@@ -117,11 +117,11 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted mt-2 text-sm sm:text-base">
           Welcome back! Here&apos;s an overview of your Google Ads performance for yesterday.
         </p>
       </div>
@@ -142,10 +142,10 @@ export default async function DashboardPage() {
                 <Icon className="h-4 w-4 text-muted" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{metric.value}</div>
+                <div className="text-xl sm:text-2xl font-bold">{metric.value}</div>
                 <div className={`flex items-center gap-1 text-xs ${trendColor} mt-1`}>
                   <TrendIcon className="h-3 w-3" />
-                  <span>{metric.change} from previous period</span>
+                  <span className="truncate">{metric.change} from previous</span>
                 </div>
               </CardContent>
             </Card>
@@ -154,14 +154,14 @@ export default async function DashboardPage() {
       </div>
 
       {/* Additional Metrics */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Avg. CPC</CardTitle>
             <CardDescription>Average cost per click</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(metrics.avgCpc)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(metrics.avgCpc)}</div>
           </CardContent>
         </Card>
 
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
             <CardDescription>Average cost per conversion</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(metrics.avgCostPerConv)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(metrics.avgCostPerConv)}</div>
           </CardContent>
         </Card>
 
@@ -183,11 +183,11 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold">{accountCount}</div>
+                <div className="text-xl sm:text-2xl font-bold">{accountCount}</div>
                 <p className="text-xs text-muted mt-1">Total accounts</p>
               </div>
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Target className="h-6 w-6 text-primary" />
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Target className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -206,14 +206,20 @@ export default async function DashboardPage() {
         <CardContent>
           <div className="space-y-4">
             {data.accounts.slice(0, 5).map((account: { id: string; name: string; yesterday: { cost: number; conversions: number }; currency: string }) => (
-              <div key={account.id} className="flex items-center justify-between border-b border-border pb-4 last:border-0 last:pb-0">
-                <div className="flex-1">
-                  <p className="font-medium">{account.name}</p>
-                  <p className="text-sm text-muted">ID: {account.id}</p>
+              <div key={account.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 border-b border-border pb-4 last:border-0 last:pb-0">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{account.name}</p>
+                  <p className="text-xs sm:text-sm text-muted truncate">ID: {account.id}</p>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold">{formatCurrency(account.yesterday.cost, account.currency)}</p>
-                  <p className="text-sm text-muted">{Math.round(account.yesterday.conversions)} conversions</p>
+                <div className="sm:text-right flex sm:flex-col gap-3 sm:gap-0">
+                  <div className="flex-1 sm:flex-none">
+                    <p className="text-xs sm:hidden text-muted mb-1">Spend</p>
+                    <p className="font-bold text-sm sm:text-base">{formatCurrency(account.yesterday.cost, account.currency)}</p>
+                  </div>
+                  <div className="flex-1 sm:flex-none">
+                    <p className="text-xs sm:hidden text-muted mb-1">Conversions</p>
+                    <p className="text-xs sm:text-sm text-muted sm:mt-1">{Math.round(account.yesterday.conversions)} conversions</p>
+                  </div>
                 </div>
               </div>
             ))}

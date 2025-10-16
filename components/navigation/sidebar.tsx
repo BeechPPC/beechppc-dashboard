@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -12,7 +13,9 @@ import {
   TrendingUp,
   DollarSign,
   PenTool,
-  Bell
+  Bell,
+  Menu,
+  X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -33,9 +36,33 @@ const automations = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r border-border bg-surface/50 backdrop-blur-sm">
+    <>
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-surface border border-border shadow-lg"
+        aria-label="Toggle menu"
+      >
+        {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      </button>
+
+      {/* Overlay for mobile */}
+      {mobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={cn(
+        "flex h-screen w-64 flex-col border-r border-border bg-surface/50 backdrop-blur-sm transition-transform duration-300 z-40",
+        "lg:relative lg:translate-x-0",
+        mobileMenuOpen ? "fixed translate-x-0" : "fixed -translate-x-full"
+      )}>
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-border px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
@@ -55,6 +82,7 @@ export function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   isActive
@@ -83,6 +111,7 @@ export function Sidebar() {
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors relative',
                     isActive
@@ -117,5 +146,6 @@ export function Sidebar() {
         </div>
       </div>
     </div>
+    </>
   )
 }
