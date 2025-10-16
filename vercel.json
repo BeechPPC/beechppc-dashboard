@@ -3,17 +3,5 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["syd1"],
-  "env": {
-    "GOOGLE_ADS_DEVELOPER_TOKEN": "@google_ads_developer_token",
-    "GOOGLE_ADS_CLIENT_ID": "@google_ads_client_id",
-    "GOOGLE_ADS_CLIENT_SECRET": "@google_ads_client_secret",
-    "GOOGLE_ADS_REFRESH_TOKEN": "@google_ads_refresh_token",
-    "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "@google_ads_login_customer_id",
-    "EMAIL_HOST": "@email_host",
-    "EMAIL_PORT": "@email_port",
-    "EMAIL_USER": "@email_user",
-    "EMAIL_PASSWORD": "@email_password",
-    "EMAIL_TO": "@email_to"
-  }
+  "regions": ["syd1"]
 }
