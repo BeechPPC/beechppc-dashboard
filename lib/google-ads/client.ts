@@ -33,13 +33,16 @@ export async function getCustomerAccounts(): Promise<GoogleAdsAccount[]> {
     const accounts = await customer.query(query)
 
     return accounts
-      .filter((account) => account.customer_client)
-      .map((account) => ({
-        id: account.customer_client!.id.toString(),
-        name: account.customer_client!.descriptive_name || 'Unnamed Account',
-        status: String(account.customer_client!.status || 'UNKNOWN'),
-        currency: account.customer_client!.currency_code || 'AUD',
-      }))
+      .map((account) => {
+        if (!account.customer_client || !account.customer_client.id) return null
+        return {
+          id: account.customer_client.id.toString(),
+          name: account.customer_client.descriptive_name || 'Unnamed Account',
+          status: String(account.customer_client.status || 'UNKNOWN'),
+          currency: account.customer_client.currency_code || 'AUD',
+        }
+      })
+      .filter((account): account is GoogleAdsAccount => account !== null)
   } catch (error) {
     console.error('Error fetching customer accounts:', error)
     throw error
@@ -82,10 +85,12 @@ export async function getAccountMetrics(
     // Aggregate metrics across all campaigns
     const aggregated = results.reduce(
       (acc, row) => {
-        acc.cost_micros += row.metrics.cost_micros || 0
-        acc.conversions += row.metrics.conversions || 0
-        acc.clicks += row.metrics.clicks || 0
-        acc.impressions += row.metrics.impressions || 0
+        if (row.metrics) {
+          acc.cost_micros += row.metrics.cost_micros || 0
+          acc.conversions += row.metrics.conversions || 0
+          acc.clicks += row.metrics.clicks || 0
+          acc.impressions += row.metrics.impressions || 0
+        }
         return acc
       },
       { cost_micros: 0, conversions: 0, clicks: 0, impressions: 0 }
