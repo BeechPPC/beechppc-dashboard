@@ -5,6 +5,16 @@ import type { DashboardMetrics } from '@/lib/google-ads/types'
 
 export async function GET() {
   try {
+    // Log environment variable status (without exposing secrets)
+    console.log('[Dashboard API] Environment check:', {
+      hasClientId: !!process.env.GOOGLE_ADS_CLIENT_ID,
+      hasClientSecret: !!process.env.GOOGLE_ADS_CLIENT_SECRET,
+      hasDeveloperToken: !!process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
+      hasRefreshToken: !!process.env.GOOGLE_ADS_REFRESH_TOKEN,
+      hasLoginCustomerId: !!process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID,
+      loginCustomerId: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID,
+    })
+
     const accountsData = await getMccReportData()
 
     // Aggregate metrics across all accounts
@@ -60,10 +70,20 @@ export async function GET() {
       accounts: accountsData
     })
   } catch (error) {
-    console.error('API Error:', error)
+    console.error('[Dashboard API] Error details:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      type: typeof error,
+    })
+
     const message = error instanceof Error ? error.message : 'Failed to fetch dashboard data'
     return NextResponse.json(
-      { success: false, error: message },
+      {
+        success: false,
+        error: message,
+        details: error instanceof Error ? error.stack : String(error)
+      },
       { status: 500 }
     )
   }
