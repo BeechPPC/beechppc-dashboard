@@ -3,8 +3,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
+interface Account {
+  name: string
+  yesterday: {
+    cost: number
+    conversions: number
+  }
+}
+
 interface PerformanceChartProps {
-  accounts: any[]
+  accounts: Account[]
 }
 
 export function PerformanceChart({ accounts }: PerformanceChartProps) {
@@ -18,7 +26,7 @@ export function PerformanceChart({ accounts }: PerformanceChartProps) {
     <Card>
       <CardHeader>
         <CardTitle>Top Accounts by Spend</CardTitle>
-        <CardDescription>Yesterday's performance comparison</CardDescription>
+        <CardDescription>Yesterday&apos;s performance comparison</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>

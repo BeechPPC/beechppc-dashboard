@@ -75,7 +75,7 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted mt-2">
-          Welcome back! Here's an overview of your Google Ads performance for yesterday.
+          Welcome back! Here&apos;s an overview of your Google Ads performance for yesterday.
         </p>
       </div>
 
@@ -154,11 +154,11 @@ export default async function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Account Performance</CardTitle>
-          <CardDescription>Yesterday's performance by account</CardDescription>
+          <CardDescription>Yesterday&apos;s performance by account</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {data.accounts.slice(0, 5).map((account: any) => (
+            {data.accounts.slice(0, 5).map((account: { id: string; name: string; yesterday: { cost: number; conversions: number }; currency: string }) => (
               <div key={account.id} className="flex items-center justify-between border-b border-border pb-4 last:border-0 last:pb-0">
                 <div className="flex-1">
                   <p className="font-medium">{account.name}</p>

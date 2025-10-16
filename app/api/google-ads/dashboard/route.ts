@@ -59,10 +59,11 @@ export async function GET() {
       accountCount: accountsData.length,
       accounts: accountsData
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('API Error:', error)
+    const message = error instanceof Error ? error.message : 'Failed to fetch dashboard data'
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch dashboard data' },
+      { success: false, error: message },
       { status: 500 }
     )
   }

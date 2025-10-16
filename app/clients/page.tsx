@@ -102,8 +102,8 @@ export default async function ClientsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {accounts.accounts.map((account: any) => {
-              const performance = accountPerformance.find((p: any) => p.id === account.id)
+            {accounts.accounts.map((account: { id: string; name: string; status: string; currency: string }) => {
+              const performance = accountPerformance.find((p: { id: string }) => p.id === account.id)
 
               return (
                 <div
@@ -126,7 +126,7 @@ export default async function ClientsPage() {
 
                   <div className="flex items-center gap-8">
                     <div className="text-right">
-                      <p className="text-sm text-muted">Yesterday's Spend</p>
+                      <p className="text-sm text-muted">Yesterday&apos;s Spend</p>
                       <p className="font-bold">
                         {performance
                           ? formatCurrency(performance.yesterday.cost, account.currency)

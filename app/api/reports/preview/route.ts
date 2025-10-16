@@ -22,10 +22,11 @@ export async function GET() {
     return new NextResponse(emailHtml, {
       headers: { 'Content-Type': 'text/html' },
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('API Error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return new NextResponse(
-      `<html><body><h1>Error generating preview</h1><p>${error.message}</p></body></html>`,
+      `<html><body><h1>Error generating preview</h1><p>${message}</p></body></html>`,
       { headers: { 'Content-Type': 'text/html' }, status: 500 }
     )
   }

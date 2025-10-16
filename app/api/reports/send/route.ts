@@ -40,10 +40,11 @@ export async function POST(request: Request) {
       accountCount: reportData.length,
       recipients,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('API Error:', error)
+    const message = error instanceof Error ? error.message : 'Failed to send report'
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to send report' },
+      { success: false, error: message },
       { status: 500 }
     )
   }

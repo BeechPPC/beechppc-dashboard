@@ -36,10 +36,11 @@ export default function ReportsPage() {
           message: data.error || 'Failed to send report',
         })
       }
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An error occurred'
       setResult({
         success: false,
-        message: error.message || 'An error occurred',
+        message,
       })
     } finally {
       setSending(false)
@@ -65,7 +66,7 @@ export default function ReportsPage() {
         <CardHeader>
           <CardTitle>Send Daily Report</CardTitle>
           <CardDescription>
-            Generate and send a report with yesterday's performance data
+            Generate and send a report with yesterday&apos;s performance data
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

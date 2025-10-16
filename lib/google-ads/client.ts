@@ -32,12 +32,14 @@ export async function getCustomerAccounts(): Promise<GoogleAdsAccount[]> {
 
     const accounts = await customer.query(query)
 
-    return accounts.map((account: any) => ({
-      id: account.customer_client.id.toString(),
-      name: account.customer_client.descriptive_name || 'Unnamed Account',
-      status: account.customer_client.status,
-      currency: account.customer_client.currency_code || 'AUD',
-    }))
+    return accounts
+      .filter((account) => account.customer_client)
+      .map((account) => ({
+        id: account.customer_client!.id.toString(),
+        name: account.customer_client!.descriptive_name || 'Unnamed Account',
+        status: String(account.customer_client!.status || 'UNKNOWN'),
+        currency: account.customer_client!.currency_code || 'AUD',
+      }))
   } catch (error) {
     console.error('Error fetching customer accounts:', error)
     throw error
@@ -79,7 +81,7 @@ export async function getAccountMetrics(
 
     // Aggregate metrics across all campaigns
     const aggregated = results.reduce(
-      (acc: any, row: any) => {
+      (acc, row) => {
         acc.cost_micros += row.metrics.cost_micros || 0
         acc.conversions += row.metrics.conversions || 0
         acc.clicks += row.metrics.clicks || 0
