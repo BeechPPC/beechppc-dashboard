@@ -1,16 +1,6 @@
 import { GoogleAdsApi } from 'google-ads-api'
 import type { GoogleAdsAccount, AccountMetrics, AccountPerformance } from './types'
 
-// Log environment variable presence (without exposing values)
-console.log('[Google Ads Client] Initializing with env vars:', {
-  hasClientId: !!process.env.GOOGLE_ADS_CLIENT_ID,
-  hasClientSecret: !!process.env.GOOGLE_ADS_CLIENT_SECRET,
-  hasDeveloperToken: !!process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
-  hasRefreshToken: !!process.env.GOOGLE_ADS_REFRESH_TOKEN,
-  hasLoginCustomerId: !!process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID,
-  loginCustomerId: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID,
-})
-
 // Initialize Google Ads API client
 const client = new GoogleAdsApi({
   client_id: process.env.GOOGLE_ADS_CLIENT_ID!,
