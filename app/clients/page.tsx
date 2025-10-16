@@ -1,19 +1,59 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, TrendingUp, Users } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, calculatePercentageChange } from '@/lib/utils'
+import { getCustomerAccounts, getMccReportData } from '@/lib/google-ads/client'
+import type { DashboardMetrics } from '@/lib/google-ads/types'
 
 async function getAccountsData() {
   try {
-    const [accountsRes, dashboardRes] = await Promise.all([
-      fetch(`http://localhost:3000/api/google-ads/accounts`, { cache: 'no-store' }),
-      fetch(`http://localhost:3000/api/google-ads/dashboard`, { cache: 'no-store' }),
+    const [accountsList, accountsData] = await Promise.all([
+      getCustomerAccounts(),
+      getMccReportData()
     ])
 
-    const accounts = accountsRes.ok ? await accountsRes.json() : null
-    const dashboard = dashboardRes.ok ? await dashboardRes.json() : null
+    // Calculate dashboard metrics
+    const totals = accountsData.reduce(
+      (acc, account) => {
+        acc.yesterday.spend += account.yesterday.cost
+        acc.yesterday.conversions += account.yesterday.conversions
+        acc.yesterday.clicks += account.yesterday.clicks
+        acc.yesterday.impressions += account.yesterday.impressions
 
-    return { accounts, dashboard }
+        if (account.previousDay) {
+          acc.previous.spend += account.previousDay.cost
+          acc.previous.conversions += account.previousDay.conversions
+          acc.previous.clicks += account.previousDay.clicks
+          acc.previous.impressions += account.previousDay.impressions
+        }
+
+        return acc
+      },
+      {
+        yesterday: { spend: 0, conversions: 0, clicks: 0, impressions: 0 },
+        previous: { spend: 0, conversions: 0, clicks: 0, impressions: 0 },
+      }
+    )
+
+    const metrics: DashboardMetrics = {
+      totalSpend: totals.yesterday.spend,
+      totalConversions: totals.yesterday.conversions,
+      totalClicks: totals.yesterday.clicks,
+      totalImpressions: totals.yesterday.impressions,
+      avgCpc: totals.yesterday.clicks > 0 ? totals.yesterday.spend / totals.yesterday.clicks : 0,
+      avgCostPerConv: totals.yesterday.conversions > 0 ? totals.yesterday.spend / totals.yesterday.conversions : 0,
+      changeVsPrevious: {
+        spend: calculatePercentageChange(totals.yesterday.spend, totals.previous.spend),
+        conversions: calculatePercentageChange(totals.yesterday.conversions, totals.previous.conversions),
+        clicks: calculatePercentageChange(totals.yesterday.clicks, totals.previous.clicks),
+        impressions: calculatePercentageChange(totals.yesterday.impressions, totals.previous.impressions),
+      },
+    }
+
+    return {
+      accounts: { success: true, accounts: accountsList },
+      dashboard: { success: true, metrics, accounts: accountsData }
+    }
   } catch (error) {
     console.error('Error fetching accounts:', error)
     return { accounts: null, dashboard: null }

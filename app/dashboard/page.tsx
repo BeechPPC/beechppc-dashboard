@@ -1,19 +1,66 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown, DollarSign, MousePointerClick, Eye, Target } from 'lucide-react'
-import { formatCurrency, formatNumber, formatPercentage } from '@/lib/utils'
+import { formatCurrency, formatNumber, formatPercentage, calculatePercentageChange } from '@/lib/utils'
 import { PerformanceChart } from '@/components/dashboard/performance-chart'
+import { getMccReportData } from '@/lib/google-ads/client'
+import type { DashboardMetrics } from '@/lib/google-ads/types'
 
 async function getDashboardData() {
   try {
-    const res = await fetch(`http://localhost:3000/api/google-ads/dashboard`, {
-      cache: 'no-store',
-    })
+    const accountsData = await getMccReportData()
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch dashboard data')
+    // Aggregate metrics across all accounts
+    const totals = accountsData.reduce(
+      (acc, account) => {
+        acc.yesterday.spend += account.yesterday.cost
+        acc.yesterday.conversions += account.yesterday.conversions
+        acc.yesterday.clicks += account.yesterday.clicks
+        acc.yesterday.impressions += account.yesterday.impressions
+
+        if (account.previousDay) {
+          acc.previous.spend += account.previousDay.cost
+          acc.previous.conversions += account.previousDay.conversions
+          acc.previous.clicks += account.previousDay.clicks
+          acc.previous.impressions += account.previousDay.impressions
+        }
+
+        return acc
+      },
+      {
+        yesterday: { spend: 0, conversions: 0, clicks: 0, impressions: 0 },
+        previous: { spend: 0, conversions: 0, clicks: 0, impressions: 0 },
+      }
+    )
+
+    const avgCpc = totals.yesterday.clicks > 0
+      ? totals.yesterday.spend / totals.yesterday.clicks
+      : 0
+
+    const avgCostPerConv = totals.yesterday.conversions > 0
+      ? totals.yesterday.spend / totals.yesterday.conversions
+      : 0
+
+    const metrics: DashboardMetrics = {
+      totalSpend: totals.yesterday.spend,
+      totalConversions: totals.yesterday.conversions,
+      totalClicks: totals.yesterday.clicks,
+      totalImpressions: totals.yesterday.impressions,
+      avgCpc,
+      avgCostPerConv,
+      changeVsPrevious: {
+        spend: calculatePercentageChange(totals.yesterday.spend, totals.previous.spend),
+        conversions: calculatePercentageChange(totals.yesterday.conversions, totals.previous.conversions),
+        clicks: calculatePercentageChange(totals.yesterday.clicks, totals.previous.clicks),
+        impressions: calculatePercentageChange(totals.yesterday.impressions, totals.previous.impressions),
+      },
     }
 
-    return res.json()
+    return {
+      success: true,
+      metrics,
+      accountCount: accountsData.length,
+      accounts: accountsData
+    }
   } catch (error) {
     console.error('Error fetching dashboard:', error)
     return null
