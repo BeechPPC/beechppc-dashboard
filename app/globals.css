@@ -1,26 +1,67 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Beech PPC Brand Colors */
+  --primary: #f59e0b;        /* Yellow-500 */
+  --primary-light: #fef3c7;  /* Yellow-50 */
+  --primary-mid: #fde68a;    /* Yellow-200 */
+  --primary-dark: #fbbf24;   /* Yellow-400 */
+
+  --background: #fefce8;     /* Soft yellow bg */
+  --surface: #ffffff;
+  --foreground: #111827;     /* Gray-900 */
+  --muted: #4b5563;          /* Gray-700 */
+
+  --success: #10b981;        /* Green-500 */
+  --error: #ef4444;
+  --warning: #f59e0b;
+
+  --border: #fde68a;
+  --ring: #f59e0b;
 }
 
 @theme inline {
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-mid: var(--primary-mid);
+  --color-primary-dark: var(--primary-dark);
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+}
+
+/* Animated background blobs like beechppc.com */
+.blob-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: float 20s infinite ease-in-out;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
 }

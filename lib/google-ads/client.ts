@@ -1,0 +1,139 @@
+import { GoogleAdsApi } from 'google-ads-api'
+import type { GoogleAdsAccount, AccountMetrics, AccountPerformance } from './types'
+
+// Initialize Google Ads API client
+const client = new GoogleAdsApi({
+  client_id: process.env.GOOGLE_ADS_CLIENT_ID!,
+  client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET!,
+  developer_token: process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+})
+
+// Authenticate with refresh token
+const customer = client.Customer({
+  customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
+  refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
+})
+
+/**
+ * Get all customer accounts under the MCC
+ */
+export async function getCustomerAccounts(): Promise<GoogleAdsAccount[]> {
+  try {
+    const query = `
+      SELECT
+        customer_client.id,
+        customer_client.descriptive_name,
+        customer_client.status,
+        customer_client.currency_code
+      FROM customer_client
+      WHERE customer_client.level = 1
+        AND customer_client.status = 'ENABLED'
+    `
+
+    const accounts = await customer.query(query)
+
+    return accounts.map((account: any) => ({
+      id: account.customer_client.id.toString(),
+      name: account.customer_client.descriptive_name || 'Unnamed Account',
+      status: account.customer_client.status,
+      currency: account.customer_client.currency_code || 'AUD',
+    }))
+  } catch (error) {
+    console.error('Error fetching customer accounts:', error)
+    throw error
+  }
+}
+
+/**
+ * Get performance metrics for a specific customer account
+ */
+export async function getAccountMetrics(
+  customerId: string,
+  dateRange: string = 'YESTERDAY'
+): Promise<AccountMetrics | null> {
+  try {
+    const accountCustomer = client.Customer({
+      customer_id: customerId,
+      refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
+      login_customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
+    })
+
+    const query = `
+      SELECT
+        customer.id,
+        customer.descriptive_name,
+        metrics.cost_micros,
+        metrics.conversions,
+        metrics.clicks,
+        metrics.impressions,
+        segments.date
+      FROM campaign
+      WHERE segments.date DURING ${dateRange}
+    `
+
+    const results = await accountCustomer.query(query)
+
+    if (!results || results.length === 0) {
+      return null
+    }
+
+    // Aggregate metrics across all campaigns
+    const aggregated = results.reduce(
+      (acc: any, row: any) => {
+        acc.cost_micros += row.metrics.cost_micros || 0
+        acc.conversions += row.metrics.conversions || 0
+        acc.clicks += row.metrics.clicks || 0
+        acc.impressions += row.metrics.impressions || 0
+        return acc
+      },
+      { cost_micros: 0, conversions: 0, clicks: 0, impressions: 0 }
+    )
+
+    const avgCpc = aggregated.clicks > 0 ? aggregated.cost_micros / aggregated.clicks : 0
+    const costPerConv = aggregated.conversions > 0 ? aggregated.cost_micros / aggregated.conversions : 0
+
+    return {
+      cost: aggregated.cost_micros / 1_000_000,
+      conversions: aggregated.conversions,
+      clicks: aggregated.clicks,
+      impressions: aggregated.impressions,
+      avgCpc: avgCpc / 1_000_000,
+      costPerConv: costPerConv / 1_000_000,
+    }
+  } catch (error) {
+    console.error(`Error fetching metrics for customer ${customerId}:`, error)
+    return null
+  }
+}
+
+/**
+ * Get all MCC accounts with their performance metrics
+ */
+export async function getMccReportData(): Promise<AccountPerformance[]> {
+  try {
+    const accounts = await getCustomerAccounts()
+    const reportData: AccountPerformance[] = []
+
+    for (const account of accounts) {
+      const [yesterdayMetrics, previousDayMetrics] = await Promise.all([
+        getAccountMetrics(account.id, 'YESTERDAY'),
+        getAccountMetrics(account.id, 'LAST_7_DAYS'),
+      ])
+
+      if (yesterdayMetrics) {
+        reportData.push({
+          id: account.id,
+          name: account.name,
+          currency: account.currency,
+          yesterday: yesterdayMetrics,
+          previousDay: previousDayMetrics || undefined,
+        })
+      }
+    }
+
+    return reportData
+  } catch (error) {
+    console.error('Error generating MCC report data:', error)
+    throw error
+  }
+}
