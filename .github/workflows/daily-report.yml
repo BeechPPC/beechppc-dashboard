@@ -1,0 +1,29 @@
+name: Send Daily Google Ads Report
+
+on:
+  schedule:
+    # Run at 11:00 AM Melbourne time (1:00 AM UTC during standard time, 12:00 AM UTC during daylight saving)
+    # This is for Melbourne Standard Time (UTC+10)
+    - cron: '0 1 * * *'
+  
+  # Allow manual trigger from Actions tab
+  workflow_dispatch:
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Send Daily Report
+        run: |
+          curl -X POST ${{ secrets.VERCEL_URL }}/api/reports/send \
+            -H "Content-Type: application/json" \
+            -d '{"recipients": ["${{ secrets.EMAIL_TO }}"]}'
+        
+      - name: Check Response
+        if: failure()
+        run: echo "Failed to send daily report. Check Vercel logs for details."
+
+# Note: You'll need to add the following secrets to your GitHub repository:
+# - VERCEL_URL: Your Vercel deployment URL (e.g., https://your-app.vercel.app)
+# - EMAIL_TO: Recipient email address (e.g., chris@beechppc.com)
