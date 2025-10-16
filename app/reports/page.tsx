@@ -52,11 +52,11 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
-        <p className="text-muted mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Reports</h1>
+        <p className="text-muted mt-2 text-sm sm:text-base">
           Generate and send daily MCC performance reports
         </p>
       </div>
@@ -88,11 +88,12 @@ export default function ReportsPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button
               onClick={handleSendReport}
               disabled={sending || !recipients.trim()}
               size="lg"
+              className="w-full sm:w-auto"
             >
               {sending ? (
                 <>
@@ -111,6 +112,7 @@ export default function ReportsPage() {
               onClick={handlePreview}
               variant="outline"
               size="lg"
+              className="w-full sm:w-auto"
             >
               <Eye className="h-4 w-4" />
               Preview Report
@@ -147,15 +149,15 @@ export default function ReportsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex items-center justify-between py-2 border-b border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-border">
               <span className="text-sm font-medium">Schedule</span>
-              <span className="text-sm text-muted">Daily at 11:00 AM Melbourne Time</span>
+              <span className="text-xs sm:text-sm text-muted">Daily at 11:00 AM Melbourne Time</span>
             </div>
-            <div className="flex items-center justify-between py-2 border-b border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-border">
               <span className="text-sm font-medium">Recipients</span>
-              <span className="text-sm text-muted">chris@beechppc.com</span>
+              <span className="text-xs sm:text-sm text-muted break-all">chris@beechppc.com</span>
             </div>
-            <div className="flex items-center justify-between py-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2">
               <span className="text-sm font-medium">Status</span>
               <span className="flex items-center gap-2 text-sm text-success">
                 <div className="h-2 w-2 rounded-full bg-success" />
@@ -165,7 +167,7 @@ export default function ReportsPage() {
           </div>
 
           <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-sm text-muted">
+            <p className="text-xs sm:text-sm text-muted">
               <Mail className="inline h-4 w-4 mr-1" />
               Reports are automatically generated and sent daily from your localhost service.
               Use the manual send button above to send a report on-demand.

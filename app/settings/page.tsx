@@ -18,11 +18,11 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted mt-2 text-sm sm:text-base">
           Configure your daily report preferences and notifications
         </p>
       </div>
@@ -74,11 +74,11 @@ export default function SettingsPage() {
           </div>
 
           <div className="pt-4 border-t border-border">
-            <p className="text-sm text-muted">
+            <p className="text-xs sm:text-sm text-muted">
               <strong>Note:</strong> Schedule changes require restarting the localhost service to take effect.
-              Update the <code className="bg-muted/20 px-1 py-0.5 rounded">REPORT_SCHEDULE</code> and{' '}
-              <code className="bg-muted/20 px-1 py-0.5 rounded">TIMEZONE</code> values in your{' '}
-              <code className="bg-muted/20 px-1 py-0.5 rounded">.env</code> file.
+              Update the <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">REPORT_SCHEDULE</code> and{' '}
+              <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">TIMEZONE</code> values in your{' '}
+              <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">.env</code> file.
             </p>
           </div>
         </CardContent>
@@ -113,10 +113,10 @@ export default function SettingsPage() {
           </div>
 
           <div className="pt-4 border-t border-border">
-            <p className="text-sm text-muted">
+            <p className="text-xs sm:text-sm text-muted">
               <strong>Note:</strong> To update default recipients for scheduled reports, modify the{' '}
-              <code className="bg-muted/20 px-1 py-0.5 rounded">EMAIL_TO</code> value in your{' '}
-              <code className="bg-muted/20 px-1 py-0.5 rounded">.env</code> file and restart the service.
+              <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">EMAIL_TO</code> value in your{' '}
+              <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">.env</code> file and restart the service.
             </p>
           </div>
         </CardContent>
@@ -131,33 +131,33 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center justify-between py-2 border-b border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-border">
             <span className="text-sm font-medium">MCC Account ID</span>
-            <span className="text-sm text-muted font-mono">6695445119</span>
+            <span className="text-xs sm:text-sm text-muted font-mono break-all">6695445119</span>
           </div>
-          <div className="flex items-center justify-between py-2 border-b border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-border">
             <span className="text-sm font-medium">API Status</span>
             <span className="flex items-center gap-2 text-sm text-success">
               <div className="h-2 w-2 rounded-full bg-success" />
               Connected
             </span>
           </div>
-          <div className="flex items-center justify-between py-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2">
             <span className="text-sm font-medium">Developer Token</span>
-            <span className="text-sm text-muted font-mono">gxL-KFFY***</span>
+            <span className="text-xs sm:text-sm text-muted font-mono break-all">gxL-KFFY***</span>
           </div>
 
           <div className="pt-4 border-t border-border">
-            <p className="text-sm text-muted">
-              API credentials are configured in your <code className="bg-muted/20 px-1 py-0.5 rounded">.env.local</code> file.
+            <p className="text-xs sm:text-sm text-muted">
+              API credentials are configured in your <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">.env.local</code> file.
             </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Save Button */}
-      <div className="flex items-center justify-between p-4 bg-primary-light/50 rounded-lg border border-primary/20">
-        <p className="text-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-primary-light/50 rounded-lg border border-primary/20">
+        <p className="text-xs sm:text-sm">
           {saved ? (
             <span className="flex items-center gap-2 text-success">
               <CheckCircle className="h-4 w-4" />
@@ -168,7 +168,7 @@ export default function SettingsPage() {
           )}
         </p>
         {!saved && (
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} className="w-full sm:w-auto">
             <Save className="h-4 w-4" />
             Save Settings
           </Button>

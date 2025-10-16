@@ -65,10 +65,10 @@ export default async function ClientsPage() {
 
   if (!accounts || !accounts.success) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
-          <p className="text-error mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Clients</h1>
+          <p className="text-error mt-2 text-sm sm:text-base">
             Failed to load client accounts. Please check your Google Ads API configuration.
           </p>
         </div>
@@ -79,30 +79,30 @@ export default async function ClientsPage() {
   const accountPerformance = dashboard?.accounts || []
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
-          <p className="text-muted mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Clients</h1>
+          <p className="text-muted mt-2 text-sm sm:text-base">
             Manage your Google Ads MCC client accounts
           </p>
         </div>
-        <Button>
+        <Button className="w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           Add Client
         </Button>
       </div>
 
       {/* Summary */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
             <Users className="h-4 w-4 text-muted" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{accounts.accounts.length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{accounts.accounts.length}</div>
             <p className="text-xs text-muted mt-1">Active accounts in MCC</p>
           </CardContent>
         </Card>
@@ -113,20 +113,20 @@ export default async function ClientsPage() {
             <TrendingUp className="h-4 w-4 text-muted" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {dashboard?.metrics ? formatCurrency(dashboard.metrics.totalSpend) : '-'}
             </div>
             <p className="text-xs text-muted mt-1">Across all accounts</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="sm:col-span-2 lg:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Avg. Performance</CardTitle>
             <TrendingUp className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">Good</div>
+            <div className="text-xl sm:text-2xl font-bold text-success">Good</div>
             <p className="text-xs text-muted mt-1">Overall account health</p>
           </CardContent>
         </Card>
@@ -148,41 +148,41 @@ export default async function ClientsPage() {
               return (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-primary-light/50 transition-colors"
+                  className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 border border-border rounded-lg hover:bg-primary-light/50 transition-colors"
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <span className="text-primary font-semibold">
-                          {account.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">{account.name}</h3>
-                        <p className="text-sm text-muted">ID: {account.id}</p>
-                      </div>
+                  {/* Account Info */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-10 w-10 flex-shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <span className="text-primary font-semibold">
+                        {account.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold truncate">{account.name}</h3>
+                      <p className="text-xs sm:text-sm text-muted truncate">ID: {account.id}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-8">
-                    <div className="text-right">
-                      <p className="text-sm text-muted">Yesterday&apos;s Spend</p>
-                      <p className="font-bold">
+                  {/* Metrics Grid - Mobile Layout */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:items-center gap-4 lg:gap-6">
+                    <div>
+                      <p className="text-xs text-muted mb-1">Yesterday&apos;s Spend</p>
+                      <p className="font-bold text-sm sm:text-base">
                         {performance
                           ? formatCurrency(performance.yesterday.cost, account.currency)
                           : '-'}
                       </p>
                     </div>
 
-                    <div className="text-right">
-                      <p className="text-sm text-muted">Conversions</p>
-                      <p className="font-bold">
+                    <div>
+                      <p className="text-xs text-muted mb-1">Conversions</p>
+                      <p className="font-bold text-sm sm:text-base">
                         {performance ? Math.round(performance.yesterday.conversions) : '-'}
                       </p>
                     </div>
 
-                    <div className="text-right">
-                      <p className="text-sm text-muted">Status</p>
+                    <div>
+                      <p className="text-xs text-muted mb-1">Status</p>
                       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
                         account.status === 'ENABLED'
                           ? 'bg-success/10 text-success'
@@ -195,7 +195,7 @@ export default async function ClientsPage() {
                       </span>
                     </div>
 
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="col-span-2 sm:col-span-1">
                       View Details
                     </Button>
                   </div>
