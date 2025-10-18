@@ -332,11 +332,16 @@ NEW_TEMPLATE: {
 ```
 beechppc-dashboard/
 ├── app/
-│   ├── dashboard/              # Dashboard page
-│   ├── clients/                # Clients page
-│   ├── reports/                # Reports page with templates
-│   │   └── page.tsx
-│   ├── settings/               # Settings page
+│   ├── (app)/                  # Route group with shared layout + sidebar
+│   │   ├── layout.tsx          # Shared layout with sidebar
+│   │   ├── dashboard/          # Dashboard page
+│   │   │   └── page.tsx
+│   │   ├── clients/            # Clients page
+│   │   │   └── page.tsx
+│   │   ├── reports/            # Reports page with templates
+│   │   │   └── page.tsx
+│   │   └── settings/           # Settings page
+│   │       └── page.tsx
 │   ├── api/
 │   │   ├── google-ads/         # Google Ads API routes
 │   │   │   ├── accounts/
@@ -346,10 +351,12 @@ beechppc-dashboard/
 │   │       ├── preview/
 │   │       ├── templates/      # Get all templates
 │   │       └── template-send/  # Send template report
-│   └── layout.tsx
+│   ├── layout.tsx              # Root layout
+│   └── page.tsx                # Root page (redirects to /dashboard)
 ├── components/
 │   ├── ui/                     # Reusable UI components
 │   ├── navigation/             # Sidebar, nav
+│   │   └── sidebar.tsx         # Main sidebar component
 │   └── dashboard/              # Dashboard components
 ├── lib/
 │   ├── google-ads/
@@ -365,6 +372,27 @@ beechppc-dashboard/
 └── public/
 ```
 
+### Layout Architecture
+
+**IMPORTANT:** All application pages (dashboard, clients, reports, settings, etc.) MUST be placed inside the `app/(app)/` directory to automatically include the sidebar navigation.
+
+The `(app)` route group provides:
+- Sidebar navigation on all pages
+- Animated background blobs
+- Consistent container padding and responsive layout
+- Proper scroll behavior
+
+**When creating new pages:**
+1. Create the page inside `app/(app)/your-page/page.tsx`
+2. Do NOT create individual `layout.tsx` files for each page
+3. The shared layout will automatically apply
+
+**Example new page structure:**
+```
+app/(app)/new-feature/
+└── page.tsx
+```
+
 ---
 
 ## Best Practices
@@ -372,10 +400,11 @@ beechppc-dashboard/
 ### When Building New Features
 
 1. **Check this file first** - Review existing patterns and colors
-2. **Use existing components** - Reuse Card, Button, Input components
-3. **Follow mobile-first** - Use responsive classes (`sm:`, `md:`, `lg:`)
-4. **Maintain consistency** - Use the defined color palette
-5. **Update this file** - Add new patterns or components here
+2. **Create pages in (app) directory** - ALL new pages MUST go in `app/(app)/` to include sidebar
+3. **Use existing components** - Reuse Card, Button, Input components
+4. **Follow mobile-first** - Use responsive classes (`sm:`, `md:`, `lg:`)
+5. **Maintain consistency** - Use the defined color palette
+6. **Update this file** - Add new patterns or components here
 
 ### Responsive Design
 
