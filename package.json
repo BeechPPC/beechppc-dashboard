@@ -1,0 +1,27 @@
+{
+  "name": "beech-ppc-ai-agent",
+  "version": "1.0.0",
+  "description": "Beech PPC AI Agent for Google Ads MCC management",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test-report": "node src/generateReport.js",
+    "dev": "node --watch src/index.js",
+    "send-report": "node src/sendReport.js"
+  },
+  "keywords": [
+    "google-ads",
+    "mcc",
+    "reporting",
+    "automation"
+  ],
+  "author": "Beech PPC",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "google-ads-api": "^21.0.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.7"
+  }
+}

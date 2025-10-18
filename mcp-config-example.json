@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "google-ads": {
+      "command": "uvx",
+      "args": [
+        "google-ads-mcp"
+      ],
+      "env": {
+        "GOOGLE_ADS_DEVELOPER_TOKEN": "INSERT_YOUR_DEVELOPER_TOKEN_HERE",
+        "GOOGLE_ADS_LOGIN_CUSTOMER_ID": "INSERT_YOUR_LOGIN_CUSTOMER_ID_HERE"
+      }
+    }
+  }
+}
+
