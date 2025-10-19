@@ -51,14 +51,14 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Preset Buttons */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {presets.map((preset) => (
           <button
             key={preset.label}
             onClick={() => handlePreset(preset.days)}
-            className="px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-primary/10 hover:border-primary transition-colors"
+            className="px-2 py-1 text-xs border border-border rounded hover:bg-primary/10 hover:border-primary transition-colors"
           >
             {preset.label}
           </button>
@@ -66,9 +66,9 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
       </div>
 
       {/* Custom Date Range */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
         <div className="flex-1">
-          <label className="block text-sm font-medium mb-1.5">
+          <label className="block text-xs font-medium mb-1">
             From
           </label>
           <div className="relative">
@@ -77,14 +77,14 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
               value={value.from}
               onChange={(e) => onChange({ ...value, from: e.target.value })}
               max={value.to || formatDate(new Date())}
-              className="w-full px-3 py-2 pl-10 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              className="w-full px-2 py-1.5 pl-8 text-sm border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary bg-white"
             />
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+            <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
           </div>
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium mb-1.5">
+          <label className="block text-xs font-medium mb-1">
             To
           </label>
           <div className="relative">
@@ -94,9 +94,9 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
               onChange={(e) => onChange({ ...value, to: e.target.value })}
               min={value.from}
               max={formatDate(new Date())}
-              className="w-full px-3 py-2 pl-10 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              className="w-full px-2 py-1.5 pl-8 text-sm border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary bg-white"
             />
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+            <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
           </div>
         </div>
       </div>
