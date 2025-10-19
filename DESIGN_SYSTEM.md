@@ -151,6 +151,25 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica N
 </select>
 ```
 
+#### Date Picker
+```tsx
+import { DatePicker, type DateRange } from '@/components/ui/date-picker'
+
+const [dateRange, setDateRange] = useState<DateRange>({
+  from: '2025-01-01',
+  to: '2025-01-31',
+})
+
+<DatePicker value={dateRange} onChange={setDateRange} />
+```
+
+**Features:**
+- Preset buttons (Today, Yesterday, Last 7/14/30/90 Days)
+- Custom date range selection
+- Automatic date validation
+- Calendar icon indicators
+- Mobile-responsive layout
+
 ### Tables
 
 **Header Row:**

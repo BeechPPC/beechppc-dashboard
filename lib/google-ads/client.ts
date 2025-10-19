@@ -54,7 +54,9 @@ export async function getCustomerAccounts(): Promise<GoogleAdsAccount[]> {
  */
 export async function getAccountMetrics(
   customerId: string,
-  dateRange: string = 'YESTERDAY'
+  dateRange: string = 'YESTERDAY',
+  customDateFrom?: string,
+  customDateTo?: string
 ): Promise<AccountMetrics | null> {
   try {
     const accountCustomer = client.Customer({
@@ -62,6 +64,14 @@ export async function getAccountMetrics(
       refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
       login_customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
     })
+
+    // Use custom date range if provided, otherwise use preset
+    let dateCondition: string
+    if (customDateFrom && customDateTo) {
+      dateCondition = `segments.date BETWEEN '${customDateFrom}' AND '${customDateTo}'`
+    } else {
+      dateCondition = `segments.date DURING ${dateRange}`
+    }
 
     const query = `
       SELECT
@@ -73,7 +83,7 @@ export async function getAccountMetrics(
         metrics.impressions,
         segments.date
       FROM campaign
-      WHERE segments.date DURING ${dateRange}
+      WHERE ${dateCondition}
     `
 
     const results = await accountCustomer.query(query)
@@ -116,15 +126,20 @@ export async function getAccountMetrics(
 /**
  * Get all MCC accounts with their performance metrics
  */
-export async function getMccReportData(): Promise<AccountPerformance[]> {
+export async function getMccReportData(
+  dateFrom?: string,
+  dateTo?: string,
+  comparisonDateFrom?: string,
+  comparisonDateTo?: string
+): Promise<AccountPerformance[]> {
   try {
     const accounts = await getCustomerAccounts()
     const reportData: AccountPerformance[] = []
 
     for (const account of accounts) {
       const [yesterdayMetrics, previousDayMetrics] = await Promise.all([
-        getAccountMetrics(account.id, 'YESTERDAY'),
-        getAccountMetrics(account.id, 'LAST_7_DAYS'),
+        getAccountMetrics(account.id, 'YESTERDAY', dateFrom, dateTo),
+        getAccountMetrics(account.id, 'LAST_7_DAYS', comparisonDateFrom, comparisonDateTo),
       ])
 
       if (yesterdayMetrics) {

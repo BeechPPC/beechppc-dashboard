@@ -1,120 +1,141 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { TrendingUp, TrendingDown, DollarSign, MousePointerClick, Eye, Target } from 'lucide-react'
-import { formatCurrency, formatNumber, formatPercentage, calculatePercentageChange } from '@/lib/utils'
+import { DatePicker, type DateRange } from '@/components/ui/date-picker'
+import { TrendingUp, TrendingDown, DollarSign, MousePointerClick, Eye, Target, Loader2 } from 'lucide-react'
+import { formatCurrency, formatNumber, formatPercentage } from '@/lib/utils'
 import { PerformanceChart } from '@/components/dashboard/performance-chart'
-import { getMccReportData } from '@/lib/google-ads/client'
-import type { DashboardMetrics } from '@/lib/google-ads/types'
+import type { DashboardMetrics, AccountPerformance } from '@/lib/google-ads/types'
 
-async function getDashboardData() {
-  try {
-    const accountsData = await getMccReportData()
-
-    // Aggregate metrics across all accounts
-    const totals = accountsData.reduce(
-      (acc, account) => {
-        acc.yesterday.spend += account.yesterday.cost
-        acc.yesterday.conversions += account.yesterday.conversions
-        acc.yesterday.clicks += account.yesterday.clicks
-        acc.yesterday.impressions += account.yesterday.impressions
-
-        if (account.previousDay) {
-          acc.previous.spend += account.previousDay.cost
-          acc.previous.conversions += account.previousDay.conversions
-          acc.previous.clicks += account.previousDay.clicks
-          acc.previous.impressions += account.previousDay.impressions
-        }
-
-        return acc
-      },
-      {
-        yesterday: { spend: 0, conversions: 0, clicks: 0, impressions: 0 },
-        previous: { spend: 0, conversions: 0, clicks: 0, impressions: 0 },
-      }
-    )
-
-    const avgCpc = totals.yesterday.clicks > 0
-      ? totals.yesterday.spend / totals.yesterday.clicks
-      : 0
-
-    const avgCostPerConv = totals.yesterday.conversions > 0
-      ? totals.yesterday.spend / totals.yesterday.conversions
-      : 0
-
-    const metrics: DashboardMetrics = {
-      totalSpend: totals.yesterday.spend,
-      totalConversions: totals.yesterday.conversions,
-      totalClicks: totals.yesterday.clicks,
-      totalImpressions: totals.yesterday.impressions,
-      avgCpc,
-      avgCostPerConv,
-      changeVsPrevious: {
-        spend: calculatePercentageChange(totals.yesterday.spend, totals.previous.spend),
-        conversions: calculatePercentageChange(totals.yesterday.conversions, totals.previous.conversions),
-        clicks: calculatePercentageChange(totals.yesterday.clicks, totals.previous.clicks),
-        impressions: calculatePercentageChange(totals.yesterday.impressions, totals.previous.impressions),
-      },
-    }
-
-    return {
-      success: true,
-      metrics,
-      accountCount: accountsData.length,
-      accounts: accountsData
-    }
-  } catch (error) {
-    console.error('Error fetching dashboard:', error)
-    return null
-  }
+interface DashboardData {
+  success: boolean
+  metrics: DashboardMetrics
+  accountCount: number
+  accounts: AccountPerformance[]
 }
 
-export default async function DashboardPage() {
-  const data = await getDashboardData()
+export default function DashboardPage() {
+  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!data || !data.success) {
+  // Initialize with Yesterday as default
+  const getYesterday = () => {
+    const date = new Date()
+    date.setDate(date.getDate() - 1)
+    return date.toISOString().split('T')[0]
+  }
+
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: getYesterday(),
+    to: getYesterday(),
+  })
+
+  // Calculate comparison period (same number of days, ending before the selected period)
+  const getComparisonPeriod = (from: string, to: string) => {
+    const fromDate = new Date(from)
+    const toDate = new Date(to)
+    const daysDiff = Math.ceil((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24))
+
+    const comparisonTo = new Date(fromDate)
+    comparisonTo.setDate(comparisonTo.getDate() - 1)
+
+    const comparisonFrom = new Date(comparisonTo)
+    comparisonFrom.setDate(comparisonFrom.getDate() - daysDiff)
+
+    return {
+      from: comparisonFrom.toISOString().split('T')[0],
+      to: comparisonTo.toISOString().split('T')[0],
+    }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const comparison = getComparisonPeriod(dateRange.from, dateRange.to)
+        const params = new URLSearchParams({
+          dateFrom: dateRange.from,
+          dateTo: dateRange.to,
+          comparisonDateFrom: comparison.from,
+          comparisonDateTo: comparison.to,
+        })
+
+        const res = await fetch(`/api/google-ads/dashboard?${params}`)
+        const result = await res.json()
+
+        if (result.success) {
+          setData(result)
+        } else {
+          setError(result.error || 'Failed to load dashboard data')
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [dateRange])
+
+  const formatDateRangeLabel = (from: string, to: string) => {
+    const fromDate = new Date(from)
+    const toDate = new Date(to)
+
+    if (from === to) {
+      return fromDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    }
+
+    return `${fromDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${toDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+  }
+
+  if (error) {
     return (
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-error mt-2">
-            Failed to load dashboard data. Please check your Google Ads API configuration.
+            {error}
           </p>
         </div>
       </div>
     )
   }
 
-  const { metrics, accountCount } = data
-
-  const metricsCards = [
+  const metricsCards = data ? [
     {
       title: 'Total Spend',
-      value: formatCurrency(metrics.totalSpend),
-      change: formatPercentage(metrics.changeVsPrevious.spend),
-      trend: metrics.changeVsPrevious.spend >= 0 ? 'up' as const : 'down' as const,
+      value: formatCurrency(data.metrics.totalSpend),
+      change: formatPercentage(data.metrics.changeVsPrevious.spend),
+      trend: data.metrics.changeVsPrevious.spend >= 0 ? 'up' as const : 'down' as const,
       icon: DollarSign,
     },
     {
       title: 'Conversions',
-      value: formatNumber(Math.round(metrics.totalConversions)),
-      change: formatPercentage(metrics.changeVsPrevious.conversions),
-      trend: metrics.changeVsPrevious.conversions >= 0 ? 'up' as const : 'down' as const,
+      value: formatNumber(Math.round(data.metrics.totalConversions)),
+      change: formatPercentage(data.metrics.changeVsPrevious.conversions),
+      trend: data.metrics.changeVsPrevious.conversions >= 0 ? 'up' as const : 'down' as const,
       icon: Target,
     },
     {
       title: 'Clicks',
-      value: formatNumber(metrics.totalClicks),
-      change: formatPercentage(metrics.changeVsPrevious.clicks),
-      trend: metrics.changeVsPrevious.clicks >= 0 ? 'up' as const : 'down' as const,
+      value: formatNumber(data.metrics.totalClicks),
+      change: formatPercentage(data.metrics.changeVsPrevious.clicks),
+      trend: data.metrics.changeVsPrevious.clicks >= 0 ? 'up' as const : 'down' as const,
       icon: MousePointerClick,
     },
     {
       title: 'Impressions',
-      value: formatNumber(metrics.totalImpressions),
-      change: formatPercentage(metrics.changeVsPrevious.impressions),
-      trend: metrics.changeVsPrevious.impressions >= 0 ? 'up' as const : 'down' as const,
+      value: formatNumber(data.metrics.totalImpressions),
+      change: formatPercentage(data.metrics.changeVsPrevious.impressions),
+      trend: data.metrics.changeVsPrevious.impressions >= 0 ? 'up' as const : 'down' as const,
       icon: Eye,
     },
-  ]
+  ] : []
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -122,110 +143,136 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted mt-2 text-sm sm:text-base">
-          Welcome back! Here&apos;s an overview of your Google Ads performance for yesterday.
+          Welcome back! Here&apos;s an overview of your Google Ads performance.
         </p>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {metricsCards.map((metric) => {
-          const Icon = metric.icon
-          const TrendIcon = metric.trend === 'up' ? TrendingUp : TrendingDown
-          const trendColor = metric.trend === 'up' ? 'text-success' : 'text-error'
+      {/* Date Range Picker */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Date Range</CardTitle>
+          <CardDescription>
+            Select a date range to view performance metrics
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DatePicker value={dateRange} onChange={setDateRange} />
+        </CardContent>
+      </Card>
 
-          return (
-            <Card key={metric.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardDescription className="text-sm font-medium">
-                  {metric.title}
-                </CardDescription>
-                <Icon className="h-4 w-4 text-muted" />
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : data ? (
+        <>
+          {/* Current Period Label */}
+          <div className="text-sm text-muted">
+            Showing data for <span className="font-medium text-gray-900">{formatDateRangeLabel(dateRange.from, dateRange.to)}</span>
+          </div>
+
+          {/* Metrics Grid */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {metricsCards.map((metric) => {
+              const Icon = metric.icon
+              const TrendIcon = metric.trend === 'up' ? TrendingUp : TrendingDown
+              const trendColor = metric.trend === 'up' ? 'text-success' : 'text-error'
+
+              return (
+                <Card key={metric.title}>
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardDescription className="text-sm font-medium">
+                      {metric.title}
+                    </CardDescription>
+                    <Icon className="h-4 w-4 text-muted" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-xl sm:text-2xl font-bold">{metric.value}</div>
+                    <div className={`flex items-center gap-1 text-xs ${trendColor} mt-1`}>
+                      <TrendIcon className="h-3 w-3" />
+                      <span className="truncate">{metric.change} from previous</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+
+          {/* Additional Metrics */}
+          <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Avg. CPC</CardTitle>
+                <CardDescription>Average cost per click</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-bold">{metric.value}</div>
-                <div className={`flex items-center gap-1 text-xs ${trendColor} mt-1`}>
-                  <TrendIcon className="h-3 w-3" />
-                  <span className="truncate">{metric.change} from previous</span>
+                <div className="text-xl sm:text-2xl font-bold">{formatCurrency(data.metrics.avgCpc)}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Avg. Cost/Conv</CardTitle>
+                <CardDescription>Average cost per conversion</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl sm:text-2xl font-bold">{formatCurrency(data.metrics.avgCostPerConv)}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Accounts</CardTitle>
+                <CardDescription>Managed Google Ads accounts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xl sm:text-2xl font-bold">{data.accountCount}</div>
+                    <p className="text-xs text-muted mt-1">Total accounts</p>
+                  </div>
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Target className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          )
-        })}
-      </div>
-
-      {/* Additional Metrics */}
-      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Avg. CPC</CardTitle>
-            <CardDescription>Average cost per click</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(metrics.avgCpc)}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Avg. Cost/Conv</CardTitle>
-            <CardDescription>Average cost per conversion</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(metrics.avgCostPerConv)}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Active Accounts</CardTitle>
-            <CardDescription>Managed Google Ads accounts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-xl sm:text-2xl font-bold">{accountCount}</div>
-                <p className="text-xs text-muted mt-1">Total accounts</p>
-              </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Target className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Performance Chart */}
-      <PerformanceChart accounts={data.accounts} />
-
-      {/* Account Performance */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Performance</CardTitle>
-          <CardDescription>Yesterday&apos;s performance by account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {data.accounts.slice(0, 5).map((account: { id: string; name: string; yesterday: { cost: number; conversions: number }; currency: string }) => (
-              <div key={account.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 border-b border-border pb-4 last:border-0 last:pb-0">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{account.name}</p>
-                  <p className="text-xs sm:text-sm text-muted truncate">ID: {account.id}</p>
-                </div>
-                <div className="sm:text-right flex sm:flex-col gap-3 sm:gap-0">
-                  <div className="flex-1 sm:flex-none">
-                    <p className="text-xs sm:hidden text-muted mb-1">Spend</p>
-                    <p className="font-bold text-sm sm:text-base">{formatCurrency(account.yesterday.cost, account.currency)}</p>
-                  </div>
-                  <div className="flex-1 sm:flex-none">
-                    <p className="text-xs sm:hidden text-muted mb-1">Conversions</p>
-                    <p className="text-xs sm:text-sm text-muted sm:mt-1">{Math.round(account.yesterday.conversions)} conversions</p>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Performance Chart */}
+          <PerformanceChart accounts={data.accounts} />
+
+          {/* Account Performance */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Performance</CardTitle>
+              <CardDescription>Performance by account for selected period</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {data.accounts.slice(0, 5).map((account) => (
+                  <div key={account.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 border-b border-border pb-4 last:border-0 last:pb-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{account.name}</p>
+                      <p className="text-xs sm:text-sm text-muted truncate">ID: {account.id}</p>
+                    </div>
+                    <div className="sm:text-right flex sm:flex-col gap-3 sm:gap-0">
+                      <div className="flex-1 sm:flex-none">
+                        <p className="text-xs sm:hidden text-muted mb-1">Spend</p>
+                        <p className="font-bold text-sm sm:text-base">{formatCurrency(account.yesterday.cost, account.currency)}</p>
+                      </div>
+                      <div className="flex-1 sm:flex-none">
+                        <p className="text-xs sm:hidden text-muted mb-1">Conversions</p>
+                        <p className="text-xs sm:text-sm text-muted sm:mt-1">{Math.round(account.yesterday.conversions)} conversions</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      ) : null}
     </div>
   )
 }

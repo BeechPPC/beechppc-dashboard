@@ -1,11 +1,17 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getMccReportData } from '@/lib/google-ads/client'
 import { calculatePercentageChange } from '@/lib/utils'
 import type { DashboardMetrics } from '@/lib/google-ads/types'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const accountsData = await getMccReportData()
+    const searchParams = request.nextUrl.searchParams
+    const dateFrom = searchParams.get('dateFrom') || undefined
+    const dateTo = searchParams.get('dateTo') || undefined
+    const comparisonDateFrom = searchParams.get('comparisonDateFrom') || undefined
+    const comparisonDateTo = searchParams.get('comparisonDateTo') || undefined
+
+    const accountsData = await getMccReportData(dateFrom, dateTo, comparisonDateFrom, comparisonDateTo)
 
     // Aggregate metrics across all accounts
     const totals = accountsData.reduce(
