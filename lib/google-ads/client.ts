@@ -130,10 +130,17 @@ export async function getMccReportData(
   dateFrom?: string,
   dateTo?: string,
   comparisonDateFrom?: string,
-  comparisonDateTo?: string
+  comparisonDateTo?: string,
+  accountId?: string
 ): Promise<AccountPerformance[]> {
   try {
-    const accounts = await getCustomerAccounts()
+    const allAccounts = await getCustomerAccounts()
+
+    // Filter to single account if specified
+    const accounts = accountId
+      ? allAccounts.filter(acc => acc.id === accountId)
+      : allAccounts
+
     const reportData: AccountPerformance[] = []
 
     for (const account of accounts) {

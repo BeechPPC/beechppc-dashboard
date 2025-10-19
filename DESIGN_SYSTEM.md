@@ -480,7 +480,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## Notes
 
-**Last Updated:** October 18, 2025
+**Last Updated:** October 19, 2025
 
 **Key Design Decisions:**
 - Yellow/amber theme chosen for warmth and optimism
@@ -488,12 +488,20 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - Mobile-first approach for accessibility
 - Consistent spacing scale (4px, 8px, 12px, 16px, 24px, 32px)
 - Icon + text combinations for clarity
+- Interactive filters (date range, account selection) for data exploration
+
+**Dashboard Filters:**
+- Date Range Picker: Preset buttons + custom range selection
+- Account Filter: Dropdown to view all accounts or individual account data
+- Filters automatically trigger data refresh
+- Visual feedback with loading states
 
 **Future Considerations:**
 - Dark mode support (track with `DARK_MODE_SUPPORT.md` if implemented)
 - Additional brand colors for categories/tags
 - Animation guidelines for transitions
 - Data visualization color palette
+- Export/download functionality for filtered data
 
 ---
 

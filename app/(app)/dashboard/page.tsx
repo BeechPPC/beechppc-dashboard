@@ -19,6 +19,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<DashboardData | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [availableAccounts, setAvailableAccounts] = useState<Array<{ id: string; name: string }>>([])
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('all')
 
   // Initialize with Yesterday as default
   const getYesterday = () => {
@@ -31,6 +33,22 @@ export default function DashboardPage() {
     from: getYesterday(),
     to: getYesterday(),
   })
+
+  // Load available accounts on mount
+  useEffect(() => {
+    const loadAccounts = async () => {
+      try {
+        const res = await fetch('/api/google-ads/accounts')
+        const result = await res.json()
+        if (result.success) {
+          setAvailableAccounts(result.accounts)
+        }
+      } catch (err) {
+        console.error('Failed to load accounts:', err)
+      }
+    }
+    loadAccounts()
+  }, [])
 
   // Calculate comparison period (same number of days, ending before the selected period)
   const getComparisonPeriod = (from: string, to: string) => {
@@ -64,6 +82,11 @@ export default function DashboardPage() {
           comparisonDateTo: comparison.to,
         })
 
+        // Add account filter if specific account is selected
+        if (selectedAccountId !== 'all') {
+          params.append('accountId', selectedAccountId)
+        }
+
         const res = await fetch(`/api/google-ads/dashboard?${params}`)
         const result = await res.json()
 
@@ -80,7 +103,7 @@ export default function DashboardPage() {
     }
 
     fetchData()
-  }, [dateRange])
+  }, [dateRange, selectedAccountId])
 
   const formatDateRangeLabel = (from: string, to: string) => {
     const fromDate = new Date(from)
@@ -147,18 +170,55 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Date Range Picker */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Date Range</CardTitle>
-          <CardDescription>
-            Select a date range to view performance metrics
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DatePicker value={dateRange} onChange={setDateRange} />
-        </CardContent>
-      </Card>
+      {/* Filters */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Date Range Picker */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Date Range</CardTitle>
+            <CardDescription>
+              Select a date range to view performance metrics
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DatePicker value={dateRange} onChange={setDateRange} />
+          </CardContent>
+        </Card>
+
+        {/* Account Filter */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Account Filter</CardTitle>
+            <CardDescription>
+              View data for all accounts or a specific account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Select Account
+              </label>
+              <select
+                value={selectedAccountId}
+                onChange={(e) => setSelectedAccountId(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              >
+                <option value="all">All Accounts</option>
+                {availableAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted mt-2">
+                {selectedAccountId === 'all'
+                  ? `Showing aggregated data from ${availableAccounts.length} account${availableAccounts.length !== 1 ? 's' : ''}`
+                  : 'Showing data for selected account only'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">

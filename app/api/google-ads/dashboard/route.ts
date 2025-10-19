@@ -10,8 +10,9 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get('dateTo') || undefined
     const comparisonDateFrom = searchParams.get('comparisonDateFrom') || undefined
     const comparisonDateTo = searchParams.get('comparisonDateTo') || undefined
+    const accountId = searchParams.get('accountId') || undefined
 
-    const accountsData = await getMccReportData(dateFrom, dateTo, comparisonDateFrom, comparisonDateTo)
+    const accountsData = await getMccReportData(dateFrom, dateTo, comparisonDateFrom, comparisonDateTo, accountId)
 
     // Aggregate metrics across all accounts
     const totals = accountsData.reduce(
