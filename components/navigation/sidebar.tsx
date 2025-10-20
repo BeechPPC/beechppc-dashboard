@@ -31,7 +31,7 @@ const automations = [
   { name: 'Competitor Monitoring', href: '/automations/competitor-monitoring', icon: TrendingUp, comingSoon: true },
   { name: 'Budget Management', href: '/automations/budget-management', icon: DollarSign, comingSoon: true },
   { name: 'Copywriting', href: '/automations/copywriting', icon: PenTool, comingSoon: true },
-  { name: 'Alert Notifications', href: '/automations/alerts', icon: Bell, comingSoon: true },
+  { name: 'Alert Notifications', href: '/automations/alerts', icon: Bell },
 ]
 
 export function Sidebar() {
