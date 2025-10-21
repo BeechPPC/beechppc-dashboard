@@ -9,8 +9,8 @@ async function ensureDataDir() {
   const dataDir = path.join(process.cwd(), 'data')
   try {
     await fs.mkdir(dataDir, { recursive: true })
-  } catch (error) {
-    // Directory already exists
+  } catch {
+    // Directory already exists, ignore error
   }
 }
 
@@ -19,7 +19,7 @@ export async function getAllAlerts(): Promise<Alert[]> {
     await ensureDataDir()
     const data = await fs.readFile(ALERTS_FILE, 'utf-8')
     return JSON.parse(data)
-  } catch (error) {
+  } catch {
     // File doesn't exist yet, return default alerts
     return getDefaultAlerts()
   }
