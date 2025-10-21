@@ -41,7 +41,11 @@ export async function POST() {
 
         try {
           // Send email to all recipients
-          await sendEmail(recipients, subject, html)
+          await sendEmail({
+            to: recipients,
+            subject,
+            html,
+          })
           emailsSent++
 
           // Update last triggered timestamp
@@ -49,7 +53,7 @@ export async function POST() {
             lastTriggered: new Date().toISOString(),
           })
         } catch (emailError) {
-          console.error(`Failed to send alert email for ${result.alert.name}:`, emailError)
+          console.error(`Failed to send alert email for ${result.alert.name}:`, emailError instanceof Error ? emailError.message : emailError)
         }
       }
     }

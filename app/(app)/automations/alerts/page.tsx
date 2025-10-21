@@ -24,8 +24,8 @@ export default function AlertsPage() {
       if (result.success) {
         setAlerts(result.alerts)
       }
-    } catch (error) {
-      console.error('Failed to load alerts:', error)
+    } catch (err) {
+      console.error('Failed to load alerts:', err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setLoading(false)
     }
@@ -49,8 +49,8 @@ export default function AlertsPage() {
       if (result.success) {
         setAlerts(alerts.map(a => a.id === id ? result.alert : a))
       }
-    } catch (error) {
-      console.error('Failed to toggle alert:', error)
+    } catch (err) {
+      console.error('Failed to toggle alert:', err instanceof Error ? err.message : 'Unknown error')
     }
   }
 
@@ -70,8 +70,9 @@ export default function AlertsPage() {
       } else {
         alert(`Error: ${result.error}`)
       }
-    } catch (error) {
-      console.error('Failed to check alerts:', error)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+      console.error('Failed to check alerts:', errorMsg)
       alert('Failed to check alerts')
     } finally {
       setChecking(false)
