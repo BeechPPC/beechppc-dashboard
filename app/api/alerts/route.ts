@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAllAlerts, createAlert, updateAlert, deleteAlert } from '@/lib/alerts/storage'
+import { getAllAlerts, createAlert, updateAlert, deleteAlert } from '@/lib/alerts/storage-memory'
 
 // GET /api/alerts - Get all alerts
 export async function GET() {

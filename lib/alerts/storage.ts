@@ -1,3 +1,10 @@
+/**
+ * File-based storage for alerts
+ * NOTE: This does NOT work on Vercel (read-only filesystem)
+ * Use storage-memory.ts for Vercel deployment
+ * For production, migrate to database (Vercel KV, Postgres, etc.)
+ */
+
 import fs from 'fs/promises'
 import path from 'path'
 import type { Alert } from './types'
