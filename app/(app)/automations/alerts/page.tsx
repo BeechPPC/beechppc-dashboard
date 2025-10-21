@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Bell, TrendingUp, TrendingDown, AlertTriangle, DollarSign, Target, Mail, Loader2, Play } from 'lucide-react'
+import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogContent } from '@/components/ui/dialog'
+import { CreateAlertForm } from '@/components/alerts/create-alert-form'
+import { Bell, TrendingUp, TrendingDown, AlertTriangle, DollarSign, Target, Mail, Loader2, Play, Plus } from 'lucide-react'
 import type { Alert } from '@/lib/alerts/types'
 
 export default function AlertsPage() {
@@ -12,6 +14,7 @@ export default function AlertsPage() {
   const [checking, setChecking] = useState(false)
   const [lastCheck, setLastCheck] = useState<Date | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   // Load alerts on mount
   useEffect(() => {
@@ -153,6 +156,14 @@ export default function AlertsPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            size="lg"
+            onClick={() => setShowCreateDialog(true)}
+            className="w-full sm:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            Create Alert
+          </Button>
           <Button
             size="lg"
             variant="outline"
@@ -379,6 +390,25 @@ export default function AlertsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Create Alert Dialog */}
+      <Dialog open={showCreateDialog} onClose={() => setShowCreateDialog(false)}>
+        <DialogHeader onClose={() => setShowCreateDialog(false)}>
+          <DialogTitle>Create New Alert</DialogTitle>
+          <DialogDescription>
+            Set up a new automated alert to monitor your Google Ads performance
+          </DialogDescription>
+        </DialogHeader>
+        <DialogContent>
+          <CreateAlertForm
+            onSuccess={() => {
+              setShowCreateDialog(false)
+              loadAlerts() // Reload alerts list
+            }}
+            onCancel={() => setShowCreateDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
