@@ -33,8 +33,8 @@ export default function AlertsPage() {
   }
 
   const toggleAlert = async (id: string) => {
-    const alert = alerts.find(a => a.id === id)
-    if (!alert) return
+    const alertToToggle = alerts.find(a => a.id === id)
+    if (!alertToToggle) return
 
     setTogglingId(id)
     try {
@@ -43,7 +43,7 @@ export default function AlertsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id,
-          enabled: !alert.enabled,
+          enabled: !alertToToggle.enabled,
         }),
       })
 
@@ -51,12 +51,12 @@ export default function AlertsPage() {
       if (result.success) {
         setAlerts(alerts.map(a => a.id === id ? result.alert : a))
       } else {
-        alert(`Failed to toggle alert: ${result.error}`)
+        window.alert(`Failed to toggle alert: ${result.error}`)
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error'
       console.error('Failed to toggle alert:', errorMsg)
-      alert(`Failed to toggle alert: ${errorMsg}`)
+      window.alert(`Failed to toggle alert: ${errorMsg}`)
     } finally {
       setTogglingId(null)
     }
@@ -72,16 +72,16 @@ export default function AlertsPage() {
 
       if (result.success) {
         setLastCheck(new Date())
-        alert(`Checked ${result.checked} alerts. ${result.triggered} triggered, ${result.emailsSent} emails sent.`)
+        window.alert(`Checked ${result.checked} alerts. ${result.triggered} triggered, ${result.emailsSent} emails sent.`)
         // Reload alerts to get updated lastTriggered timestamps
         await loadAlerts()
       } else {
-        alert(`Error: ${result.error}`)
+        window.alert(`Error: ${result.error}`)
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error'
       console.error('Failed to check alerts:', errorMsg)
-      alert('Failed to check alerts')
+      window.alert('Failed to check alerts')
     } finally {
       setChecking(false)
     }
