@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Bell, Plus, TrendingUp, TrendingDown, AlertTriangle, DollarSign, Target, Mail, Loader2, Play } from 'lucide-react'
+import { Bell, TrendingUp, TrendingDown, AlertTriangle, DollarSign, Target, Mail, Loader2, Play } from 'lucide-react'
 import type { Alert } from '@/lib/alerts/types'
 
 export default function AlertsPage() {
@@ -355,9 +355,9 @@ export default function AlertsPage() {
         <CardContent>
           <div className="space-y-3 text-sm text-muted">
             <p>• Alerts are checked automatically on a schedule (configurable per alert)</p>
-            <p>• You can also manually check alerts using the "Check Now" button</p>
+            <p>• You can also manually check alerts using the &quot;Check Now&quot; button</p>
             <p>• When an alert is triggered, an email is sent to all configured recipients</p>
-            <p>• Alerts compare today's data with yesterday's data for percentage change conditions</p>
+            <p>• Alerts compare today&apos;s data with yesterday&apos;s data for percentage change conditions</p>
             <p>• Configure alerts to monitor all accounts or specific accounts</p>
           </div>
         </CardContent>
