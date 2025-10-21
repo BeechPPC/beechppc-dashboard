@@ -11,6 +11,7 @@ export default function AlertsPage() {
   const [loading, setLoading] = useState(true)
   const [checking, setChecking] = useState(false)
   const [lastCheck, setLastCheck] = useState<Date | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
   // Load alerts on mount
   useEffect(() => {
@@ -35,6 +36,7 @@ export default function AlertsPage() {
     const alert = alerts.find(a => a.id === id)
     if (!alert) return
 
+    setTogglingId(id)
     try {
       const res = await fetch('/api/alerts', {
         method: 'PATCH',
@@ -48,9 +50,15 @@ export default function AlertsPage() {
       const result = await res.json()
       if (result.success) {
         setAlerts(alerts.map(a => a.id === id ? result.alert : a))
+      } else {
+        alert(`Failed to toggle alert: ${result.error}`)
       }
     } catch (err) {
-      console.error('Failed to toggle alert:', err instanceof Error ? err.message : 'Unknown error')
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+      console.error('Failed to toggle alert:', errorMsg)
+      alert(`Failed to toggle alert: ${errorMsg}`)
+    } finally {
+      setTogglingId(null)
     }
   }
 
@@ -278,8 +286,16 @@ export default function AlertsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => toggleAlert(alert.id)}
+                        disabled={togglingId === alert.id}
                       >
-                        {alert.enabled ? 'Disable' : 'Enable'}
+                        {togglingId === alert.id ? (
+                          <>
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            {alert.enabled ? 'Disabling...' : 'Enabling...'}
+                          </>
+                        ) : (
+                          alert.enabled ? 'Disable' : 'Enable'
+                        )}
                       </Button>
                     </div>
                   </div>
