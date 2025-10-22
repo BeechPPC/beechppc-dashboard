@@ -16,7 +16,8 @@ import {
   Bell,
   Menu,
   X,
-  ListCheck
+  ListCheck,
+  ChevronDown
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -43,6 +44,8 @@ const accounts = [
 export function Sidebar() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [automationsOpen, setAutomationsOpen] = useState(true)
+  const [accountsOpen, setAccountsOpen] = useState(true)
 
   return (
     <>
@@ -105,12 +108,24 @@ export function Sidebar() {
 
         {/* Automations Section */}
         <div className="pt-6">
-          <div className="px-3 pb-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          <button
+            onClick={() => setAutomationsOpen(!automationsOpen)}
+            className="w-full px-3 pb-2 flex items-center justify-between group"
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted group-hover:text-foreground transition-colors">
               Automations
             </h3>
-          </div>
-          <div className="space-y-1">
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 text-muted transition-transform duration-200",
+                automationsOpen && "rotate-180"
+              )}
+            />
+          </button>
+          <div className={cn(
+            "space-y-1 overflow-hidden transition-all duration-200",
+            automationsOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          )}>
             {automations.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -139,12 +154,24 @@ export function Sidebar() {
         </div>
                {/* Accounts Section */}
                <div className="pt-6">
-          <div className="px-3 pb-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          <button
+            onClick={() => setAccountsOpen(!accountsOpen)}
+            className="w-full px-3 pb-2 flex items-center justify-between group"
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted group-hover:text-foreground transition-colors">
               Accounts
             </h3>
-          </div>
-          <div className="space-y-1">
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 text-muted transition-transform duration-200",
+                accountsOpen && "rotate-180"
+              )}
+            />
+          </button>
+          <div className={cn(
+            "space-y-1 overflow-hidden transition-all duration-200",
+            accountsOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          )}>
             {accounts.map((item) => {
               const isActive = pathname === item.href
               return (
