@@ -1,4 +1,4 @@
-import { getMccReportData } from '@/lib/google-ads/client'
+import { getMccReportData, getCustomerAccounts, getConversionActions } from '@/lib/google-ads/client'
 import type { Alert, AlertTrigger, AlertCheckResult } from './types'
 import type { AccountPerformance } from '@/lib/google-ads/types'
 
@@ -7,6 +7,11 @@ import type { AccountPerformance } from '@/lib/google-ads/types'
  */
 export async function checkAlert(alert: Alert): Promise<AlertCheckResult> {
   try {
+    // Handle conversion tracking alerts separately
+    if (alert.type === 'conversion_tracking') {
+      return await checkConversionTrackingAlert(alert)
+    }
+
     // Get today's date
     const today = new Date()
     const todayStr = today.toISOString().split('T')[0]
@@ -42,6 +47,79 @@ export async function checkAlert(alert: Alert): Promise<AlertCheckResult> {
     }
   } catch (error) {
     console.error(`Error checking alert ${alert.id}:`, error)
+    return {
+      triggered: false,
+      alert,
+      triggers: [],
+    }
+  }
+}
+
+/**
+ * Check conversion tracking alerts
+ */
+async function checkConversionTrackingAlert(alert: Alert): Promise<AlertCheckResult> {
+  try {
+    const triggers: AlertTrigger[] = []
+
+    // Get all accounts or specific account
+    const allAccounts = await getCustomerAccounts()
+    const accounts = alert.accountId
+      ? allAccounts.filter(acc => acc.id === alert.accountId)
+      : allAccounts
+
+    // Check each account's conversion actions
+    for (const account of accounts) {
+      const conversionActions = await getConversionActions(account.id)
+
+      for (const action of conversionActions) {
+        // Check if conversion action meets the alert condition
+        if (alert.condition === 'no_data_for_days' && action.daysSinceLastConversion !== null) {
+          if (action.daysSinceLastConversion >= alert.threshold) {
+            triggers.push({
+              alertId: alert.id,
+              alertName: alert.name,
+              accountId: account.id,
+              accountName: account.name,
+              triggeredAt: new Date().toISOString(),
+              metricType: alert.type,
+              currentValue: action.daysSinceLastConversion,
+              threshold: alert.threshold,
+              condition: alert.condition,
+              message: `Conversion action "${action.name}" has not received any conversions for ${action.daysSinceLastConversion} days`,
+              conversionActionName: action.name,
+              lastConversionDate: action.lastConversionDate || undefined,
+              daysSinceLastConversion: action.daysSinceLastConversion,
+            })
+          }
+        } else if (action.lastConversionDate === null) {
+          // No conversion data found at all
+          triggers.push({
+            alertId: alert.id,
+            alertName: alert.name,
+            accountId: account.id,
+            accountName: account.name,
+            triggeredAt: new Date().toISOString(),
+            metricType: alert.type,
+            currentValue: 999, // Use large number to indicate no data
+            threshold: alert.threshold,
+            condition: alert.condition,
+            message: `Conversion action "${action.name}" has no conversion data in the last 90 days`,
+            conversionActionName: action.name,
+            lastConversionDate: undefined,
+            daysSinceLastConversion: undefined,
+          })
+        }
+      }
+    }
+
+    return {
+      triggered: triggers.length > 0,
+      alert,
+      triggers,
+    }
+  } catch (error) {
+    console.error(`Error checking conversion tracking alert ${alert.id}:`, error)
     return {
       triggered: false,
       alert,

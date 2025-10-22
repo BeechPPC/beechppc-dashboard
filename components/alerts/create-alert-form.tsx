@@ -55,6 +55,9 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
 
   // Get available conditions based on alert type
   const getAvailableConditions = (type: AlertType): AlertCondition[] => {
+    if (type === 'conversion_tracking') {
+      return ['no_data_for_days']
+    }
     if (type === 'spend' || type === 'conversions') {
       return ['above', 'below']
     }
@@ -150,6 +153,7 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
       ctr: 'CTR',
       cpc: 'CPC',
       conversion_rate: 'Conversion Rate',
+      conversion_tracking: 'Conversion Tracking',
     }[formData.type]
 
     const conditionLabel = {
@@ -157,12 +161,16 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
       below: 'falls below',
       increases_by: 'increases by',
       decreases_by: 'decreases by',
+      no_data_for_days: 'has no conversions for',
     }[formData.condition]
 
     const thresholdLabel = (() => {
       const value = formData.threshold
       if (formData.type === 'spend' || formData.type === 'cpc') {
         return `$${value}`
+      }
+      if (formData.condition === 'no_data_for_days') {
+        return `${value} days`
       }
       if (formData.condition === 'increases_by' || formData.condition === 'decreases_by') {
         return `${value}%`
@@ -176,6 +184,10 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
     const accountLabel = formData.accountId
       ? accounts.find(a => a.id === formData.accountId)?.name || 'Unknown Account'
       : 'All Accounts'
+
+    if (formData.type === 'conversion_tracking') {
+      return `Alert will trigger when any conversion action ${conditionLabel} ${thresholdLabel} for ${accountLabel}`
+    }
 
     return `Alert will trigger when ${typeLabel} ${conditionLabel} ${thresholdLabel} for ${accountLabel}`
   }
@@ -225,6 +237,7 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
           onChange={(e) => handleTypeChange(e.target.value as AlertType)}
           className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
         >
+          <option value="conversion_tracking">Conversion Tracking Issues</option>
           <option value="spend">Daily Spend</option>
           <option value="conversions">Conversions</option>
           <option value="conversion_rate">Conversion Rate</option>
@@ -248,6 +261,7 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
             {availableConditions.includes('below') && <option value="below">Below</option>}
             {availableConditions.includes('increases_by') && <option value="increases_by">Increases By</option>}
             {availableConditions.includes('decreases_by') && <option value="decreases_by">Decreases By</option>}
+            {availableConditions.includes('no_data_for_days') && <option value="no_data_for_days">No Data For (Days)</option>}
           </select>
         </div>
 

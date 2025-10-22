@@ -177,8 +177,23 @@ export function generateAlertEmail(triggers: AlertTrigger[]): string {
           <span class="metric-badge">${trigger.metricType}</span>
         </div>
         <p class="alert-account">📊 ${trigger.accountName} (ID: ${trigger.accountId})</p>
+        ${trigger.conversionActionName ? `
+        <p class="alert-account" style="color: #6b7280; font-weight: normal;">
+          🎯 Conversion Action: <strong>${trigger.conversionActionName}</strong>
+        </p>
+        ` : ''}
         <div class="alert-message">
           ${trigger.message}
+          ${trigger.lastConversionDate ? `
+          <p style="margin: 8px 0 0; font-size: 13px;">
+            📅 Last Conversion: ${new Date(trigger.lastConversionDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+            ${trigger.daysSinceLastConversion ? `(${trigger.daysSinceLastConversion} days ago)` : ''}
+          </p>
+          ` : `
+          <p style="margin: 8px 0 0; font-size: 13px; color: #ef4444; font-weight: 600;">
+            ⚠️ No conversion data found in the last 90 days
+          </p>
+          `}
         </div>
         <p class="alert-time">Triggered at ${new Date(trigger.triggeredAt).toLocaleTimeString('en-US')}</p>
       </div>

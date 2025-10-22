@@ -1,6 +1,6 @@
-export type AlertType = 'spend' | 'conversions' | 'ctr' | 'cpc' | 'conversion_rate'
+export type AlertType = 'spend' | 'conversions' | 'ctr' | 'cpc' | 'conversion_rate' | 'conversion_tracking'
 
-export type AlertCondition = 'above' | 'below' | 'increases_by' | 'decreases_by'
+export type AlertCondition = 'above' | 'below' | 'increases_by' | 'decreases_by' | 'no_data_for_days'
 
 export type AlertFrequency = 'daily' | 'hourly' | 'realtime'
 
@@ -31,6 +31,10 @@ export interface AlertTrigger {
   threshold: number
   condition: AlertCondition
   message: string
+  // For conversion tracking alerts
+  conversionActionName?: string
+  lastConversionDate?: string
+  daysSinceLastConversion?: number
 }
 
 export interface AlertCheckResult {

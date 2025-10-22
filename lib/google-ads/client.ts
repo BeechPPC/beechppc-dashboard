@@ -166,3 +166,103 @@ export async function getMccReportData(
     throw error
   }
 }
+
+export interface ConversionAction {
+  id: string
+  name: string
+  status: string
+  lastConversionDate: string | null
+  daysSinceLastConversion: number | null
+}
+
+/**
+ * Get conversion actions and their last conversion dates for an account
+ */
+export async function getConversionActions(customerId: string): Promise<ConversionAction[]> {
+  try {
+    const accountCustomer = client.Customer({
+      customer_id: customerId,
+      refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
+      login_customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
+    })
+
+    // Get all conversion actions for the account
+    const conversionActionsQuery = `
+      SELECT
+        conversion_action.id,
+        conversion_action.name,
+        conversion_action.status
+      FROM conversion_action
+      WHERE conversion_action.status = 'ENABLED'
+    `
+
+    const conversionActions = await accountCustomer.query(conversionActionsQuery)
+
+    const results: ConversionAction[] = []
+
+    // For each conversion action, get the last conversion date
+    for (const action of conversionActions) {
+      if (!action.conversion_action) continue
+
+      const conversionActionId = action.conversion_action.id?.toString()
+      const conversionActionName = action.conversion_action.name || 'Unnamed'
+
+      // Query for the most recent conversion for this action (last 90 days)
+      const lastConversionQuery = `
+        SELECT
+          segments.conversion_action,
+          segments.conversion_action_name,
+          segments.date,
+          metrics.conversions
+        FROM campaign
+        WHERE segments.conversion_action = '${conversionActionId}'
+          AND segments.date DURING LAST_90_DAYS
+          AND metrics.conversions > 0
+        ORDER BY segments.date DESC
+        LIMIT 1
+      `
+
+      try {
+        const lastConversionResults = await accountCustomer.query(lastConversionQuery)
+
+        let lastConversionDate: string | null = null
+        let daysSinceLastConversion: number | null = null
+
+        if (lastConversionResults && lastConversionResults.length > 0) {
+          const lastConv = lastConversionResults[0]
+          if (lastConv.segments?.date) {
+            lastConversionDate = lastConv.segments.date
+
+            // Calculate days since last conversion
+            const lastDate = new Date(lastConversionDate)
+            const today = new Date()
+            daysSinceLastConversion = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
+          }
+        }
+
+        results.push({
+          id: conversionActionId || '',
+          name: conversionActionName,
+          status: String(action.conversion_action.status || 'UNKNOWN'),
+          lastConversionDate,
+          daysSinceLastConversion,
+        })
+      } catch (convError) {
+        console.error(`Error fetching last conversion for action ${conversionActionName}:`, convError)
+        // Still include the action, just without last conversion data
+        results.push({
+          id: conversionActionId || '',
+          name: conversionActionName,
+          status: String(action.conversion_action.status || 'UNKNOWN'),
+          lastConversionDate: null,
+          daysSinceLastConversion: null,
+        })
+      }
+    }
+
+    return results
+  } catch (error) {
+    console.error(`Error fetching conversion actions for customer ${customerId}:`, error)
+    throw error
+  }
+}
