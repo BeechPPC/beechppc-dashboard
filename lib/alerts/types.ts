@@ -1,6 +1,6 @@
-export type AlertType = 'spend' | 'conversions' | 'ctr' | 'cpc' | 'conversion_rate' | 'conversion_tracking'
+export type AlertType = 'spend' | 'conversions' | 'ctr' | 'cpc' | 'conversion_rate' | 'conversion_tracking' | 'ad_disapproval'
 
-export type AlertCondition = 'above' | 'below' | 'increases_by' | 'decreases_by' | 'no_data_for_days'
+export type AlertCondition = 'above' | 'below' | 'increases_by' | 'decreases_by' | 'no_data_for_days' | 'has_disapproved_ads'
 
 export type AlertFrequency = 'daily' | 'hourly' | 'realtime'
 
@@ -35,6 +35,12 @@ export interface AlertTrigger {
   conversionActionName?: string
   lastConversionDate?: string
   daysSinceLastConversion?: number
+  // For ad disapproval alerts
+  adId?: string
+  adName?: string
+  disapprovalReasons?: string[]
+  adGroupName?: string
+  campaignName?: string
 }
 
 export interface AlertCheckResult {

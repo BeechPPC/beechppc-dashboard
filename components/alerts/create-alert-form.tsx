@@ -58,6 +58,9 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
     if (type === 'conversion_tracking') {
       return ['no_data_for_days']
     }
+    if (type === 'ad_disapproval') {
+      return ['has_disapproved_ads']
+    }
     if (type === 'spend' || type === 'conversions') {
       return ['above', 'below']
     }
@@ -154,6 +157,7 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
       cpc: 'CPC',
       conversion_rate: 'Conversion Rate',
       conversion_tracking: 'Conversion Tracking',
+      ad_disapproval: 'Ad Disapproval',
     }[formData.type]
 
     const conditionLabel = {
@@ -162,6 +166,7 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
       increases_by: 'increases by',
       decreases_by: 'decreases by',
       no_data_for_days: 'has no conversions for',
+      has_disapproved_ads: 'has disapproved ads',
     }[formData.condition]
 
     const thresholdLabel = (() => {
@@ -187,6 +192,10 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
 
     if (formData.type === 'conversion_tracking') {
       return `Alert will trigger when any conversion action ${conditionLabel} ${thresholdLabel} for ${accountLabel}`
+    }
+
+    if (formData.type === 'ad_disapproval') {
+      return `Alert will trigger when ${accountLabel} ${conditionLabel}`
     }
 
     return `Alert will trigger when ${typeLabel} ${conditionLabel} ${thresholdLabel} for ${accountLabel}`
@@ -237,6 +246,7 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
           onChange={(e) => handleTypeChange(e.target.value as AlertType)}
           className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
         >
+          <option value="ad_disapproval">Ad Disapprovals</option>
           <option value="conversion_tracking">Conversion Tracking Issues</option>
           <option value="spend">Daily Spend</option>
           <option value="conversions">Conversions</option>

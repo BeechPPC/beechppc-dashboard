@@ -1,4 +1,4 @@
-import { getMccReportData, getCustomerAccounts, getConversionActions } from '@/lib/google-ads/client'
+import { getMccReportData, getCustomerAccounts, getConversionActions, getDisapprovedAds } from '@/lib/google-ads/client'
 import type { Alert, AlertTrigger, AlertCheckResult } from './types'
 import type { AccountPerformance } from '@/lib/google-ads/types'
 
@@ -10,6 +10,11 @@ export async function checkAlert(alert: Alert): Promise<AlertCheckResult> {
     // Handle conversion tracking alerts separately
     if (alert.type === 'conversion_tracking') {
       return await checkConversionTrackingAlert(alert)
+    }
+
+    // Handle ad disapproval alerts separately
+    if (alert.type === 'ad_disapproval') {
+      return await checkAdDisapprovalAlert(alert)
     }
 
     // Get today's date
@@ -120,6 +125,60 @@ async function checkConversionTrackingAlert(alert: Alert): Promise<AlertCheckRes
     }
   } catch (error) {
     console.error(`Error checking conversion tracking alert ${alert.id}:`, error)
+    return {
+      triggered: false,
+      alert,
+      triggers: [],
+    }
+  }
+}
+
+/**
+ * Check ad disapproval alerts
+ */
+async function checkAdDisapprovalAlert(alert: Alert): Promise<AlertCheckResult> {
+  try {
+    const triggers: AlertTrigger[] = []
+
+    // Get all accounts or specific account
+    const allAccounts = await getCustomerAccounts()
+    const accounts = alert.accountId
+      ? allAccounts.filter(acc => acc.id === alert.accountId)
+      : allAccounts
+
+    // Check each account for disapproved ads
+    for (const account of accounts) {
+      const disapprovedAds = await getDisapprovedAds(account.id)
+
+      // If there are any disapproved ads, create a trigger for each
+      for (const ad of disapprovedAds) {
+        triggers.push({
+          alertId: alert.id,
+          alertName: alert.name,
+          accountId: account.id,
+          accountName: account.name,
+          triggeredAt: new Date().toISOString(),
+          metricType: alert.type,
+          currentValue: disapprovedAds.length,
+          threshold: 0, // Any disapproval triggers the alert
+          condition: alert.condition,
+          message: `Ad "${ad.adName}" in campaign "${ad.campaignName}" has been disapproved`,
+          adId: ad.adId,
+          adName: ad.adName,
+          disapprovalReasons: ad.disapprovalReasons,
+          adGroupName: ad.adGroupName,
+          campaignName: ad.campaignName,
+        })
+      }
+    }
+
+    return {
+      triggered: triggers.length > 0,
+      alert,
+      triggers,
+    }
+  } catch (error) {
+    console.error(`Error checking ad disapproval alert ${alert.id}:`, error)
     return {
       triggered: false,
       alert,

@@ -182,6 +182,21 @@ export function generateAlertEmail(triggers: AlertTrigger[]): string {
           🎯 Conversion Action: <strong>${trigger.conversionActionName}</strong>
         </p>
         ` : ''}
+        ${trigger.campaignName ? `
+        <p class="alert-account" style="color: #6b7280; font-weight: normal;">
+          📢 Campaign: <strong>${trigger.campaignName}</strong>
+        </p>
+        ` : ''}
+        ${trigger.adGroupName ? `
+        <p class="alert-account" style="color: #6b7280; font-weight: normal;">
+          📁 Ad Group: <strong>${trigger.adGroupName}</strong>
+        </p>
+        ` : ''}
+        ${trigger.adName ? `
+        <p class="alert-account" style="color: #6b7280; font-weight: normal;">
+          📝 Ad: <strong>${trigger.adName}</strong> (ID: ${trigger.adId})
+        </p>
+        ` : ''}
         <div class="alert-message">
           ${trigger.message}
           ${trigger.lastConversionDate ? `
@@ -189,11 +204,19 @@ export function generateAlertEmail(triggers: AlertTrigger[]): string {
             📅 Last Conversion: ${new Date(trigger.lastConversionDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
             ${trigger.daysSinceLastConversion ? `(${trigger.daysSinceLastConversion} days ago)` : ''}
           </p>
-          ` : `
+          ` : trigger.metricType === 'conversion_tracking' ? `
           <p style="margin: 8px 0 0; font-size: 13px; color: #ef4444; font-weight: 600;">
             ⚠️ No conversion data found in the last 90 days
           </p>
-          `}
+          ` : ''}
+          ${trigger.disapprovalReasons && trigger.disapprovalReasons.length > 0 ? `
+          <div style="margin-top: 12px;">
+            <p style="font-weight: 600; margin-bottom: 6px; font-size: 13px;">🚫 Disapproval Reasons:</p>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+              ${trigger.disapprovalReasons.map(reason => `<li style="margin: 4px 0;">${reason}</li>`).join('')}
+            </ul>
+          </div>
+          ` : ''}
         </div>
         <p class="alert-time">Triggered at ${new Date(trigger.triggeredAt).toLocaleTimeString('en-US')}</p>
       </div>

@@ -175,6 +175,17 @@ export interface ConversionAction {
   daysSinceLastConversion: number | null
 }
 
+export interface DisapprovedAd {
+  adId: string
+  adName: string
+  adGroupId: string
+  adGroupName: string
+  campaignId: string
+  campaignName: string
+  disapprovalReasons: string[]
+  policyTopicEntries: string[]
+}
+
 /**
  * Get conversion actions and their last conversion dates for an account
  */
@@ -263,6 +274,97 @@ export async function getConversionActions(customerId: string): Promise<Conversi
     return results
   } catch (error) {
     console.error(`Error fetching conversion actions for customer ${customerId}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Get all disapproved ads for an account
+ */
+export async function getDisapprovedAds(customerId: string): Promise<DisapprovedAd[]> {
+  try {
+    const accountCustomer = client.Customer({
+      customer_id: customerId,
+      refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
+      login_customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
+    })
+
+    // Query for disapproved ads
+    const query = `
+      SELECT
+        ad_group_ad.ad.id,
+        ad_group_ad.ad.name,
+        ad_group_ad.ad.type,
+        ad_group_ad.policy_summary.approval_status,
+        ad_group_ad.policy_summary.policy_topic_entries,
+        ad_group.id,
+        ad_group.name,
+        campaign.id,
+        campaign.name
+      FROM ad_group_ad
+      WHERE ad_group_ad.policy_summary.approval_status = 'DISAPPROVED'
+        AND ad_group_ad.status = 'ENABLED'
+        AND ad_group.status = 'ENABLED'
+        AND campaign.status = 'ENABLED'
+    `
+
+    const results = await accountCustomer.query(query)
+
+    const disapprovedAds: DisapprovedAd[] = []
+
+    for (const row of results) {
+      if (!row.ad_group_ad?.ad || !row.ad_group || !row.campaign) continue
+
+      const ad = row.ad_group_ad.ad
+      const policyTopicEntries = row.ad_group_ad.policy_summary?.policy_topic_entries || []
+
+      // Extract disapproval reasons from policy topic entries
+      const disapprovalReasons: string[] = []
+      const policyTopics: string[] = []
+
+      for (const entry of policyTopicEntries) {
+        if (entry.topic) {
+          policyTopics.push(String(entry.topic))
+        }
+        // Get evidences if available
+        if (entry.evidences) {
+          for (const evidence of entry.evidences) {
+            if (evidence.text_list?.texts) {
+              for (const text of evidence.text_list.texts) {
+                if (text) {
+                  disapprovalReasons.push(String(text))
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // If no specific reasons found, use the policy topics
+      if (disapprovalReasons.length === 0 && policyTopics.length > 0) {
+        disapprovalReasons.push(...policyTopics)
+      }
+
+      // If still no reasons, add a generic message
+      if (disapprovalReasons.length === 0) {
+        disapprovalReasons.push('Policy violation (details not available)')
+      }
+
+      disapprovedAds.push({
+        adId: ad.id?.toString() || '',
+        adName: ad.name || `Ad ${ad.id}` || 'Unnamed Ad',
+        adGroupId: row.ad_group.id?.toString() || '',
+        adGroupName: row.ad_group.name || 'Unnamed Ad Group',
+        campaignId: row.campaign.id?.toString() || '',
+        campaignName: row.campaign.name || 'Unnamed Campaign',
+        disapprovalReasons,
+        policyTopicEntries: policyTopics,
+      })
+    }
+
+    return disapprovedAds
+  } catch (error) {
+    console.error(`Error fetching disapproved ads for customer ${customerId}:`, error)
     throw error
   }
 }
