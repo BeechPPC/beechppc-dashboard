@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, TrendingUp, Users } from 'lucide-react'
+import { Plus, TrendingUp, Users, MousePointerClick, Eye, DollarSign, Target, BarChart3 } from 'lucide-react'
 import { formatCurrency, calculatePercentageChange } from '@/lib/utils'
 import { getCustomerAccounts, getMccReportData } from '@/lib/google-ads/client'
 import type { DashboardMetrics } from '@/lib/google-ads/types'
@@ -95,7 +95,7 @@ export default async function ClientsPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
@@ -109,25 +109,122 @@ export default async function ClientsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Spend (Yesterday)</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted" />
+            <CardTitle className="text-sm font-medium">Total Spend</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted" />
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold">
               {dashboard?.metrics ? formatCurrency(dashboard.metrics.totalSpend) : '-'}
             </div>
-            <p className="text-xs text-muted mt-1">Across all accounts</p>
+            <p className="text-xs text-muted mt-1">
+              Yesterday
+              {dashboard?.metrics?.changeVsPrevious?.spend !== undefined && (
+                <span className={dashboard.metrics.changeVsPrevious.spend >= 0 ? 'text-success' : 'text-error'}>
+                  {' '}• {dashboard.metrics.changeVsPrevious.spend >= 0 ? '+' : ''}{dashboard.metrics.changeVsPrevious.spend.toFixed(1)}%
+                </span>
+              )}
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="sm:col-span-2 lg:col-span-1">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Performance</CardTitle>
-            <TrendingUp className="h-4 w-4 text-success" />
+            <CardTitle className="text-sm font-medium">Total Conversions</CardTitle>
+            <Target className="h-4 w-4 text-muted" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-success">Good</div>
-            <p className="text-xs text-muted mt-1">Overall account health</p>
+            <div className="text-xl sm:text-2xl font-bold">
+              {dashboard?.metrics ? Math.round(dashboard.metrics.totalConversions) : '-'}
+            </div>
+            <p className="text-xs text-muted mt-1">
+              Yesterday
+              {dashboard?.metrics?.changeVsPrevious?.conversions !== undefined && (
+                <span className={dashboard.metrics.changeVsPrevious.conversions >= 0 ? 'text-success' : 'text-error'}>
+                  {' '}• {dashboard.metrics.changeVsPrevious.conversions >= 0 ? '+' : ''}{dashboard.metrics.changeVsPrevious.conversions.toFixed(1)}%
+                </span>
+              )}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Avg. CPC</CardTitle>
+            <MousePointerClick className="h-4 w-4 text-muted" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-2xl font-bold">
+              {dashboard?.metrics ? formatCurrency(dashboard.metrics.avgCpc) : '-'}
+            </div>
+            <p className="text-xs text-muted mt-1">Cost per click</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Clicks</CardTitle>
+            <MousePointerClick className="h-4 w-4 text-muted" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-2xl font-bold">
+              {dashboard?.metrics ? dashboard.metrics.totalClicks.toLocaleString() : '-'}
+            </div>
+            <p className="text-xs text-muted mt-1">
+              Yesterday
+              {dashboard?.metrics?.changeVsPrevious?.clicks !== undefined && (
+                <span className={dashboard.metrics.changeVsPrevious.clicks >= 0 ? 'text-success' : 'text-error'}>
+                  {' '}• {dashboard.metrics.changeVsPrevious.clicks >= 0 ? '+' : ''}{dashboard.metrics.changeVsPrevious.clicks.toFixed(1)}%
+                </span>
+              )}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Impressions</CardTitle>
+            <Eye className="h-4 w-4 text-muted" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-2xl font-bold">
+              {dashboard?.metrics ? dashboard.metrics.totalImpressions.toLocaleString() : '-'}
+            </div>
+            <p className="text-xs text-muted mt-1">
+              Yesterday
+              {dashboard?.metrics?.changeVsPrevious?.impressions !== undefined && (
+                <span className={dashboard.metrics.changeVsPrevious.impressions >= 0 ? 'text-success' : 'text-error'}>
+                  {' '}• {dashboard.metrics.changeVsPrevious.impressions >= 0 ? '+' : ''}{dashboard.metrics.changeVsPrevious.impressions.toFixed(1)}%
+                </span>
+              )}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Avg. CTR</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-2xl font-bold">
+              {dashboard?.metrics && dashboard.metrics.totalImpressions > 0
+                ? ((dashboard.metrics.totalClicks / dashboard.metrics.totalImpressions) * 100).toFixed(2) + '%'
+                : '-'}
+            </div>
+            <p className="text-xs text-muted mt-1">Click-through rate</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Cost / Conv</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-2xl font-bold">
+              {dashboard?.metrics ? formatCurrency(dashboard.metrics.avgCostPerConv) : '-'}
+            </div>
+            <p className="text-xs text-muted mt-1">Avg. cost per conversion</p>
           </CardContent>
         </Card>
       </div>
@@ -148,10 +245,10 @@ export default async function ClientsPage() {
               return (
                 <div
                   key={account.id}
-                  className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 border border-border rounded-lg hover:bg-primary-light/50 transition-colors"
+                  className="flex flex-col gap-4 p-4 border border-border rounded-lg hover:bg-primary-light/50 transition-colors"
                 >
                   {/* Account Info */}
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex items-center gap-3">
                     <div className="h-10 w-10 flex-shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
                       <span className="text-primary font-semibold">
                         {account.name.charAt(0).toUpperCase()}
@@ -164,9 +261,9 @@ export default async function ClientsPage() {
                   </div>
 
                   {/* Metrics Grid - Mobile Layout */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:items-center gap-4 lg:gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-7 gap-3 lg:gap-4 w-full">
                     <div>
-                      <p className="text-xs text-muted mb-1">Yesterday&apos;s Spend</p>
+                      <p className="text-xs text-muted mb-1">Spend</p>
                       <p className="font-bold text-sm sm:text-base">
                         {performance
                           ? formatCurrency(performance.yesterday.cost, account.currency)
@@ -178,6 +275,38 @@ export default async function ClientsPage() {
                       <p className="text-xs text-muted mb-1">Conversions</p>
                       <p className="font-bold text-sm sm:text-base">
                         {performance ? Math.round(performance.yesterday.conversions) : '-'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-muted mb-1">Clicks</p>
+                      <p className="font-bold text-sm sm:text-base">
+                        {performance ? performance.yesterday.clicks.toLocaleString() : '-'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-muted mb-1">Impressions</p>
+                      <p className="font-bold text-sm sm:text-base">
+                        {performance ? performance.yesterday.impressions.toLocaleString() : '-'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-muted mb-1">CTR</p>
+                      <p className="font-bold text-sm sm:text-base">
+                        {performance && performance.yesterday.impressions > 0
+                          ? ((performance.yesterday.clicks / performance.yesterday.impressions) * 100).toFixed(2) + '%'
+                          : '-'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-muted mb-1">Avg. CPC</p>
+                      <p className="font-bold text-sm sm:text-base">
+                        {performance && performance.yesterday.clicks > 0
+                          ? formatCurrency(performance.yesterday.cost / performance.yesterday.clicks, account.currency)
+                          : '-'}
                       </p>
                     </div>
 
@@ -194,8 +323,11 @@ export default async function ClientsPage() {
                         {account.status}
                       </span>
                     </div>
+                  </div>
 
-                    <Button variant="outline" size="sm" className="col-span-2 sm:col-span-1">
+                  {/* View Details Button - Full Width on Mobile */}
+                  <div className="lg:ml-auto">
+                    <Button variant="outline" size="sm" className="w-full lg:w-auto">
                       View Details
                     </Button>
                   </div>
