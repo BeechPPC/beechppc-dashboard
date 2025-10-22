@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.75.0",
+    "@vercel/kv": "^3.0.0",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
     "google-ads-api": "^21.0.1",

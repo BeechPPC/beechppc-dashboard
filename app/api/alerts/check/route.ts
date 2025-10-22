@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getEnabledAlerts, updateAlert } from '@/lib/alerts/storage-memory'
+import { getEnabledAlerts, updateAlert } from '@/lib/alerts/storage-kv'
 import { checkAllAlerts } from '@/lib/alerts/checker'
 import { generateAlertEmail, generateAlertEmailSubject } from '@/lib/alerts/email-template'
 import { sendEmail } from '@/lib/email/service'
