@@ -15,7 +15,8 @@ import {
   PenTool,
   Bell,
   Menu,
-  X
+  X,
+  ListCheck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -24,6 +25,7 @@ const navigation = [
   { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Tasks', href: '/tasks', icon: ListCheck },
 ]
 
 const automations = [
@@ -32,6 +34,9 @@ const automations = [
   { name: 'Budget Management', href: '/automations/budget-management', icon: DollarSign, comingSoon: true },
   { name: 'Copywriting', href: '/automations/copywriting', icon: PenTool, comingSoon: true },
   { name: 'Alert Notifications', href: '/automations/alerts', icon: Bell },
+]
+
+const accounts = [
 ]
 
 export function Sidebar() {
@@ -106,6 +111,40 @@ export function Sidebar() {
           </div>
           <div className="space-y-1">
             {automations.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors relative',
+                    isActive
+                      ? 'bg-primary text-white'
+                      : 'text-muted hover:bg-primary-light hover:text-foreground'
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="flex-1">{item.name}</span>
+                  {item.comingSoon && (
+                    <span className="text-xs bg-primary-dark text-white px-2 py-0.5 rounded-full">
+                      Soon
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+               {/* Accounts Section */}
+               <div className="pt-6">
+          <div className="px-3 pb-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
+              Accounts
+            </h3>
+          </div>
+          <div className="space-y-1">
+            {accounts.map((item) => {
               const isActive = pathname === item.href
               return (
                 <Link
