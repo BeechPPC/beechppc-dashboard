@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogContent } from '@/components/ui/dialog'
 import { CreateAlertForm } from '@/components/alerts/create-alert-form'
-import { Bell, TrendingUp, TrendingDown, AlertTriangle, DollarSign, Target, Mail, Loader2, Play, Plus } from 'lucide-react'
+import { Bell, TrendingUp, TrendingDown, AlertTriangle, DollarSign, Target, Mail, Loader2, Play, Plus, Trash2 } from 'lucide-react'
 import type { Alert } from '@/lib/alerts/types'
 
 export default function AlertsPage() {
@@ -14,6 +14,7 @@ export default function AlertsPage() {
   const [checking, setChecking] = useState(false)
   const [lastCheck, setLastCheck] = useState<Date | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   // Load alerts on mount
@@ -62,6 +63,38 @@ export default function AlertsPage() {
       window.alert(`Failed to toggle alert: ${errorMsg}`)
     } finally {
       setTogglingId(null)
+    }
+  }
+
+  const deleteAlert = async (id: string) => {
+    const alertToDelete = alerts.find(a => a.id === id)
+    if (!alertToDelete) return
+
+    // Confirm deletion
+    if (!window.confirm(`Are you sure you want to delete "${alertToDelete.name}"?`)) {
+      return
+    }
+
+    setDeletingId(id)
+    try {
+      const res = await fetch('/api/alerts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+
+      const result = await res.json()
+      if (result.success) {
+        setAlerts(alerts.filter(a => a.id !== id))
+      } else {
+        window.alert(`Failed to delete alert: ${result.error}`)
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+      console.error('Failed to delete alert:', errorMsg)
+      window.alert(`Failed to delete alert: ${errorMsg}`)
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -263,8 +296,22 @@ export default function AlertsPage() {
                     className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border pb-4 last:border-0 last:pb-0"
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-lg ${alert.enabled ? 'bg-primary/10' : 'bg-gray-100'}`}>
-                        <Icon className={`h-5 w-5 ${alert.enabled ? 'text-primary' : 'text-gray-400'}`} />
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`p-2 rounded-lg ${alert.enabled ? 'bg-primary/10' : 'bg-gray-100'}`}>
+                          <Icon className={`h-5 w-5 ${alert.enabled ? 'text-primary' : 'text-gray-400'}`} />
+                        </div>
+                        <button
+                          onClick={() => deleteAlert(alert.id)}
+                          disabled={deletingId === alert.id}
+                          className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Delete alert"
+                        >
+                          {deletingId === alert.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">

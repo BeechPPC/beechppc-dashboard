@@ -21,17 +21,30 @@ This application uses Vercel KV (Redis) to store alerts persistently across all 
 6. Choose a region close to your users
 7. Click **Create**
 
-### 2. Connect to Your Project
+### 2. Get Your Environment Variables
 
+**Method 1: From KV Database Page**
 1. After creating the database, click on it
-2. Go to the **.env.local** tab
-3. You'll see the environment variables:
+2. Look for the **Connect** or **Quickstart** tab
+3. Scroll down to find the environment variables section
+4. You should see:
    ```
    KV_REST_API_URL="https://..."
    KV_REST_API_TOKEN="..."
    KV_REST_API_READ_ONLY_TOKEN="..."
    ```
-4. Click **Copy Snippet** to copy all variables
+5. Click **Copy** or **Copy Snippet**
+
+**Method 2: From Project Settings**
+1. Go to your **Project** → **Settings** → **Environment Variables**
+2. Vercel may have auto-added them when you created the KV database
+3. Look for variables starting with `KV_`
+
+**Method 3: Manually Get Credentials**
+1. In your KV database page
+2. Look for **REST API** section or **Settings**
+3. Find **REST API URL** and **Token** fields
+4. You may need to click "Show" or "Reveal" to see the token
 
 ### 3. Add Environment Variables
 
