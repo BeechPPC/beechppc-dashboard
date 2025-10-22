@@ -37,6 +37,7 @@ const automations = [
 ]
 
 const accounts = [
+  { name: 'All Accounts', href: '/accounts', icon: Bell, comingSoon: true },
 ]
 
 export function Sidebar() {
