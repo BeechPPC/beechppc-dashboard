@@ -86,8 +86,11 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
       newErrors.name = 'Alert name is required'
     }
 
-    if (!formData.threshold || isNaN(Number(formData.threshold)) || Number(formData.threshold) <= 0) {
-      newErrors.threshold = 'Please enter a valid positive number'
+    // Skip threshold validation for ad_disapproval alerts
+    if (formData.type !== 'ad_disapproval') {
+      if (!formData.threshold || isNaN(Number(formData.threshold)) || Number(formData.threshold) <= 0) {
+        newErrors.threshold = 'Please enter a valid positive number'
+      }
     }
 
     if (!formData.recipients.trim()) {
@@ -123,7 +126,7 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
           description: formData.description.trim() || undefined,
           type: formData.type,
           condition: formData.condition,
-          threshold: Number(formData.threshold),
+          threshold: formData.type === 'ad_disapproval' ? 0 : Number(formData.threshold),
           accountId: formData.accountId || undefined,
           recipients: formData.recipients.split(',').map(e => e.trim()),
           frequency: formData.frequency,
@@ -148,6 +151,14 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
 
   // Generate preview text
   const getPreviewText = (): string => {
+    // Ad disapproval doesn't need threshold
+    if (formData.type === 'ad_disapproval') {
+      const accountLabel = formData.accountId
+        ? accounts.find(a => a.id === formData.accountId)?.name || 'Unknown Account'
+        : 'All Accounts'
+      return `Alert will trigger when ${accountLabel} has disapproved ads`
+    }
+
     if (!formData.threshold) return 'Configure alert settings to see preview'
 
     const typeLabel = {
@@ -192,10 +203,6 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
 
     if (formData.type === 'conversion_tracking') {
       return `Alert will trigger when any conversion action ${conditionLabel} ${thresholdLabel} for ${accountLabel}`
-    }
-
-    if (formData.type === 'ad_disapproval') {
-      return `Alert will trigger when ${accountLabel} ${conditionLabel}`
     }
 
     return `Alert will trigger when ${typeLabel} ${conditionLabel} ${thresholdLabel} for ${accountLabel}`
@@ -257,7 +264,8 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
       </div>
 
       {/* Condition and Threshold */}
-      <div className="grid grid-cols-2 gap-4">
+      {formData.type === 'ad_disapproval' ? (
+        // Ad disapproval only shows condition (no threshold needed)
         <div>
           <label className="block text-sm font-medium mb-2">
             Condition <span className="text-error">*</span>
@@ -267,37 +275,56 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
             onChange={(e) => setFormData({ ...formData, condition: e.target.value as AlertCondition })}
             className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
           >
-            {availableConditions.includes('above') && <option value="above">Above</option>}
-            {availableConditions.includes('below') && <option value="below">Below</option>}
-            {availableConditions.includes('increases_by') && <option value="increases_by">Increases By</option>}
-            {availableConditions.includes('decreases_by') && <option value="decreases_by">Decreases By</option>}
-            {availableConditions.includes('no_data_for_days') && <option value="no_data_for_days">No Data For (Days)</option>}
+            {availableConditions.includes('has_disapproved_ads') && <option value="has_disapproved_ads">Has Disapproved Ads</option>}
           </select>
+          <p className="text-xs text-muted mt-1">
+            Alert will trigger whenever any ads are disapproved in the selected account(s)
+          </p>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Threshold <span className="text-error">*</span>
-          </label>
-          <div className="relative">
-            {(formData.type === 'spend' || formData.type === 'cpc') && (
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">$</span>
-            )}
-            <input
-              type="number"
-              value={formData.threshold}
-              onChange={(e) => setFormData({ ...formData, threshold: e.target.value })}
-              placeholder="0"
-              min="0"
-              step="any"
-              className={`w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                (formData.type === 'spend' || formData.type === 'cpc') ? 'pl-7' : ''
-              }`}
-            />
+      ) : (
+        // Other alert types show both condition and threshold
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Condition <span className="text-error">*</span>
+            </label>
+            <select
+              value={formData.condition}
+              onChange={(e) => setFormData({ ...formData, condition: e.target.value as AlertCondition })}
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+            >
+              {availableConditions.includes('above') && <option value="above">Above</option>}
+              {availableConditions.includes('below') && <option value="below">Below</option>}
+              {availableConditions.includes('increases_by') && <option value="increases_by">Increases By</option>}
+              {availableConditions.includes('decreases_by') && <option value="decreases_by">Decreases By</option>}
+              {availableConditions.includes('no_data_for_days') && <option value="no_data_for_days">No Data For (Days)</option>}
+            </select>
           </div>
-          {errors.threshold && <p className="text-error text-xs mt-1">{errors.threshold}</p>}
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Threshold <span className="text-error">*</span>
+            </label>
+            <div className="relative">
+              {(formData.type === 'spend' || formData.type === 'cpc') && (
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">$</span>
+              )}
+              <input
+                type="number"
+                value={formData.threshold}
+                onChange={(e) => setFormData({ ...formData, threshold: e.target.value })}
+                placeholder="0"
+                min="0"
+                step="any"
+                className={`w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
+                  (formData.type === 'spend' || formData.type === 'cpc') ? 'pl-7' : ''
+                }`}
+              />
+            </div>
+            {errors.threshold && <p className="text-error text-xs mt-1">{errors.threshold}</p>}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Account Scope */}
       <div>
