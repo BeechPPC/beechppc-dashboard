@@ -5,7 +5,7 @@
  * Falls back to memory storage if Redis is not configured
  */
 
-import { createClient, RedisClientType } from 'redis'
+import { createClient } from 'redis'
 import type { Alert } from './types'
 
 const ALERTS_KEY = 'beechppc:alerts'
@@ -15,8 +15,10 @@ const redisUrl = process.env.REDIS_URL || process.env.Alerts_REDIS_URL
 const isRedisConfigured = Boolean(redisUrl)
 
 // Lazy load Redis client
-let redis: RedisClientType | null = null
-let redisConnecting: Promise<RedisClientType | null> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let redis: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let redisConnecting: Promise<any> | null = null
 let lastConnectionAttempt = 0
 const CONNECTION_RETRY_DELAY = 5000 // 5 seconds
 
