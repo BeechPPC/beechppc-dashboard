@@ -50,7 +50,7 @@ export function ClientList({ accounts, accountPerformance }: ClientListProps) {
               </div>
 
               {/* Metrics Grid - Mobile Layout */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-7 gap-3 lg:gap-4 w-full">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 gap-3 lg:gap-4 w-full">
                 <div>
                   <p className="text-xs text-muted mb-1">Spend</p>
                   <p className="font-bold text-sm sm:text-base">
@@ -95,6 +95,15 @@ export function ClientList({ accounts, accountPerformance }: ClientListProps) {
                   <p className="font-bold text-sm sm:text-base">
                     {performance && performance.yesterday.clicks > 0
                       ? formatCurrency(performance.yesterday.cost / performance.yesterday.clicks, account.currency)
+                      : '-'}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted mb-1">Cost / Conv</p>
+                  <p className="font-bold text-sm sm:text-base">
+                    {performance && performance.yesterday.conversions > 0
+                      ? formatCurrency(performance.yesterday.cost / performance.yesterday.conversions, account.currency)
                       : '-'}
                   </p>
                 </div>
