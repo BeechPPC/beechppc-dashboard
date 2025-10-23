@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
-  Clock, Mail, Save, CheckCircle, Upload, Palette, Image as ImageIcon,
+  Save, CheckCircle, Upload, Palette, Image as ImageIcon,
   Type, Moon, Sun, Monitor, Layout, Building2
 } from 'lucide-react'
 import { COLOR_SCHEMES, FONT_FAMILIES } from '@/lib/settings/types'
@@ -24,9 +24,6 @@ export default function SettingsPage() {
   const [fontFamily, setFontFamily] = useState(settings.fontFamily || 'inter')
   const [themeMode, setThemeMode] = useState(settings.themeMode || 'system')
   const [dashboardLayout, setDashboardLayout] = useState(settings.dashboardLayout || 'spacious')
-  const [schedule, setSchedule] = useState(settings.schedule || '0 11 * * *')
-  const [timezone, setTimezone] = useState(settings.timezone || 'Australia/Melbourne')
-  const [recipients, setRecipients] = useState(settings.recipients || 'chris@beechppc.com')
 
   // Sync local state when settings load
   useState(() => {
@@ -36,9 +33,6 @@ export default function SettingsPage() {
       setFontFamily(settings.fontFamily || 'inter')
       setThemeMode(settings.themeMode || 'system')
       setDashboardLayout(settings.dashboardLayout || 'spacious')
-      setSchedule(settings.schedule || '0 11 * * *')
-      setTimezone(settings.timezone || 'Australia/Melbourne')
-      setRecipients(settings.recipients || 'chris@beechppc.com')
     }
   })
 
@@ -50,9 +44,6 @@ export default function SettingsPage() {
         fontFamily,
         themeMode,
         dashboardLayout,
-        schedule,
-        timezone,
-        recipients,
       })
 
       setSaved(true)
@@ -503,90 +494,6 @@ export default function SettingsPage() {
                 More breathing room, easier to scan
               </div>
             </button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Report Schedule */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Report Schedule
-          </CardTitle>
-          <CardDescription>
-            Configure when daily reports are automatically sent
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Schedule (Cron Expression)
-            </label>
-            <input
-              type="text"
-              value={schedule}
-              onChange={(e) => setSchedule(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
-              placeholder="0 11 * * *"
-            />
-            <p className="text-xs text-muted mt-1">
-              Current: Daily at 11:00 AM
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Timezone
-            </label>
-            <select
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="Australia/Melbourne">Australia/Melbourne</option>
-              <option value="Australia/Sydney">Australia/Sydney</option>
-              <option value="Australia/Brisbane">Australia/Brisbane</option>
-              <option value="Australia/Perth">Australia/Perth</option>
-              <option value="Pacific/Auckland">New Zealand (Auckland)</option>
-              <option value="UTC">UTC</option>
-            </select>
-          </div>
-
-          <div className="pt-4 border-t border-border">
-            <p className="text-xs sm:text-sm text-muted">
-              <strong>Note:</strong> Schedule changes require restarting the service or updating GitHub Actions workflow.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Email Recipients */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Email Recipients
-          </CardTitle>
-          <CardDescription>
-            Manage who receives the daily reports
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Default Recipients
-            </label>
-            <input
-              type="text"
-              value={recipients}
-              onChange={(e) => setRecipients(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="email1@example.com, email2@example.com"
-            />
-            <p className="text-xs text-muted mt-1">
-              Separate multiple emails with commas
-            </p>
           </div>
         </CardContent>
       </Card>

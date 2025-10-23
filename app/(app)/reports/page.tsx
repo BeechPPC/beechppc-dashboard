@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Send, Eye, Mail, CheckCircle, XCircle, Loader2, FileText } from 'lucide-react'
+import { Send, Eye, CheckCircle, XCircle, Loader2, FileText, Clock, Save } from 'lucide-react'
+import { useSettings } from '@/lib/settings/context'
 
 interface ReportTemplate {
   id: string
@@ -19,6 +20,7 @@ interface Account {
 }
 
 export default function ReportsPage() {
+  const { settings, updateSettings } = useSettings()
   const [sending, setSending] = useState(false)
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
   const [recipients, setRecipients] = useState('chris@beechppc.com')
@@ -27,6 +29,20 @@ export default function ReportsPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
   const [selectedAccount, setSelectedAccount] = useState<string>('all')
   const [loadingData, setLoadingData] = useState(true)
+
+  // Schedule settings
+  const [schedule, setSchedule] = useState(settings.schedule || '0 11 * * *')
+  const [timezone, setTimezone] = useState(settings.timezone || 'Australia/Melbourne')
+  const [defaultRecipients, setDefaultRecipients] = useState(settings.recipients || 'chris@beechppc.com')
+  const [scheduleSaved, setScheduleSaved] = useState(false)
+
+  // Sync with settings changes
+  useEffect(() => {
+    setSchedule(settings.schedule || '0 11 * * *')
+    setTimezone(settings.timezone || 'Australia/Melbourne')
+    setDefaultRecipients(settings.recipients || 'chris@beechppc.com')
+    setRecipients(settings.recipients || 'chris@beechppc.com')
+  }, [settings])
 
   // Load templates and accounts on mount
   useEffect(() => {
@@ -59,6 +75,21 @@ export default function ReportsPage() {
 
     loadData()
   }, [])
+
+  const handleSaveSchedule = async () => {
+    try {
+      await updateSettings({
+        schedule,
+        timezone,
+        recipients: defaultRecipients,
+      })
+      setScheduleSaved(true)
+      setTimeout(() => setScheduleSaved(false), 3000)
+    } catch (error) {
+      console.error('Error saving schedule:', error)
+      alert('Failed to save schedule settings')
+    }
+  }
 
   const handleSendTemplateReport = async () => {
     if (!selectedTemplate) {
@@ -354,38 +385,92 @@ export default function ReportsPage() {
         </CardContent>
       </Card>
 
-      {/* Report Schedule Info */}
+      {/* Report Schedule Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle>Scheduled Reports</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Scheduled Reports
+          </CardTitle>
           <CardDescription>
-            Automatic daily reports are configured
+            Configure automatic daily report schedule and default recipients
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-border">
-              <span className="text-sm font-medium">Schedule</span>
-              <span className="text-xs sm:text-sm text-muted">Daily at 11:00 AM Melbourne Time</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-border">
-              <span className="text-sm font-medium">Recipients</span>
-              <span className="text-xs sm:text-sm text-muted break-all">chris@beechppc.com</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2">
-              <span className="text-sm font-medium">Status</span>
-              <span className="flex items-center gap-2 text-sm text-success">
-                <div className="h-2 w-2 rounded-full bg-success" />
-                Active
-              </span>
-            </div>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Schedule (Cron Expression)
+            </label>
+            <input
+              type="text"
+              value={schedule}
+              onChange={(e) => setSchedule(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
+              placeholder="0 11 * * *"
+            />
+            <p className="text-xs text-muted mt-1">
+              Current: Daily at 11:00 AM
+            </p>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-border">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Timezone
+            </label>
+            <select
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+            >
+              <option value="Australia/Melbourne">Australia/Melbourne</option>
+              <option value="Australia/Sydney">Australia/Sydney</option>
+              <option value="Australia/Brisbane">Australia/Brisbane</option>
+              <option value="Australia/Perth">Australia/Perth</option>
+              <option value="Pacific/Auckland">New Zealand (Auckland)</option>
+              <option value="UTC">UTC</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Default Recipients
+            </label>
+            <input
+              type="text"
+              value={defaultRecipients}
+              onChange={(e) => setDefaultRecipients(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="email1@example.com, email2@example.com"
+            />
+            <p className="text-xs text-muted mt-1">
+              Separate multiple emails with commas
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-success" />
+              <span className="text-sm text-success">Active</span>
+            </div>
+            <Button onClick={handleSaveSchedule} disabled={scheduleSaved}>
+              {scheduleSaved ? (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  Saved!
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Save Schedule
+                </>
+              )}
+            </Button>
+          </div>
+
+          <div className="pt-4 border-t border-border">
             <p className="text-xs sm:text-sm text-muted">
-              <Mail className="inline h-4 w-4 mr-1" />
-              Reports are automatically generated and sent daily from your localhost service.
-              Use the manual send button above to send a report on-demand.
+              <strong>Note:</strong> Schedule changes require restarting the service or updating GitHub Actions workflow.
+              Reports are automatically generated and sent daily. Use the manual send buttons above to send on-demand.
             </p>
           </div>
         </CardContent>
