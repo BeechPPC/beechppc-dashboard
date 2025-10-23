@@ -213,43 +213,169 @@ const [dateRange, setDateRange] = useState<DateRange>({
 
 ## Email Templates
 
-### Layout Structure
-1. **Header:** Gradient background (`#fef3c7` to `#fde68a`)
-   - Company name: "Beech PPC"
-   - Report title
-   - Font: 28px, bold, `#111827`
+### Universal Design Standards
 
-2. **Account Info Bar:**
-   - Background: White
-   - Border bottom: `1px solid #fde68a`
-   - Account name, date, result count
+All email templates (daily reports, template reports, alerts) MUST follow these design standards:
 
-3. **Description Section:**
-   - Background: White
-   - Gray text (`#6b7280`)
-   - Template description
+#### **1. Header Design (All Emails)**
+```html
+<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+  <h1 style="margin: 0; color: #111827; font-size: 28px; font-weight: 600;">Beech PPC</h1>
+  <p style="margin: 10px 0 0 0; color: #374151; font-size: 16px;">[Report Title]</p>
+  <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">[Date]</p>
+</div>
+```
 
-4. **Data Table:**
-   - Background: White
-   - Headers: `#fef3c7` background, `#f59e0b` bottom border
-   - Rows: `#fde68a` bottom border
-   - Highlighted values: `#f59e0b` (for key metrics)
+#### **2. Container Structure**
+```html
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+  <!-- Content sections -->
+</div>
+```
 
-5. **Footer:**
-   - Centered text
-   - Gray (`#9ca3af`)
-   - Small font (12px)
-   - Generation timestamp
+#### **3. Table Headers (All Tables)**
+```html
+<th style="padding: 12px; background-color: #fef3c7; border-bottom: 2px solid #f59e0b; text-align: left; font-weight: 600; color: #111827;">
+  Column Header
+</th>
+```
 
-### Mobile Responsive
+#### **4. Table Rows (All Tables)**
+```html
+<td style="padding: 12px; border-bottom: 1px solid #fde68a;">
+  Cell Content
+</td>
+```
+
+#### **5. Footer (All Emails)**
+```html
+<div style="margin-top: 20px; padding: 20px; text-align: center; color: #9ca3af; font-size: 12px;">
+  <p style="margin: 0;">This is an automated report from Beech PPC</p>
+  <p style="margin: 5px 0 0 0;">Generated on [Melbourne Time]</p>
+</div>
+```
+
+### Daily Report Template
+
+#### **Layout Structure**
+1. **Header:** Beech PPC branding with gradient
+2. **Summary Cards:** 3-column grid with key metrics
+3. **Account Performance Table:** All accounts with performance data
+4. **Footer:** Standard Beech PPC footer
+
+#### **Summary Cards Design**
+```html
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+  <div style="text-align: center; padding: 20px; background-color: #fefce8; border-radius: 8px;">
+    <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; font-weight: 500;">Metric Label</p>
+    <p style="margin: 0; color: #111827; font-size: 24px; font-weight: bold;">Metric Value</p>
+  </div>
+</div>
+```
+
+### Template Report Emails
+
+#### **Layout Structure**
+1. **Header:** Beech PPC branding with template name
+2. **Account Info:** Account name, date, result count
+3. **Description:** Template description
+4. **Data Table:** Template-specific data with consistent styling
+5. **Footer:** Standard Beech PPC footer
+
+#### **Account Info Section**
+```html
+<div style="background-color: #fff; padding: 20px 30px; border-bottom: 1px solid #fde68a;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h2 style="margin: 0; color: #111827; font-size: 20px;">Account Name</h2>
+      <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Date</p>
+    </div>
+    <div style="text-align: right;">
+      <p style="margin: 0; color: #6b7280; font-size: 14px;">X results</p>
+    </div>
+  </div>
+</div>
+```
+
+### Mobile Responsive Standards
+
+#### **CSS Media Queries (All Emails)**
 ```css
 @media only screen and (max-width: 600px) {
-  table { font-size: 12px !important; }
-  th, td { padding: 8px !important; }
-  h1 { font-size: 24px !important; }
-  h2 { font-size: 18px !important; }
+  .container {
+    padding: 10px !important;
+  }
+  .summary-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .summary-card {
+    padding: 15px !important;
+  }
+  table {
+    font-size: 12px !important;
+  }
+  th, td {
+    padding: 8px !important;
+  }
+  h1 {
+    font-size: 24px !important;
+  }
+  h2 {
+    font-size: 18px !important;
+  }
+  .account-name {
+    font-size: 14px !important;
+  }
+  .account-id {
+    font-size: 11px !important;
+  }
 }
 ```
+
+#### **Required CSS Classes**
+- `.container` - Main container with responsive padding
+- `.summary-grid` - Grid layout for summary cards
+- `.summary-card` - Individual summary card styling
+- `.account-name` - Account name text
+- `.account-id` - Account ID text
+
+### Color Consistency
+
+#### **Primary Colors (All Emails)**
+- **Header Gradient:** `#fef3c7` to `#fde68a`
+- **Table Headers:** `#fef3c7` background, `#f59e0b` border
+- **Table Borders:** `#fde68a`
+- **Text Primary:** `#111827`
+- **Text Secondary:** `#374151`
+- **Text Muted:** `#6b7280`
+- **Footer Text:** `#9ca3af`
+
+#### **Highlighted Values**
+- **Key Metrics:** `#f59e0b` (bold, primary color)
+- **Important Data:** Bold text with primary color
+- **Success Indicators:** Green (`#10b981`)
+- **Warning Indicators:** Amber (`#f59e0b`)
+
+### Typography Standards
+
+#### **Font Stack (All Emails)**
+```css
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+```
+
+#### **Font Sizes**
+- **H1 (Headers):** 28px (24px mobile)
+- **H2 (Subheaders):** 20px (18px mobile)
+- **Body Text:** 16px (14px mobile)
+- **Small Text:** 14px (12px mobile)
+- **Footer Text:** 12px
+
+#### **Font Weights**
+- **Bold:** 700 (headings, important metrics)
+- **Semibold:** 600 (subheadings)
+- **Medium:** 500 (labels)
+- **Normal:** 400 (body text)
 
 ---
 
@@ -296,6 +422,41 @@ const [dateRange, setDateRange] = useState<DateRange>({
 
 ## Report Templates
 
+### Design Consistency Standards
+
+All report templates MUST follow these design standards for consistency:
+
+#### **Template Structure**
+1. **Header:** Beech PPC branding with template name
+2. **Account Info:** Account name, date, result count
+3. **Description:** Template description
+4. **Data Table:** Template-specific data with consistent styling
+5. **Footer:** Standard Beech PPC footer
+
+#### **Table Styling Standards**
+```html
+<!-- Table Headers -->
+<th style="padding: 12px; background-color: #fef3c7; border-bottom: 2px solid #f59e0b; text-align: left; font-weight: 600; color: #111827;">
+  Column Header
+</th>
+
+<!-- Table Rows -->
+<td style="padding: 12px; border-bottom: 1px solid #fde68a;">
+  Cell Content
+</td>
+
+<!-- Highlighted Values -->
+<td style="padding: 12px; border-bottom: 1px solid #fde68a; text-align: right; font-weight: bold; color: #f59e0b;">
+  Key Metric
+</td>
+```
+
+#### **Highlighting Rules**
+- **CTR Values:** Bold, primary color (`#f59e0b`)
+- **Conversion Values:** Bold, primary color (`#f59e0b`)
+- **Cost Values:** Standard formatting
+- **Performance Metrics:** Bold when they're the primary sort metric
+
 ### Available Templates
 
 1. **Zero Conversion Search Terms**
@@ -317,6 +478,68 @@ const [dateRange, setDateRange] = useState<DateRange>({
    - Limit: 20 results
    - Columns: Keyword, Match Type, Campaign, Impressions, Clicks, Conversions, CTR, Cost/Conv
    - Highlighted: Conversions (bold, primary color)
+
+### Email Template Implementation Standards
+
+#### **File Structure**
+```
+lib/email/
+├── service.ts          # Email sending service
+├── template.ts         # Daily report template
+└── template-email.ts   # Template report emails
+```
+
+#### **Required Functions**
+All email templates MUST implement:
+
+```typescript
+// Daily Report Template
+export function generateEmailTemplate(
+  reportData: AccountPerformance[], 
+  reportDate: Date
+): string
+
+// Template Report Emails
+export function generateTemplateEmail(
+  template: ReportTemplate,
+  accountData: TemplateReportData,
+  reportDate: Date
+): string
+```
+
+#### **HTML Structure Requirements**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[Report Title]</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: [font-stack]; background-color: #fefce8;">
+  <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <!-- Header Section -->
+    <!-- Content Sections -->
+    <!-- Footer Section -->
+  </div>
+  
+  <!-- Mobile Responsive Styles -->
+  <style>
+    @media only screen and (max-width: 600px) {
+      /* Mobile styles */
+    }
+  </style>
+</body>
+</html>
+```
+
+#### **CSS Class Requirements**
+All templates MUST include these CSS classes:
+- `.container` - Main container
+- `.summary-grid` - Grid layout for summary cards
+- `.summary-card` - Individual summary card
+- `.account-name` - Account name text
+- `.account-id` - Account ID text
 
 ### Adding New Templates
 
@@ -342,6 +565,46 @@ NEW_TEMPLATE: {
   },
   limit: 20, // optional
 }
+```
+
+### Template Email Implementation
+
+When implementing new template emails, follow these patterns:
+
+#### **1. Header Generation**
+```typescript
+const headerHtml = `
+  <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="margin: 0; color: #111827; font-size: 28px; font-weight: 600;">Beech PPC</h1>
+    <p style="margin: 10px 0 0 0; color: #374151; font-size: 16px;">${template.name}</p>
+  </div>
+`
+```
+
+#### **2. Table Generation**
+```typescript
+const tableHtml = `
+  <table style="width: 100%; border-collapse: collapse; background-color: #fff;">
+    <thead>
+      <tr>
+        ${tableHeaders}
+      </tr>
+    </thead>
+    <tbody>
+      ${tableRows}
+    </tbody>
+  </table>
+`
+```
+
+#### **3. Footer Generation**
+```typescript
+const footerHtml = `
+  <div style="margin-top: 20px; padding: 20px; text-align: center; color: #9ca3af; font-size: 12px;">
+    <p style="margin: 0;">This is an automated report from Beech PPC</p>
+    <p style="margin: 5px 0 0 0;">Generated on ${new Date().toLocaleString('en-AU', { timeZone: 'Australia/Melbourne' })}</p>
+  </div>
+`
 ```
 
 ---
@@ -480,7 +743,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## Notes
 
-**Last Updated:** October 19, 2025
+**Last Updated:** January 2025
 
 **Key Design Decisions:**
 - Yellow/amber theme chosen for warmth and optimism
@@ -489,6 +752,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - Consistent spacing scale (4px, 8px, 12px, 16px, 24px, 32px)
 - Icon + text combinations for clarity
 - Interactive filters (date range, account selection) for data exploration
+- **Email Template Consistency:** All emails follow unified design standards
 
 **Dashboard Filters:**
 - Date Range Picker: Preset buttons + custom range selection
@@ -496,12 +760,20 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - Filters automatically trigger data refresh
 - Visual feedback with loading states
 
+**Email Template Standards:**
+- **Universal Design:** All emails use consistent header, footer, and table styling
+- **Mobile Responsive:** All templates include mobile breakpoints and CSS classes
+- **Color Consistency:** Unified color palette across all email types
+- **Typography Standards:** Consistent font stack, sizes, and weights
+- **Branding:** Beech PPC branding on all email templates
+
 **Future Considerations:**
 - Dark mode support (track with `DARK_MODE_SUPPORT.md` if implemented)
 - Additional brand colors for categories/tags
 - Animation guidelines for transitions
 - Data visualization color palette
 - Export/download functionality for filtered data
+- Email template variations for different report types
 
 ---
 
