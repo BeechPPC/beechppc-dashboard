@@ -2,8 +2,10 @@ name: Send Daily Google Ads Report
 
 on:
   schedule:
-    # Run at 11:00 AM Melbourne time (1:00 AM UTC during standard time, 12:00 AM UTC during daylight saving)
-    # This is for Melbourne Standard Time (UTC+10)
+    # Run at 11:00 AM Melbourne time
+    # Melbourne is typically UTC+10 (AEST) or UTC+11 (AEDT)
+    # Using UTC+10 (1:00 AM UTC) as the primary schedule
+    # This covers most of the year when Melbourne is in AEST
     - cron: '0 1 * * *'
   
   # Allow manual trigger from Actions tab
@@ -14,16 +16,66 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Check Melbourne Time
+        run: |
+          echo "🕐 Current time in Melbourne:"
+          TZ='Australia/Melbourne' date
+          echo "🕐 Current UTC time:"
+          date -u
+          echo "📅 Today's date:"
+          TZ='Australia/Melbourne' date '+%Y-%m-%d %H:%M:%S %Z'
+        
+      - name: Validate Secrets
+        run: |
+          if [ -z "${{ secrets.VERCEL_URL }}" ]; then
+            echo "❌ VERCEL_URL secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.EMAIL_TO }}" ]; then
+            echo "❌ EMAIL_TO secret is not set"
+            exit 1
+          fi
+          echo "✅ All secrets are configured"
+          echo "Vercel URL: ${{ secrets.VERCEL_URL }}"
+          echo "Email to: ${{ secrets.EMAIL_TO }}"
+        
       - name: Send Daily Report
         run: |
-          curl -X POST ${{ secrets.VERCEL_URL }}/api/reports/send \
+          echo "🚀 Sending daily report..."
+          response=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.VERCEL_URL }}/api/reports/send" \
             -H "Content-Type: application/json" \
-            -d '{"recipients": ["${{ secrets.EMAIL_TO }}"]}'
+            -d '{"recipients": ["${{ secrets.EMAIL_TO }}"]}')
+          
+          # Extract HTTP status code (last line)
+          http_code=$(echo "$response" | tail -n1)
+          # Extract response body (all but last line)
+          response_body=$(echo "$response" | head -n -1)
+          
+          echo "HTTP Status: $http_code"
+          echo "Response: $response_body"
+          
+          if [ "$http_code" -eq 200 ]; then
+            echo "✅ Report sent successfully"
+          else
+            echo "❌ Report failed with status $http_code"
+            echo "Response: $response_body"
+            exit 1
+          fi
         
-      - name: Check Response
+      - name: Report Success
+        if: success()
+        run: echo "✅ Daily report sent successfully to ${{ secrets.EMAIL_TO }}"
+        
+      - name: Report Failure
         if: failure()
-        run: echo "Failed to send daily report. Check Vercel logs for details."
+        run: |
+          echo "❌ Failed to send daily report"
+          echo "Check the following:"
+          echo "1. VERCEL_URL secret is set correctly"
+          echo "2. EMAIL_TO secret is set correctly"
+          echo "3. Vercel deployment is running"
+          echo "4. API endpoint is accessible"
 
-# Note: You'll need to add the following secrets to your GitHub repository:
+# Required GitHub Secrets:
 # - VERCEL_URL: Your Vercel deployment URL (e.g., https://your-app.vercel.app)
 # - EMAIL_TO: Recipient email address (e.g., chris@beechppc.com)
