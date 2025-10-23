@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import Image from 'next/image'
 import {
   LayoutDashboard,
   FileText,
@@ -46,6 +47,25 @@ export function Sidebar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [automationsOpen, setAutomationsOpen] = useState(true)
   const [accountsOpen, setAccountsOpen] = useState(true)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+
+  // Load logo from settings
+  useEffect(() => {
+    const loadLogo = async () => {
+      try {
+        const response = await fetch('/api/settings')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.logoUrl) {
+            setLogoUrl(data.logoUrl)
+          }
+        }
+      } catch (error) {
+        console.error('Error loading logo:', error)
+      }
+    }
+    loadLogo()
+  }, [])
 
   return (
     <>
@@ -75,9 +95,20 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-border px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <Zap className="h-5 w-5 text-white" />
-          </div>
+          {logoUrl ? (
+            <div className="relative h-8 w-8 rounded-lg overflow-hidden">
+              <Image
+                src={logoUrl}
+                alt="Logo"
+                fill
+                className="object-contain"
+              />
+            </div>
+          ) : (
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+              <Zap className="h-5 w-5 text-white" />
+            </div>
+          )}
           <span className="font-semibold text-lg">Beech PPC AI</span>
         </Link>
       </div>
