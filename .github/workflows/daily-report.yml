@@ -35,14 +35,28 @@ jobs:
             echo "❌ EMAIL_TO secret is not set"
             exit 1
           fi
+          
+          # Validate URL format
+          if [[ ! "${{ secrets.VERCEL_URL }}" =~ ^https?:// ]]; then
+            echo "❌ VERCEL_URL must start with http:// or https://"
+            echo "Current value: ${{ secrets.VERCEL_URL }}"
+            exit 1
+          fi
+          
+          # Remove trailing slash if present
+          VERCEL_URL_CLEAN="${{ secrets.VERCEL_URL }}"
+          VERCEL_URL_CLEAN="${VERCEL_URL_CLEAN%/}"
+          
           echo "✅ All secrets are configured"
-          echo "Vercel URL: ${{ secrets.VERCEL_URL }}"
+          echo "Vercel URL: $VERCEL_URL_CLEAN"
           echo "Email to: ${{ secrets.EMAIL_TO }}"
         
       - name: Send Daily Report
         run: |
           echo "🚀 Sending daily report..."
-          response=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.VERCEL_URL }}/api/reports/send" \
+          
+          # Follow redirects and handle 308 redirects properly
+          response=$(curl -s -w "\n%{http_code}" -L -X POST "${{ secrets.VERCEL_URL }}/api/reports/send" \
             -H "Content-Type: application/json" \
             -d '{"recipients": ["${{ secrets.EMAIL_TO }}"]}')
           
@@ -59,6 +73,12 @@ jobs:
           else
             echo "❌ Report failed with status $http_code"
             echo "Response: $response_body"
+            echo ""
+            echo "🔍 Troubleshooting tips:"
+            echo "1. Check that VERCEL_URL includes https://"
+            echo "2. Ensure the URL doesn't have a trailing slash"
+            echo "3. Verify your Vercel deployment is running"
+            echo "4. Test the URL manually: curl ${{ secrets.VERCEL_URL }}/api/reports/send"
             exit 1
           fi
         
