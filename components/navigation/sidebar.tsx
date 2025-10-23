@@ -48,10 +48,11 @@ export function Sidebar() {
   const [automationsOpen, setAutomationsOpen] = useState(true)
   const [accountsOpen, setAccountsOpen] = useState(true)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [companyName, setCompanyName] = useState<string>('Beech PPC AI')
 
-  // Load logo from settings
+  // Load branding settings
   useEffect(() => {
-    const loadLogo = async () => {
+    const loadBranding = async () => {
       try {
         const response = await fetch('/api/settings')
         if (response.ok) {
@@ -59,12 +60,15 @@ export function Sidebar() {
           if (data.logoUrl) {
             setLogoUrl(data.logoUrl)
           }
+          if (data.companyName) {
+            setCompanyName(data.companyName)
+          }
         }
       } catch (error) {
-        console.error('Error loading logo:', error)
+        console.error('Error loading branding:', error)
       }
     }
-    loadLogo()
+    loadBranding()
   }, [])
 
   return (
@@ -109,7 +113,7 @@ export function Sidebar() {
               <Zap className="h-5 w-5 text-white" />
             </div>
           )}
-          <span className="font-semibold text-lg">Beech PPC AI</span>
+          <span className="font-semibold text-lg">{companyName}</span>
         </Link>
       </div>
 

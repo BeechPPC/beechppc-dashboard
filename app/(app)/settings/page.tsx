@@ -1,72 +1,69 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Clock, Mail, Save, CheckCircle, Upload, Palette, Image as ImageIcon } from 'lucide-react'
-import { COLOR_SCHEMES } from '@/lib/settings/types'
-import type { AppSettings } from '@/lib/settings/types'
+import {
+  Clock, Mail, Save, CheckCircle, Upload, Palette, Image as ImageIcon,
+  Type, Moon, Sun, Monitor, Layout, Building2
+} from 'lucide-react'
+import { COLOR_SCHEMES, FONT_FAMILIES } from '@/lib/settings/types'
+import { useSettings } from '@/lib/settings/context'
 import Image from 'next/image'
 
 export default function SettingsPage() {
+  const { settings, loading, updateSettings, applyTheme } = useSettings()
   const [saved, setSaved] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [schedule, setSchedule] = useState('0 11 * * *')
-  const [timezone, setTimezone] = useState('Australia/Melbourne')
-  const [recipients, setRecipients] = useState('chris@beechppc.com')
-  const [logoUrl, setLogoUrl] = useState<string | undefined>()
-  const [logoFileName, setLogoFileName] = useState<string | undefined>()
-  const [colorScheme, setColorScheme] = useState('beech-yellow')
   const [uploading, setUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const faviconInputRef = useRef<HTMLInputElement>(null)
 
-  // Load settings on mount
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const response = await fetch('/api/settings')
-        if (response.ok) {
-          const data: AppSettings = await response.json()
-          setSchedule(data.schedule || '0 11 * * *')
-          setTimezone(data.timezone || 'Australia/Melbourne')
-          setRecipients(data.recipients || 'chris@beechppc.com')
-          setLogoUrl(data.logoUrl)
-          setLogoFileName(data.logoFileName)
-          setColorScheme(data.colorScheme || 'beech-yellow')
-        }
-      } catch (error) {
-        console.error('Error loading settings:', error)
-      } finally {
-        setLoading(false)
-      }
+  // Local state for form fields
+  const [companyName, setCompanyName] = useState(settings.companyName || 'Beech PPC AI')
+  const [colorScheme, setColorScheme] = useState(settings.colorScheme || 'beech-yellow')
+  const [fontFamily, setFontFamily] = useState(settings.fontFamily || 'inter')
+  const [themeMode, setThemeMode] = useState(settings.themeMode || 'system')
+  const [dashboardLayout, setDashboardLayout] = useState(settings.dashboardLayout || 'spacious')
+  const [schedule, setSchedule] = useState(settings.schedule || '0 11 * * *')
+  const [timezone, setTimezone] = useState(settings.timezone || 'Australia/Melbourne')
+  const [recipients, setRecipients] = useState(settings.recipients || 'chris@beechppc.com')
+
+  // Sync local state when settings load
+  useState(() => {
+    if (!loading) {
+      setCompanyName(settings.companyName || 'Beech PPC AI')
+      setColorScheme(settings.colorScheme || 'beech-yellow')
+      setFontFamily(settings.fontFamily || 'inter')
+      setThemeMode(settings.themeMode || 'system')
+      setDashboardLayout(settings.dashboardLayout || 'spacious')
+      setSchedule(settings.schedule || '0 11 * * *')
+      setTimezone(settings.timezone || 'Australia/Melbourne')
+      setRecipients(settings.recipients || 'chris@beechppc.com')
     }
-    loadSettings()
-  }, [])
+  })
 
   const handleSave = async () => {
     try {
-      const response = await fetch('/api/settings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          schedule,
-          timezone,
-          recipients,
-          colorScheme,
-        }),
+      await updateSettings({
+        companyName,
+        colorScheme,
+        fontFamily,
+        themeMode,
+        dashboardLayout,
+        schedule,
+        timezone,
+        recipients,
       })
 
-      if (response.ok) {
-        setSaved(true)
-        setTimeout(() => setSaved(false), 3000)
+      setSaved(true)
+      applyTheme()
+      setTimeout(() => setSaved(false), 3000)
 
-        // Apply color scheme immediately
-        applyColorScheme(colorScheme)
-      }
+      // Reload to update company name in sidebar
+      window.location.reload()
     } catch (error) {
       console.error('Error saving settings:', error)
+      alert('Failed to save settings')
     }
   }
 
@@ -85,13 +82,8 @@ export default function SettingsPage() {
       })
 
       if (response.ok) {
-        const data = await response.json()
-        setLogoUrl(data.logoUrl)
-        setLogoFileName(data.fileName)
         setSaved(true)
         setTimeout(() => setSaved(false), 3000)
-
-        // Reload the page to update the logo in the sidebar
         window.location.reload()
       } else {
         const error = await response.json()
@@ -105,32 +97,35 @@ export default function SettingsPage() {
     }
   }
 
-  const applyColorScheme = (schemeName: string) => {
-    const scheme = COLOR_SCHEMES[schemeName]
-    if (!scheme) return
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    const root = document.documentElement
-    root.style.setProperty('--primary', scheme.primary)
-    root.style.setProperty('--primary-light', scheme.primaryLight)
-    root.style.setProperty('--primary-mid', scheme.primaryMid)
-    root.style.setProperty('--primary-dark', scheme.primaryDark)
-    root.style.setProperty('--background', scheme.background)
-    root.style.setProperty('--surface', scheme.surface)
-    root.style.setProperty('--foreground', scheme.foreground)
-    root.style.setProperty('--muted', scheme.muted)
-    root.style.setProperty('--success', scheme.success)
-    root.style.setProperty('--error', scheme.error)
-    root.style.setProperty('--warning', scheme.warning)
-    root.style.setProperty('--border', scheme.border)
-    root.style.setProperty('--ring', scheme.ring)
-  }
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('favicon', file)
 
-  // Apply color scheme on load
-  useEffect(() => {
-    if (!loading) {
-      applyColorScheme(colorScheme)
+      const response = await fetch('/api/settings/upload-favicon', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (response.ok) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 3000)
+        window.location.reload()
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to upload favicon')
+      }
+    } catch (error) {
+      console.error('Error uploading favicon:', error)
+      alert('Failed to upload favicon')
+    } finally {
+      setUploading(false)
     }
-  }, [loading, colorScheme])
+  }
 
   if (loading) {
     return (
@@ -146,9 +141,34 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted mt-2 text-sm sm:text-base">
-          Configure your branding, color scheme, and report preferences
+          Configure your branding, appearance, and report preferences
         </p>
       </div>
+
+      {/* Company Name */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Company Name
+          </CardTitle>
+          <CardDescription>
+            Customize your company or agency name displayed in the dashboard
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <input
+            type="text"
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Beech PPC AI"
+          />
+          <p className="text-xs text-muted mt-2">
+            This will appear in the sidebar and throughout the application
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Logo Upload */}
       <Card>
@@ -164,10 +184,10 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
-              {logoUrl ? (
+              {settings.logoUrl ? (
                 <div className="relative h-16 w-16 rounded-lg border border-border overflow-hidden">
                   <Image
-                    src={logoUrl}
+                    src={settings.logoUrl}
                     alt="Logo preview"
                     fill
                     className="object-contain"
@@ -182,28 +202,194 @@ export default function SettingsPage() {
             <div className="flex-1">
               <input
                 type="file"
-                ref={fileInputRef}
+                ref={logoInputRef}
                 onChange={handleLogoUpload}
                 accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
                 className="hidden"
               />
               <Button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => logoInputRef.current?.click()}
                 disabled={uploading}
                 variant="outline"
               >
                 <Upload className="h-4 w-4" />
-                {uploading ? 'Uploading...' : logoUrl ? 'Change Logo' : 'Upload Logo'}
+                {uploading ? 'Uploading...' : settings.logoUrl ? 'Change Logo' : 'Upload Logo'}
               </Button>
               <p className="text-xs text-muted mt-2">
                 Accepted formats: PNG, JPEG, SVG, WebP. Max size: 5MB
               </p>
-              {logoFileName && (
+              {settings.logoFileName && (
                 <p className="text-xs text-muted mt-1">
-                  Current file: {logoFileName}
+                  Current: {settings.logoFileName}
                 </p>
               )}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Favicon Upload */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5" />
+            Favicon
+          </CardTitle>
+          <CardDescription>
+            Upload a custom favicon for your browser tab
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              {settings.faviconUrl ? (
+                <div className="relative h-8 w-8 rounded border border-border overflow-hidden bg-white">
+                  <Image
+                    src={settings.faviconUrl}
+                    alt="Favicon preview"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
+                  <ImageIcon className="h-4 w-4 text-white" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <input
+                type="file"
+                ref={faviconInputRef}
+                onChange={handleFaviconUpload}
+                accept=".ico,image/x-icon,image/png"
+                className="hidden"
+              />
+              <Button
+                onClick={() => faviconInputRef.current?.click()}
+                disabled={uploading}
+                variant="outline"
+              >
+                <Upload className="h-4 w-4" />
+                {uploading ? 'Uploading...' : settings.faviconUrl ? 'Change Favicon' : 'Upload Favicon'}
+              </Button>
+              <p className="text-xs text-muted mt-2">
+                Accepted formats: ICO, PNG. Max size: 500KB. Recommended: 32x32px
+              </p>
+              {settings.faviconFileName && (
+                <p className="text-xs text-muted mt-1">
+                  Current: {settings.faviconFileName}
+                </p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Font Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Type className="h-5 w-5" />
+            Font Family
+          </CardTitle>
+          <CardDescription>
+            Choose the typography for your dashboard
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {Object.entries(FONT_FAMILIES).map(([key, font]) => (
+              <button
+                key={key}
+                onClick={() => setFontFamily(key)}
+                className={`p-4 rounded-lg border-2 transition-all text-left ${
+                  fontFamily === key
+                    ? 'border-primary bg-primary-light/30'
+                    : 'border-border hover:border-primary/50'
+                }`}
+                style={{ fontFamily: font.value }}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <div className="font-semibold">{font.name}</div>
+                  {fontFamily === key && (
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                  )}
+                </div>
+                <div className="text-xs text-muted">{font.description}</div>
+                <div className="text-sm mt-2">The quick brown fox jumps</div>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Theme Mode */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Moon className="h-5 w-5" />
+            Theme Mode
+          </CardTitle>
+          <CardDescription>
+            Choose between light mode, dark mode, or follow your system preference
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button
+              onClick={() => setThemeMode('light')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                themeMode === 'light'
+                  ? 'border-primary bg-primary-light/30'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <Sun className="h-5 w-5" />
+                {themeMode === 'light' && (
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div className="font-medium">Light</div>
+              <div className="text-xs text-muted mt-1">Always light theme</div>
+            </button>
+
+            <button
+              onClick={() => setThemeMode('dark')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                themeMode === 'dark'
+                  ? 'border-primary bg-primary-light/30'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <Moon className="h-5 w-5" />
+                {themeMode === 'dark' && (
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div className="font-medium">Dark</div>
+              <div className="text-xs text-muted mt-1">Always dark theme</div>
+            </button>
+
+            <button
+              onClick={() => setThemeMode('system')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                themeMode === 'system'
+                  ? 'border-primary bg-primary-light/30'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <Monitor className="h-5 w-5" />
+                {themeMode === 'system' && (
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div className="font-medium">System</div>
+              <div className="text-xs text-muted mt-1">Follow system setting</div>
+            </button>
           </div>
         </CardContent>
       </Card>
@@ -216,7 +402,7 @@ export default function SettingsPage() {
             Color Scheme
           </CardTitle>
           <CardDescription>
-            Choose a color scheme for your dashboard
+            Choose a color scheme for your dashboard (adapts to theme mode)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -263,6 +449,60 @@ export default function SettingsPage() {
                 </div>
               </button>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dashboard Layout */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Layout className="h-5 w-5" />
+            Dashboard Layout
+          </CardTitle>
+          <CardDescription>
+            Choose the density of information displayed on your dashboard
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              onClick={() => setDashboardLayout('compact')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                dashboardLayout === 'compact'
+                  ? 'border-primary bg-primary-light/30'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="font-medium">Compact</div>
+                {dashboardLayout === 'compact' && (
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div className="text-xs text-muted">
+                More data on screen, tighter spacing
+              </div>
+            </button>
+
+            <button
+              onClick={() => setDashboardLayout('spacious')}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                dashboardLayout === 'spacious'
+                  ? 'border-primary bg-primary-light/30'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="font-medium">Spacious</div>
+                {dashboardLayout === 'spacious' && (
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div className="text-xs text-muted">
+                More breathing room, easier to scan
+              </div>
+            </button>
           </div>
         </CardContent>
       </Card>
@@ -315,10 +555,7 @@ export default function SettingsPage() {
 
           <div className="pt-4 border-t border-border">
             <p className="text-xs sm:text-sm text-muted">
-              <strong>Note:</strong> Schedule changes require restarting the localhost service to take effect.
-              Update the <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">REPORT_SCHEDULE</code> and{' '}
-              <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">TIMEZONE</code> values in your{' '}
-              <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">.env</code> file.
+              <strong>Note:</strong> Schedule changes require restarting the service or updating GitHub Actions workflow.
             </p>
           </div>
         </CardContent>
@@ -349,47 +586,6 @@ export default function SettingsPage() {
             />
             <p className="text-xs text-muted mt-1">
               Separate multiple emails with commas
-            </p>
-          </div>
-
-          <div className="pt-4 border-t border-border">
-            <p className="text-xs sm:text-sm text-muted">
-              <strong>Note:</strong> To update default recipients for scheduled reports, modify the{' '}
-              <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">EMAIL_TO</code> value in your{' '}
-              <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">.env</code> file and restart the service.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Google Ads API */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Google Ads API Configuration</CardTitle>
-          <CardDescription>
-            Your Google Ads API connection details
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-border">
-            <span className="text-sm font-medium">MCC Account ID</span>
-            <span className="text-xs sm:text-sm text-muted font-mono break-all">6695445119</span>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-border">
-            <span className="text-sm font-medium">API Status</span>
-            <span className="flex items-center gap-2 text-sm text-success">
-              <div className="h-2 w-2 rounded-full bg-success" />
-              Connected
-            </span>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2">
-            <span className="text-sm font-medium">Developer Token</span>
-            <span className="text-xs sm:text-sm text-muted font-mono break-all">gxL-KFFY***</span>
-          </div>
-
-          <div className="pt-4 border-t border-border">
-            <p className="text-xs sm:text-sm text-muted">
-              API credentials are configured in your <code className="bg-muted/20 px-1 py-0.5 rounded text-xs">.env.local</code> file.
             </p>
           </div>
         </CardContent>

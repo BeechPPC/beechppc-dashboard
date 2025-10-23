@@ -20,15 +20,21 @@ export interface ColorScheme {
 }
 
 export interface AppSettings {
-  // Logo settings
+  // Branding settings
+  companyName?: string
   logoUrl?: string
   logoFileName?: string
+  faviconUrl?: string
+  faviconFileName?: string
 
-  // Color scheme settings
+  // Appearance settings
   colorScheme: string // Name of the active color scheme
   customColors?: ColorScheme // Custom color scheme if user creates one
+  fontFamily?: string // Selected font family
+  themeMode?: 'light' | 'dark' | 'system' // Dark mode preference
+  dashboardLayout?: 'compact' | 'spacious' // Dashboard density
 
-  // Existing settings
+  // Report settings
   schedule?: string
   timezone?: string
   recipients?: string
@@ -137,8 +143,141 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
   },
 }
 
+// Dark mode color schemes
+export const DARK_COLOR_SCHEMES: Record<string, ColorScheme> = {
+  'beech-yellow': {
+    name: 'Beech Yellow (Dark)',
+    primary: '#f59e0b',
+    primaryLight: '#422006',
+    primaryMid: '#78350f',
+    primaryDark: '#fbbf24',
+    background: '#0f0f0f',
+    surface: '#1a1a1a',
+    foreground: '#f9fafb',
+    muted: '#9ca3af',
+    success: '#10b981',
+    error: '#ef4444',
+    warning: '#f59e0b',
+    border: '#374151',
+    ring: '#f59e0b',
+  },
+  'ocean-blue': {
+    name: 'Ocean Blue (Dark)',
+    primary: '#0ea5e9',
+    primaryLight: '#082f49',
+    primaryMid: '#0c4a6e',
+    primaryDark: '#38bdf8',
+    background: '#0f0f0f',
+    surface: '#1a1a1a',
+    foreground: '#f9fafb',
+    muted: '#9ca3af',
+    success: '#10b981',
+    error: '#ef4444',
+    warning: '#f59e0b',
+    border: '#374151',
+    ring: '#0ea5e9',
+  },
+  'forest-green': {
+    name: 'Forest Green (Dark)',
+    primary: '#10b981',
+    primaryLight: '#022c22',
+    primaryMid: '#064e3b',
+    primaryDark: '#34d399',
+    background: '#0f0f0f',
+    surface: '#1a1a1a',
+    foreground: '#f9fafb',
+    muted: '#9ca3af',
+    success: '#10b981',
+    error: '#ef4444',
+    warning: '#f59e0b',
+    border: '#374151',
+    ring: '#10b981',
+  },
+  'royal-purple': {
+    name: 'Royal Purple (Dark)',
+    primary: '#8b5cf6',
+    primaryLight: '#2e1065',
+    primaryMid: '#4c1d95',
+    primaryDark: '#a78bfa',
+    background: '#0f0f0f',
+    surface: '#1a1a1a',
+    foreground: '#f9fafb',
+    muted: '#9ca3af',
+    success: '#10b981',
+    error: '#ef4444',
+    warning: '#f59e0b',
+    border: '#374151',
+    ring: '#8b5cf6',
+  },
+  'sunset-orange': {
+    name: 'Sunset Orange (Dark)',
+    primary: '#f97316',
+    primaryLight: '#431407',
+    primaryMid: '#7c2d12',
+    primaryDark: '#fb923c',
+    background: '#0f0f0f',
+    surface: '#1a1a1a',
+    foreground: '#f9fafb',
+    muted: '#9ca3af',
+    success: '#10b981',
+    error: '#ef4444',
+    warning: '#f97316',
+    border: '#374151',
+    ring: '#f97316',
+  },
+  'slate-gray': {
+    name: 'Slate Gray (Dark)',
+    primary: '#94a3b8',
+    primaryLight: '#0f172a',
+    primaryMid: '#1e293b',
+    primaryDark: '#cbd5e1',
+    background: '#0f0f0f',
+    surface: '#1a1a1a',
+    foreground: '#f8fafc',
+    muted: '#94a3b8',
+    success: '#10b981',
+    error: '#ef4444',
+    warning: '#f59e0b',
+    border: '#334155',
+    ring: '#94a3b8',
+  },
+}
+
+// Available font families
+export const FONT_FAMILIES = {
+  inter: {
+    name: 'Inter',
+    value: 'var(--font-inter)',
+    description: 'Modern and clean (Default)',
+  },
+  roboto: {
+    name: 'Roboto',
+    value: 'var(--font-roboto)',
+    description: 'Google\'s signature font',
+  },
+  'open-sans': {
+    name: 'Open Sans',
+    value: 'var(--font-open-sans)',
+    description: 'Friendly and readable',
+  },
+  montserrat: {
+    name: 'Montserrat',
+    value: 'var(--font-montserrat)',
+    description: 'Bold and geometric',
+  },
+  'source-sans': {
+    name: 'Source Sans Pro',
+    value: 'var(--font-source-sans)',
+    description: 'Adobe\'s versatile font',
+  },
+}
+
 export const DEFAULT_SETTINGS: AppSettings = {
+  companyName: 'Beech PPC AI',
   colorScheme: 'beech-yellow',
+  fontFamily: 'inter',
+  themeMode: 'system',
+  dashboardLayout: 'spacious',
   schedule: '0 11 * * *',
   timezone: 'Australia/Melbourne',
   recipients: 'chris@beechppc.com',
