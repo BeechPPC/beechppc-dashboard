@@ -13,14 +13,14 @@ This guide walks you through deploying the Beech PPC Dashboard to Vercel and set
 
 1. **Create a new repository** on GitHub:
    - Go to https://github.com/new
-   - Repository name: `Beech-PPC-AI-Agent` (or your preferred name)
+   - Repository name: `beechppc-dashboard` (or your preferred name)
    - Make it private (recommended for security)
    - Don't initialize with README (we already have one)
 
 2. **Push your local repository**:
    ```bash
    cd /Users/chrisbeechey/beechppc-dashboard
-   git remote add origin https://github.com/BeechPPC/Beech-PPC-AI-Agent.git
+   git remote add origin https://github.com/BeechPPC/beechppc-dashboard.git
    git branch -M main
    git push -u origin main
    ```
