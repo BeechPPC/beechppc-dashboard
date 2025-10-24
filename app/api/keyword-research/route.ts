@@ -55,16 +55,20 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Initializing Google Ads customer...')
+    // Use specific account ID for Keyword Planner (not MCC)
+    const keywordPlannerAccountId = '6469501976'
+
     const customer = client.Customer({
-      customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
+      customer_id: keywordPlannerAccountId,
       refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
+      login_customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
     })
 
-    console.log('Customer initialized')
+    console.log('Customer initialized with account:', keywordPlannerAccountId)
 
     // Prepare the keyword plan idea service request
     const keywordPlanIdeas: Record<string, unknown> = {
-      customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
+      customer_id: keywordPlannerAccountId,
       language: `languageConstants/${language}`,
       geo_target_constants: [`geoTargetConstants/${location}`],
       include_adult_keywords: false,
@@ -86,14 +90,27 @@ export async function POST(request: NextRequest) {
 
     // Generate keyword ideas using Google Ads Keyword Planner
     console.log('Fetching keyword ideas from Google Ads API...')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await customer.keywordPlanIdeas.generateKeywordIdeas(keywordPlanIdeas as any)
+    console.log('Request params:', JSON.stringify(keywordPlanIdeas, null, 2))
+
+    let response
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      response = await customer.keywordPlanIdeas.generateKeywordIdeas(keywordPlanIdeas as any)
+    } catch (apiError) {
+      console.error('Google Ads API Error:', apiError)
+      throw new Error(`Google Ads API Error: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`)
+    }
 
     console.log(`Received ${response.results?.length || 0} keyword ideas`)
 
     if (!response.results || response.results.length === 0) {
       console.log('No keyword ideas found')
-      return NextResponse.json({ keywords: [], groups: [] })
+      console.log('Response object:', JSON.stringify(response, null, 2))
+      return NextResponse.json({
+        keywords: [],
+        groups: [],
+        message: 'No keyword ideas found. This could be due to: 1) Very restrictive targeting 2) Account permissions 3) API quota limits'
+      })
     }
 
     // Process keyword ideas
