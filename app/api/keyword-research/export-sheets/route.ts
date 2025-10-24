@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
-import { GoogleAdsApi } from 'google-ads-api'
 
 interface KeywordData {
   keyword: string

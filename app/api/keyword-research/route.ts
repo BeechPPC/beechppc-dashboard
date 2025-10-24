@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Prepare the keyword plan idea service request
-    const keywordPlanIdeas: any = {
+    const keywordPlanIdeas: Record<string, unknown> = {
       customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
       language: `languageConstants/${language}`,
       geo_target_constants: [`geoTargetConstants/${location}`],
@@ -71,7 +71,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate keyword ideas using Google Ads Keyword Planner
-    const response = await customer.keywordPlanIdeas.generateKeywordIdeas(keywordPlanIdeas)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await customer.keywordPlanIdeas.generateKeywordIdeas(keywordPlanIdeas as any)
 
     if (!response.results || response.results.length === 0) {
       return NextResponse.json({ keywords: [], groups: [] })
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // Process keyword ideas
     const keywords: KeywordData[] = response.results
-      .map((idea: any) => {
+      .map((idea) => {
         const keywordText = idea.text || ''
         const metrics = idea.keyword_idea_metrics || {}
 
@@ -200,7 +201,12 @@ Respond ONLY with the JSON object, no other text.`
     })
 
     // Create grouped results
-    const groups: KeywordGroup[] = (aiResponse.groups || []).map((group: any) => {
+    interface AIGroup {
+      theme: string
+      keywords: string[]
+    }
+
+    const groups: KeywordGroup[] = (aiResponse.groups || []).map((group: AIGroup) => {
       const groupKeywords = enrichedKeywords.filter(k => k.theme === group.theme)
       const totalSearchVolume = groupKeywords.reduce((sum, k) => sum + k.avgMonthlySearches, 0)
 
