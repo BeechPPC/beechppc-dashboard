@@ -48,6 +48,7 @@ This guide walks you through deploying the Beech PPC Dashboard to Vercel and set
    GOOGLE_ADS_CLIENT_SECRET=your-client-secret
    GOOGLE_ADS_REFRESH_TOKEN=your-refresh-token
    GOOGLE_ADS_LOGIN_CUSTOMER_ID=your-mcc-account-id
+   ANTHROPIC_API_KEY=your-anthropic-api-key
    EMAIL_HOST=smtp.gmail.com
    EMAIL_PORT=587
    EMAIL_USER=your-email@gmail.com
@@ -56,6 +57,8 @@ This guide walks you through deploying the Beech PPC Dashboard to Vercel and set
    ```
 
    **Important**: Replace all placeholder values with your actual credentials from `.env.local`
+
+   **Note**: The `ANTHROPIC_API_KEY` is required for AI-powered keyword research features. Get your API key from https://console.anthropic.com/
 
 4. **Deploy**:
    - Click "Deploy"
@@ -223,6 +226,28 @@ If you prefer to keep the existing LaunchAgent setup:
 - ~1 minute per run
 - Total: ~30 minutes/month (well within free tier)
 
+## Features
+
+### Keyword Research Tool
+
+The keyword research tool uses:
+- **Google Ads Keyword Planner API**: Fetches keyword ideas, search volume, competition, and CPC data
+- **Claude AI**: Analyzes keywords, groups them by theme, identifies search intent, and provides strategic insights
+- **Export Options**: Download as CSV or export directly to Google Sheets
+
+**Usage**:
+1. Navigate to `/automations/keyword-research`
+2. Enter seed keywords (one per line) or a landing page URL
+3. Select target location and language
+4. Click "Start Research"
+5. View results grouped by theme with AI insights
+6. Export to CSV or Google Sheets
+
+**API Limits**:
+- Google Ads API: 15,000 operations/day (free tier)
+- Can process up to 1,000 keywords per request
+- Claude AI: Analyzes top 100 keywords for grouping and insights
+
 ## Next Steps
 
 After successful deployment, consider:
@@ -232,6 +257,7 @@ After successful deployment, consider:
 3. **Configure Monitoring** - Add error tracking (Sentry, LogRocket)
 4. **Create Backups** - Export data regularly
 5. **Document Processes** - Create runbooks for common tasks
+6. **Set up Anthropic API Key** - Enable AI-powered keyword research features
 
 ## Support
 
