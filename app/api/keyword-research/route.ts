@@ -96,14 +96,22 @@ export async function POST(request: NextRequest) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       response = await customer.keywordPlanIdeas.generateKeywordIdeas(keywordPlanIdeas as any)
+      console.log('API call successful')
+      console.log('Response type:', typeof response)
+      console.log('Response keys:', Object.keys(response))
+      console.log('Full response structure:', JSON.stringify(response, null, 2))
     } catch (apiError) {
       console.error('Google Ads API Error:', apiError)
+      console.error('Error details:', JSON.stringify(apiError, null, 2))
       throw new Error(`Google Ads API Error: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`)
     }
 
-    console.log(`Received ${response.results?.length || 0} keyword ideas`)
+    // Handle response - it can be an array directly or an object with results property
+    const results = Array.isArray(response) ? response : response.results
 
-    if (!response.results || response.results.length === 0) {
+    console.log(`Received ${results?.length || 0} keyword ideas`)
+
+    if (!results || results.length === 0) {
       console.log('No keyword ideas found')
       console.log('Response object:', JSON.stringify(response, null, 2))
       return NextResponse.json({
@@ -113,8 +121,11 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Debug: Log first result to see structure
+    console.log('First keyword idea sample:', JSON.stringify(results[0], null, 2))
+
     // Process keyword ideas
-    const keywords: KeywordData[] = response.results
+    const keywords: KeywordData[] = results
       .map((idea) => {
         const keywordText = idea.text || ''
         const metrics = idea.keyword_idea_metrics || {}
@@ -144,6 +155,16 @@ export async function POST(request: NextRequest) {
       })
       .filter((k: KeywordData) => k.keyword && k.avgMonthlySearches > 0)
       .sort((a: KeywordData, b: KeywordData) => b.avgMonthlySearches - a.avgMonthlySearches)
+
+    console.log(`Processed ${results.length} raw results`)
+    console.log(`After filtering: ${keywords.length} keywords with search volume > 0`)
+
+    if (keywords.length === 0 && results.length > 0) {
+      console.log('⚠️  WARNING: All keywords were filtered out!')
+      console.log('Sample raw keyword data:')
+      console.log('- Text:', results[0]?.text)
+      console.log('- Metrics:', results[0]?.keyword_idea_metrics)
+    }
 
     // Use Claude AI to analyze and group keywords
     console.log('Analyzing keywords with Claude AI...')

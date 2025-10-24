@@ -65,6 +65,14 @@ export default function KeywordResearchPage() {
         throw new Error(data.error || 'Failed to fetch keyword data')
       }
 
+      // Check if we got a message indicating no results
+      if (data.message && (!data.keywords || data.keywords.length === 0)) {
+        setError(data.message)
+        setResults([])
+        setGroupedResults([])
+        return
+      }
+
       setResults(data.keywords || [])
       setGroupedResults(data.groups || [])
     } catch (err) {
