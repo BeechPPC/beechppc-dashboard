@@ -9,10 +9,18 @@ const client = new GoogleAdsApi({
   developer_token: process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
 })
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-})
+// Initialize Anthropic client (lazy initialization)
+let anthropic: Anthropic | null = null
+function getAnthropicClient() {
+  if (!anthropic) {
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey || apiKey === 'your_anthropic_api_key_here') {
+      throw new Error('ANTHROPIC_API_KEY is not configured. Please add your Anthropic API key to the .env file.')
+    }
+    anthropic = new Anthropic({ apiKey })
+  }
+  return anthropic
+}
 
 interface KeywordData {
   keyword: string
@@ -34,7 +42,10 @@ interface KeywordGroup {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Keyword research API called')
     const { seedKeywords, landingPageUrl, location = '2036', language = '1000' } = await request.json()
+
+    console.log('Request params:', { seedKeywords, landingPageUrl, location, language })
 
     if ((!seedKeywords || seedKeywords.length === 0) && !landingPageUrl) {
       return NextResponse.json(
@@ -43,10 +54,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('Initializing Google Ads customer...')
     const customer = client.Customer({
       customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
       refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
     })
+
+    console.log('Customer initialized')
 
     // Prepare the keyword plan idea service request
     const keywordPlanIdeas: Record<string, unknown> = {
@@ -71,10 +85,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate keyword ideas using Google Ads Keyword Planner
+    console.log('Fetching keyword ideas from Google Ads API...')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await customer.keywordPlanIdeas.generateKeywordIdeas(keywordPlanIdeas as any)
 
+    console.log(`Received ${response.results?.length || 0} keyword ideas`)
+
     if (!response.results || response.results.length === 0) {
+      console.log('No keyword ideas found')
       return NextResponse.json({ keywords: [], groups: [] })
     }
 
@@ -111,7 +129,10 @@ export async function POST(request: NextRequest) {
       .sort((a: KeywordData, b: KeywordData) => b.avgMonthlySearches - a.avgMonthlySearches)
 
     // Use Claude AI to analyze and group keywords
+    console.log('Analyzing keywords with Claude AI...')
     const { keywords: enrichedKeywords, groups } = await analyzeKeywordsWithClaude(keywords)
+
+    console.log(`Analysis complete. ${groups.length} groups created`)
 
     return NextResponse.json({
       keywords: enrichedKeywords,
@@ -130,6 +151,8 @@ export async function POST(request: NextRequest) {
 
 async function analyzeKeywordsWithClaude(keywords: KeywordData[]): Promise<{ keywords: KeywordData[], groups: KeywordGroup[] }> {
   try {
+    const client = getAnthropicClient()
+
     // Limit to top 100 keywords for AI analysis to stay within token limits
     const topKeywords = keywords.slice(0, 100)
 
@@ -162,7 +185,7 @@ Return your response as a valid JSON object with this structure:
 
 Respond ONLY with the JSON object, no other text.`
 
-    const message = await anthropic.messages.create({
+    const message = await client.messages.create({
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 4096,
       messages: [{
