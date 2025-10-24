@@ -35,7 +35,7 @@ export default function KeywordResearchPage() {
             <div className="flex-1 text-center sm:text-left">
               <h3 className="text-lg font-semibold mb-1">Coming Soon</h3>
               <p className="text-sm text-muted">
-                We're building powerful AI-driven keyword research tools to help you discover high-performing keywords and optimize your campaigns. Stay tuned!
+                We are building powerful AI-driven keyword research tools to help you discover high-performing keywords and optimize your campaigns. Stay tuned!
               </p>
             </div>
           </div>
