@@ -42,7 +42,6 @@ export function TaskColumn({ title, status, tasks, onDeleteTask }: TaskColumnPro
 
   return (
     <div
-      ref={setNodeRef}
       className={`flex flex-col bg-gray-50 rounded-lg border-2 transition-colors ${
         isOver ? 'border-primary bg-primary-light/30' : 'border-border'
       }`}
@@ -61,7 +60,10 @@ export function TaskColumn({ title, status, tasks, onDeleteTask }: TaskColumnPro
       </div>
 
       {/* Tasks List */}
-      <div className="flex-1 p-4 space-y-3 min-h-[400px] max-h-[600px] overflow-y-auto">
+      <div
+        ref={setNodeRef}
+        className="flex-1 p-4 space-y-3 min-h-[400px] max-h-[600px] overflow-y-auto"
+      >
         <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.length === 0 ? (
             <div className="flex items-center justify-center h-32 text-sm text-muted">
