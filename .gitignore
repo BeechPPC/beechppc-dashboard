@@ -43,3 +43,7 @@ next-env.d.ts
 
 # logs
 logs/
+
+# debug and test files
+KEYWORD_RESEARCH_DEBUG.md
+test-keyword-api.js
