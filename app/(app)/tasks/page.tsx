@@ -81,9 +81,20 @@ export default function TasksPage() {
     }
 
     const taskId = active.id as string
-    const newStatus = over.id as Task['status']
+    let newStatus: Task['status'] | null = null
 
-    if (['pending', 'in_progress', 'completed'].includes(newStatus)) {
+    // Check if we dropped on a column (droppable area)
+    if (['pending', 'in_progress', 'completed'].includes(over.id as string)) {
+      newStatus = over.id as Task['status']
+    } else {
+      // We dropped on a task, so find which column that task belongs to
+      const targetTask = tasks.find((t) => t.id === over.id)
+      if (targetTask) {
+        newStatus = targetTask.status
+      }
+    }
+
+    if (newStatus) {
       setTasks((tasks) =>
         tasks.map((task) =>
           task.id === taskId ? { ...task, status: newStatus } : task
