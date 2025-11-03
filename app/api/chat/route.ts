@@ -272,7 +272,7 @@ Always be helpful and proactive in suggesting next steps or additional analysis.
       // Execute the function
       const functionResult = await executeFunctionCall(
         toolUseBlock.name,
-        toolUseBlock.input
+        toolUseBlock.input as Record<string, unknown>
       )
 
       console.log('Function result:', JSON.stringify(functionResult, null, 2))
