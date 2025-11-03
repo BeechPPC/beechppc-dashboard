@@ -51,6 +51,9 @@ export interface KeywordData {
   conversions: number
   ctr: number
   costPerConversion: number
+  avgCpc?: number
+  accountId?: string
+  accountName?: string
 }
 
 /**
@@ -214,6 +217,92 @@ export async function getBestPerformingKeywordsByConversion(
     }))
   } catch (error) {
     console.error(`Error fetching best performing keywords for ${customerId}:`, error)
+    return []
+  }
+}
+
+/**
+ * Get highest CPC keywords across all accounts
+ */
+export async function getHighestCpcKeywords(
+  customerIds: string[],
+  dateRange: string = 'LAST_7_DAYS',
+  limit: number = 50
+): Promise<KeywordData[]> {
+  try {
+    const allKeywords: KeywordData[] = []
+
+    // Fetch keywords from all accounts in parallel
+    const results = await Promise.all(
+      customerIds.map(async (customerId) => {
+        try {
+          const accountCustomer = client.Customer({
+            customer_id: customerId,
+            refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
+            login_customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
+          })
+
+          const query = `
+            SELECT
+              ad_group_criterion.keyword.text,
+              ad_group_criterion.keyword.match_type,
+              ad_group_criterion.criterion_id,
+              campaign.name,
+              ad_group.name,
+              customer.id,
+              customer.descriptive_name,
+              metrics.impressions,
+              metrics.clicks,
+              metrics.cost_micros,
+              metrics.conversions,
+              metrics.ctr,
+              metrics.average_cpc
+            FROM keyword_view
+            WHERE segments.date DURING ${dateRange}
+              AND metrics.clicks > 0
+              AND ad_group_criterion.status = 'ENABLED'
+            ORDER BY metrics.average_cpc DESC
+            LIMIT ${limit}
+          `
+
+          const accountResults = await accountCustomer.query(query)
+
+          return accountResults.map(row => ({
+            keyword: row.ad_group_criterion?.keyword?.text || '',
+            matchType: String(row.ad_group_criterion?.keyword?.match_type || 'UNKNOWN'),
+            criterionId: String(row.ad_group_criterion?.criterion_id || ''),
+            campaign: row.campaign?.name || '',
+            adGroup: row.ad_group?.name || '',
+            accountId: String(row.customer?.id || customerId),
+            accountName: row.customer?.descriptive_name || '',
+            impressions: row.metrics?.impressions || 0,
+            clicks: row.metrics?.clicks || 0,
+            cost: (row.metrics?.cost_micros || 0) / 1_000_000,
+            conversions: row.metrics?.conversions || 0,
+            ctr: (row.metrics?.ctr || 0) * 100,
+            avgCpc: (row.metrics?.average_cpc || 0) / 1_000_000,
+            costPerConversion: row.metrics?.conversions > 0
+              ? (row.metrics?.cost_micros || 0) / row.metrics.conversions / 1_000_000
+              : 0,
+          }))
+        } catch (error) {
+          console.error(`Error fetching keywords for account ${customerId}:`, error)
+          return []
+        }
+      })
+    )
+
+    // Flatten all results
+    results.forEach(accountKeywords => {
+      allKeywords.push(...accountKeywords)
+    })
+
+    // Sort by avgCpc descending and return top N
+    return allKeywords
+      .sort((a, b) => (b.avgCpc || 0) - (a.avgCpc || 0))
+      .slice(0, limit)
+  } catch (error) {
+    console.error('Error fetching highest CPC keywords:', error)
     return []
   }
 }

@@ -1,4 +1,5 @@
 import { Sidebar } from '@/components/navigation/sidebar'
+import { ChatbotWidget } from '@/components/chat/chatbot-widget'
 
 export default function AppLayout({
   children,
@@ -32,6 +33,9 @@ export default function AppLayout({
           {children}
         </div>
       </main>
+
+      {/* AI Chatbot Assistant */}
+      <ChatbotWidget />
     </div>
   )
 }
