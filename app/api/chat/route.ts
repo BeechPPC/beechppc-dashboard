@@ -45,7 +45,11 @@ async function executeFunctionCall(functionName: string, args: Record<string, un
       }
 
       case 'get_account_metrics': {
-        const { customerId, dateFrom, dateTo, comparisonDateFrom, comparisonDateTo } = args
+        const customerId = args.customerId as string
+        const dateFrom = args.dateFrom as string | undefined
+        const dateTo = args.dateTo as string | undefined
+        const comparisonDateFrom = args.comparisonDateFrom as string | undefined
+        const comparisonDateTo = args.comparisonDateTo as string | undefined
 
         // Get current period metrics
         const metrics = await getAccountMetrics(
@@ -84,7 +88,7 @@ async function executeFunctionCall(functionName: string, args: Record<string, un
       }
 
       case 'get_conversion_actions': {
-        const { customerId } = args
+        const customerId = args.customerId as string
         const conversions = await getConversionActions(customerId)
         return {
           success: true,
@@ -94,7 +98,7 @@ async function executeFunctionCall(functionName: string, args: Record<string, un
       }
 
       case 'get_disapproved_ads': {
-        const { customerId } = args
+        const customerId = args.customerId as string
         const disapprovedAds = await getDisapprovedAds(customerId)
         return {
           success: true,
@@ -104,7 +108,11 @@ async function executeFunctionCall(functionName: string, args: Record<string, un
       }
 
       case 'generate_report': {
-        const { accountIds = [], templateType = 'daily', recipients, dateFrom, dateTo } = args
+        const accountIds = (args.accountIds as string[]) || []
+        const templateType = (args.templateType as string) || 'daily'
+        const recipients = args.recipients as string[]
+        const dateFrom = args.dateFrom as string | undefined
+        const dateTo = args.dateTo as string | undefined
 
         if (!recipients || recipients.length === 0) {
           return {
