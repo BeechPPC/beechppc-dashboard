@@ -18,11 +18,13 @@ import {
   Menu,
   X,
   ListCheck,
-  ChevronDown
+  ChevronDown,
+  MessageCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navigation = [
+  { name: 'Chat Assistant', href: '/chat', icon: MessageCircle },
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Clients', href: '/clients', icon: Users },
