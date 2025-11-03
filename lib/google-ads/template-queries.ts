@@ -281,8 +281,8 @@ export async function getHighestCpcKeywords(
             conversions: row.metrics?.conversions || 0,
             ctr: (row.metrics?.ctr || 0) * 100,
             avgCpc: (row.metrics?.average_cpc || 0) / 1_000_000,
-            costPerConversion: row.metrics?.conversions > 0
-              ? (row.metrics?.cost_micros || 0) / row.metrics.conversions / 1_000_000
+            costPerConversion: (row.metrics?.conversions || 0) > 0
+              ? (row.metrics?.cost_micros || 0) / (row.metrics?.conversions || 1) / 1_000_000
               : 0,
           }))
         } catch (error) {
