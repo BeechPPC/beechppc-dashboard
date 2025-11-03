@@ -120,16 +120,61 @@ export const CHAT_FUNCTIONS: FunctionTool[] = [
     input_schema: {
       type: 'object',
       properties: {
-        query: {
-          type: 'string',
-          description: 'The keyword or phrase to search for',
+        seedKeywords: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Array of seed keywords to generate ideas from',
         },
-        customerId: {
+        landingPageUrl: {
           type: 'string',
-          description: 'The Google Ads customer account ID to use for the search',
+          description: 'Optional landing page URL to extract keyword ideas from',
         },
       },
-      required: ['query', 'customerId'],
+      required: ['seedKeywords'],
+    },
+  },
+  {
+    name: 'get_campaign_performance',
+    description:
+      'Get detailed performance metrics for all campaigns in a Google Ads account. Returns campaign-level data including budget, spend, conversions, CTR, and conversion rate. Useful for identifying best/worst performing campaigns.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        customerId: {
+          type: 'string',
+          description: 'The Google Ads customer account ID (without dashes)',
+        },
+        dateRange: {
+          type: 'string',
+          enum: ['TODAY', 'YESTERDAY', 'LAST_7_DAYS', 'LAST_14_DAYS', 'LAST_30_DAYS', 'THIS_MONTH', 'LAST_MONTH'],
+          description: 'Date range for the metrics (default: LAST_7_DAYS)',
+        },
+      },
+      required: ['customerId'],
+    },
+  },
+  {
+    name: 'get_keyword_performance',
+    description:
+      'Get detailed performance metrics for keywords in a Google Ads account. Returns keyword-level data including match type, quality score, spend, conversions, and CTR. Useful for identifying high-performing or wasteful keywords.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        customerId: {
+          type: 'string',
+          description: 'The Google Ads customer account ID (without dashes)',
+        },
+        dateRange: {
+          type: 'string',
+          enum: ['TODAY', 'YESTERDAY', 'LAST_7_DAYS', 'LAST_14_DAYS', 'LAST_30_DAYS', 'THIS_MONTH', 'LAST_MONTH'],
+          description: 'Date range for the metrics (default: LAST_7_DAYS)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of keywords to return (default: 50)',
+        },
+      },
+      required: ['customerId'],
     },
   },
 ]

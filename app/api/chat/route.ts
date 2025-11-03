@@ -8,6 +8,8 @@ import {
   getConversionActions,
   getDisapprovedAds,
   getMccReportData,
+  getCampaignPerformance,
+  getKeywordPerformance,
 } from '@/lib/google-ads/client'
 import { sendEmail } from '@/lib/email/service'
 import { generateEmailTemplate } from '@/lib/email/template'
@@ -163,11 +165,69 @@ async function executeFunctionCall(functionName: string, args: Record<string, un
       }
 
       case 'search_keywords': {
-        // This would call the keyword research API endpoint
-        // For now, return a message that this feature requires the keyword research tool
+        const seedKeywords = args.seedKeywords as string[]
+        const landingPageUrl = args.landingPageUrl as string | undefined
+
+        try {
+          // Call the keyword research API endpoint
+          const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/keyword-research`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              seedKeywords,
+              landingPageUrl,
+              location: '2036', // Australia
+              language: '1000', // English
+            }),
+          })
+
+          const data = await response.json()
+
+          if (!response.ok) {
+            return {
+              success: false,
+              message: `Keyword research error: ${data.error || 'Unknown error'}`,
+            }
+          }
+
+          return {
+            success: true,
+            data: {
+              keywords: data.keywords?.slice(0, 20) || [], // Limit to top 20 for chat
+              groups: data.groups || [],
+            },
+            message: `Found ${data.keywords?.length || 0} keyword ideas organized into ${data.groups?.length || 0} themed groups`,
+          }
+        } catch (error) {
+          return {
+            success: false,
+            message: `Keyword research failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          }
+        }
+      }
+
+      case 'get_campaign_performance': {
+        const customerId = args.customerId as string
+        const dateRange = (args.dateRange as string) || 'LAST_7_DAYS'
+
+        const campaigns = await getCampaignPerformance(customerId, dateRange)
         return {
-          success: false,
-          message: 'Keyword research is available through the Automations > Keyword Research page',
+          success: true,
+          data: campaigns,
+          message: `Retrieved performance data for ${campaigns.length} campaigns`,
+        }
+      }
+
+      case 'get_keyword_performance': {
+        const customerId = args.customerId as string
+        const dateRange = (args.dateRange as string) || 'LAST_7_DAYS'
+        const limit = (args.limit as number) || 50
+
+        const keywords = await getKeywordPerformance(customerId, dateRange, limit)
+        return {
+          success: true,
+          data: keywords,
+          message: `Retrieved performance data for ${keywords.length} keywords`,
         }
       }
 
@@ -217,27 +277,60 @@ export async function POST(request: NextRequest) {
     // System prompt to guide Claude's behavior
     const systemPrompt = `You are a helpful Google Ads assistant for BeechPPC. You help users analyze their Google Ads account data, generate reports, and answer questions about their advertising performance.
 
-When users ask questions:
-- Use the available functions to fetch real data from their Google Ads accounts
-- Format responses in a clear, professional manner
+IMPORTANT INSTRUCTIONS:
+- Always use the available functions to fetch real data from their Google Ads accounts
+- Format responses in a clear, professional manner with proper structure
 - Include specific numbers and metrics when available
-- Provide actionable insights and recommendations
-- Be concise but thorough
+- Provide actionable insights and recommendations based on the data
+- Be concise but thorough - don't overwhelm with data, highlight key findings
+- When showing metrics, use tables or bullet points for clarity
+- Proactively suggest next steps or additional analysis
 
-Available data includes:
-- Account information and metrics (spend, conversions, clicks, impressions, CPC, cost per conversion)
-- Conversion tracking status
-- Disapproved ads and policy violations
-- Report generation and emailing
+AVAILABLE CAPABILITIES:
+1. Account Management:
+   - List all accounts with status and currency
+   - Get account metrics with date ranges and comparisons
 
-Current date: ${new Date().toLocaleDateString()}
+2. Campaign Analysis:
+   - View campaign performance (budget, spend, conversions, CTR)
+   - Identify best/worst performing campaigns
+   - Monitor budget pacing
 
-When referring to dates:
-- "Yesterday" means the most recent complete day
-- "This week" means the last 7 days
-- "Last week" means 7-14 days ago
+3. Keyword Insights:
+   - Analyze keyword performance (quality score, CTR, conversions)
+   - Find high-cost or low-performing keywords
+   - Research new keyword opportunities
 
-Always be helpful and proactive in suggesting next steps or additional analysis.`
+4. Quality Assurance:
+   - Check conversion tracking status
+   - Find disapproved ads and policy violations
+   - Monitor last conversion dates
+
+5. Reporting:
+   - Generate and email performance reports
+   - Create custom reports by account or date range
+
+ANALYSIS GUIDELINES:
+- When analyzing performance, always consider: ROAS/ROI, conversion rate, CPC trends
+- Flag issues like: no recent conversions, high spend with low ROI, disapproved ads, low quality scores
+- Provide context: compare to previous periods when possible
+- Suggest specific actions: pause campaigns, adjust bids, add negative keywords, etc.
+
+CURRENT CONTEXT:
+- Today's date: ${new Date().toLocaleDateString()}
+- Date range meanings:
+  * "Yesterday" = most recent complete day
+  * "This week" = last 7 days
+  * "Last 7 days" = LAST_7_DAYS
+  * "Last 30 days" = LAST_30_DAYS
+
+TONE:
+- Professional but friendly
+- Data-driven and analytical
+- Action-oriented with clear recommendations
+- Transparent about limitations
+
+Always be proactive in suggesting relevant follow-up questions or analysis the user might find valuable.`
 
     // Initial request to Claude with function calling
     let response = await client.messages.create({

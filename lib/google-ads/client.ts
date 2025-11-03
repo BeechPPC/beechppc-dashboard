@@ -186,6 +186,37 @@ export interface DisapprovedAd {
   policyTopicEntries: string[]
 }
 
+export interface CampaignPerformance {
+  id: string
+  name: string
+  status: string
+  budget: number
+  budgetType: string
+  cost: number
+  conversions: number
+  clicks: number
+  impressions: number
+  ctr: number
+  avgCpc: number
+  costPerConversion: number
+  conversionRate: number
+}
+
+export interface KeywordPerformance {
+  keyword: string
+  matchType: string
+  campaign: string
+  adGroup: string
+  cost: number
+  conversions: number
+  clicks: number
+  impressions: number
+  ctr: number
+  avgCpc: number
+  costPerConversion: number
+  qualityScore: number | null
+}
+
 /**
  * Get conversion actions and their last conversion dates for an account
  */
@@ -365,6 +396,133 @@ export async function getDisapprovedAds(customerId: string): Promise<Disapproved
     return disapprovedAds
   } catch (error) {
     console.error(`Error fetching disapproved ads for customer ${customerId}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Get campaign performance metrics for an account
+ */
+export async function getCampaignPerformance(
+  customerId: string,
+  dateRange: string = 'LAST_7_DAYS'
+): Promise<CampaignPerformance[]> {
+  try {
+    const accountCustomer = client.Customer({
+      customer_id: customerId,
+      refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
+      login_customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
+    })
+
+    const query = `
+      SELECT
+        campaign.id,
+        campaign.name,
+        campaign.status,
+        campaign_budget.amount_micros,
+        campaign_budget.period,
+        metrics.cost_micros,
+        metrics.conversions,
+        metrics.clicks,
+        metrics.impressions,
+        metrics.ctr,
+        metrics.average_cpc
+      FROM campaign
+      WHERE segments.date DURING ${dateRange}
+        AND campaign.status IN ('ENABLED', 'PAUSED')
+      ORDER BY metrics.cost_micros DESC
+    `
+
+    const results = await accountCustomer.query(query)
+
+    return results.map(row => {
+      const cost = (row.metrics?.cost_micros || 0) / 1_000_000
+      const conversions = row.metrics?.conversions || 0
+      const clicks = row.metrics?.clicks || 0
+      const impressions = row.metrics?.impressions || 0
+
+      return {
+        id: row.campaign?.id?.toString() || '',
+        name: row.campaign?.name || 'Unnamed Campaign',
+        status: String(row.campaign?.status || 'UNKNOWN'),
+        budget: (row.campaign_budget?.amount_micros || 0) / 1_000_000,
+        budgetType: String(row.campaign_budget?.period || 'DAILY'),
+        cost,
+        conversions,
+        clicks,
+        impressions,
+        ctr: (row.metrics?.ctr || 0) * 100,
+        avgCpc: (row.metrics?.average_cpc || 0) / 1_000_000,
+        costPerConversion: conversions > 0 ? cost / conversions : 0,
+        conversionRate: clicks > 0 ? (conversions / clicks) * 100 : 0,
+      }
+    })
+  } catch (error) {
+    console.error(`Error fetching campaign performance for customer ${customerId}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Get keyword performance metrics for an account
+ */
+export async function getKeywordPerformance(
+  customerId: string,
+  dateRange: string = 'LAST_7_DAYS',
+  limit: number = 50
+): Promise<KeywordPerformance[]> {
+  try {
+    const accountCustomer = client.Customer({
+      customer_id: customerId,
+      refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
+      login_customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
+    })
+
+    const query = `
+      SELECT
+        ad_group_criterion.keyword.text,
+        ad_group_criterion.keyword.match_type,
+        ad_group_criterion.quality_info.quality_score,
+        campaign.name,
+        ad_group.name,
+        metrics.cost_micros,
+        metrics.conversions,
+        metrics.clicks,
+        metrics.impressions,
+        metrics.ctr,
+        metrics.average_cpc
+      FROM keyword_view
+      WHERE segments.date DURING ${dateRange}
+        AND ad_group_criterion.status = 'ENABLED'
+        AND metrics.impressions > 0
+      ORDER BY metrics.cost_micros DESC
+      LIMIT ${limit}
+    `
+
+    const results = await accountCustomer.query(query)
+
+    return results.map(row => {
+      const cost = (row.metrics?.cost_micros || 0) / 1_000_000
+      const conversions = row.metrics?.conversions || 0
+      const clicks = row.metrics?.clicks || 0
+
+      return {
+        keyword: row.ad_group_criterion?.keyword?.text || '',
+        matchType: String(row.ad_group_criterion?.keyword?.match_type || 'UNKNOWN'),
+        campaign: row.campaign?.name || 'Unknown',
+        adGroup: row.ad_group?.name || 'Unknown',
+        cost,
+        conversions,
+        clicks,
+        impressions: row.metrics?.impressions || 0,
+        ctr: (row.metrics?.ctr || 0) * 100,
+        avgCpc: (row.metrics?.average_cpc || 0) / 1_000_000,
+        costPerConversion: conversions > 0 ? cost / conversions : 0,
+        qualityScore: row.ad_group_criterion?.quality_info?.quality_score || null,
+      }
+    })
+  } catch (error) {
+    console.error(`Error fetching keyword performance for customer ${customerId}:`, error)
     throw error
   }
 }
