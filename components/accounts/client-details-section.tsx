@@ -33,16 +33,40 @@ export function ClientDetailsSection({ accountId, accountName, currency }: Clien
 
   const loadDetails = async () => {
     setLoading(true)
+    
+    // Try to load from localStorage first (for instant display)
+    const storageKey = `client-details-${accountId}`
+    try {
+      const cached = localStorage.getItem(storageKey)
+      if (cached) {
+        const cachedDetails = JSON.parse(cached) as ClientDetails
+        setDetails(cachedDetails)
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error)
+    }
+
+    // Then try to load from API (which will use Redis if available)
     try {
       const response = await fetch(`/api/clients/${accountId}/details`)
       if (response.ok) {
         const data = await response.json()
         if (data.details) {
           setDetails(data.details)
+          // Update localStorage with API data
+          localStorage.setItem(storageKey, JSON.stringify(data.details))
+        } else {
+          // If API returns null, keep localStorage data if it exists
+          const cached = localStorage.getItem(storageKey)
+          if (cached) {
+            const cachedDetails = JSON.parse(cached) as ClientDetails
+            setDetails(cachedDetails)
+          }
         }
       }
     } catch (error) {
       console.error('Error loading client details:', error)
+      // Keep localStorage data if API fails
     } finally {
       setLoading(false)
     }
@@ -52,6 +76,19 @@ export function ClientDetailsSection({ accountId, accountName, currency }: Clien
     loadDetails()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountId])
+
+  // Sync details to localStorage whenever they change
+  useEffect(() => {
+    if (details) {
+      const storageKey = `client-details-${accountId}`
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(details))
+      } catch (error) {
+        console.error('Error saving details to localStorage:', error)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [details])
 
   const handleDetailsSaved = () => {
     setDialogOpen(false)

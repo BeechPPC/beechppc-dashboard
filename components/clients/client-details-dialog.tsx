@@ -97,6 +97,14 @@ export function ClientDetailsDialog({ open, onClose, accountId, accountName, cur
       })
 
       if (response.ok) {
+        // Save to localStorage as backup
+        const storageKey = `client-details-${accountId}`
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(details))
+        } catch (error) {
+          console.error('Error saving to localStorage:', error)
+        }
+        
         setSuccess('Client details saved successfully!')
         // Close dialog after a short delay to show success message
         setTimeout(() => {

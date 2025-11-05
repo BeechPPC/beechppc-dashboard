@@ -34,18 +34,54 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
   const loadNotes = async () => {
     setLoading(true)
     setError(null)
+    
+    // Try to load from localStorage first (for instant display)
+    const storageKey = `meeting-notes-${accountId}`
+    try {
+      const cached = localStorage.getItem(storageKey)
+      if (cached) {
+        const cachedNotes = JSON.parse(cached) as MeetingNote[]
+        setNotes(cachedNotes)
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error)
+    }
+
+    // Then try to load from API (which will use Redis if available)
     try {
       const response = await fetch(`/api/clients/${accountId}/meeting-notes`)
       if (response.ok) {
         const data = await response.json()
-        setNotes(data.notes || [])
+        const apiNotes = data.notes || []
+        
+        // Merge with localStorage (API takes priority)
+        if (apiNotes.length > 0) {
+          setNotes(apiNotes)
+          // Update localStorage with API data
+          localStorage.setItem(storageKey, JSON.stringify(apiNotes))
+        } else {
+          // If API returns empty, keep localStorage data if it exists
+          const cached = localStorage.getItem(storageKey)
+          if (cached) {
+            const cachedNotes = JSON.parse(cached) as MeetingNote[]
+            if (cachedNotes.length > 0) {
+              setNotes(cachedNotes)
+            }
+          }
+        }
       } else {
         const errorData = await response.json().catch(() => ({}))
-        setError(errorData.error || 'Failed to load meeting notes')
+        // Don't show error if we have cached data
+        if (!localStorage.getItem(storageKey)) {
+          setError(errorData.error || 'Failed to load meeting notes')
+        }
       }
     } catch (error) {
       console.error('Error loading meeting notes:', error)
-      setError('Failed to load meeting notes. Please check your connection.')
+      // Don't show error if we have cached data
+      if (!localStorage.getItem(storageKey)) {
+        setError('Failed to load meeting notes. Please check your connection.')
+      }
     } finally {
       setLoading(false)
     }
@@ -55,6 +91,19 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
     loadNotes()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountId])
+
+  // Sync notes to localStorage whenever they change
+  useEffect(() => {
+    if (notes.length > 0 || localStorage.getItem(`meeting-notes-${accountId}`)) {
+      const storageKey = `meeting-notes-${accountId}`
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(notes))
+      } catch (error) {
+        console.error('Error saving notes to localStorage:', error)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notes])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -77,13 +126,24 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
 
       if (response.ok) {
         const data = await response.json()
+        // Create new note from form data (API returns success with note object)
+        const newNote: MeetingNote = data.note || {
+          id: Date.now().toString(),
+          date: formData.date,
+          note: formData.note,
+          createdAt: new Date().toISOString(),
+        }
+        
+        // Update local state immediately
+        const updatedNotes = [...notes, newNote]
+        setNotes(updatedNotes)
+        
         setSuccess('Meeting note saved successfully!')
         setFormData({
           date: new Date().toISOString().split('T')[0],
           note: '',
         })
         setShowForm(false)
-        await loadNotes()
         // Clear success message after 3 seconds
         setTimeout(() => setSuccess(null), 3000)
       } else {
@@ -101,6 +161,14 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
   const handleDelete = async (noteId: string) => {
     if (!confirm('Are you sure you want to delete this meeting note?')) return
 
+    // Update local state immediately
+    const updatedNotes = notes.filter(note => note.id !== noteId)
+    setNotes(updatedNotes)
+    
+    // Update localStorage
+    const storageKey = `meeting-notes-${accountId}`
+    localStorage.setItem(storageKey, JSON.stringify(updatedNotes))
+
     try {
       const response = await fetch(
         `/api/clients/${accountId}/meeting-notes?noteId=${noteId}`,
@@ -110,10 +178,12 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
       )
 
       if (response.ok) {
-        loadNotes()
+        // Optionally reload from API to sync
+        await loadNotes()
       }
     } catch (error) {
       console.error('Error deleting meeting note:', error)
+      // Note still deleted from local state and localStorage
     }
   }
 
