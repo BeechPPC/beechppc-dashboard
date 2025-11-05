@@ -5,6 +5,8 @@ import { formatCurrency, calculatePercentageChange } from '@/lib/utils'
 import { Building2, TrendingUp, MousePointerClick, Eye, DollarSign, Target, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { ClientDetailsSection } from '@/components/accounts/client-details-section'
+import { MeetingNotes } from '@/components/accounts/meeting-notes'
 
 async function getAccountData(accountId: string) {
   try {
@@ -83,10 +85,25 @@ export default async function AccountDetailPage({
         </div>
       </div>
 
+      {/* Client Information Section */}
+      <ClientDetailsSection
+        accountId={account.id}
+        accountName={account.name}
+        currency={account.currency}
+      />
+
       {/* Performance Metrics */}
-      {yesterday ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Metrics</CardTitle>
+          <CardDescription>
+            Yesterday's performance compared to previous period
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {yesterday ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardDescription className="text-sm font-medium">
                 Spend
@@ -191,14 +208,17 @@ export default async function AccountDetailPage({
               </div>
             </CardContent>
           </Card>
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted">No performance data available for this account</p>
-          </CardContent>
-        </Card>
-      )}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted">
+              <p>No performance data available for this account</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Meeting Notes Section */}
+      <MeetingNotes accountId={account.id} />
     </div>
   )
 }
