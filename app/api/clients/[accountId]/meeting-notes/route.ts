@@ -29,8 +29,16 @@ export async function GET(
     return NextResponse.json({ notes: [] })
   } catch (error) {
     console.error('Error fetching meeting notes:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    // Check if it's a Redis connection error
+    if (errorMessage.includes('Redis') || errorMessage.includes('not configured')) {
+      return NextResponse.json(
+        { error: 'Database connection failed. Please check your Redis configuration.', notes: [] },
+        { status: 500 }
+      )
+    }
     return NextResponse.json(
-      { error: 'Failed to fetch meeting notes' },
+      { error: `Failed to fetch meeting notes: ${errorMessage}`, notes: [] },
       { status: 500 }
     )
   }
@@ -74,8 +82,16 @@ export async function POST(
     return NextResponse.json({ success: true, note: newNote })
   } catch (error) {
     console.error('Error saving meeting note:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    // Check if it's a Redis connection error
+    if (errorMessage.includes('Redis') || errorMessage.includes('not configured')) {
+      return NextResponse.json(
+        { error: 'Database connection failed. Please check your Redis configuration.' },
+        { status: 500 }
+      )
+    }
     return NextResponse.json(
-      { error: 'Failed to save meeting note' },
+      { error: `Failed to save meeting note: ${errorMessage}` },
       { status: 500 }
     )
   }

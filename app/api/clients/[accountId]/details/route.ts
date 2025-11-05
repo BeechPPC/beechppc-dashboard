@@ -19,8 +19,16 @@ export async function GET(
     return NextResponse.json({ details: null })
   } catch (error) {
     console.error('Error fetching client details:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    // Check if it's a Redis connection error
+    if (errorMessage.includes('Redis') || errorMessage.includes('not configured')) {
+      return NextResponse.json(
+        { error: 'Database connection failed. Please check your Redis configuration.', details: null },
+        { status: 500 }
+      )
+    }
     return NextResponse.json(
-      { error: 'Failed to fetch client details' },
+      { error: `Failed to fetch client details: ${errorMessage}`, details: null },
       { status: 500 }
     )
   }
@@ -43,8 +51,16 @@ export async function POST(
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error saving client details:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    // Check if it's a Redis connection error
+    if (errorMessage.includes('Redis') || errorMessage.includes('not configured')) {
+      return NextResponse.json(
+        { error: 'Database connection failed. Please check your Redis configuration.' },
+        { status: 500 }
+      )
+    }
     return NextResponse.json(
-      { error: 'Failed to save client details' },
+      { error: `Failed to save client details: ${errorMessage}` },
       { status: 500 }
     )
   }

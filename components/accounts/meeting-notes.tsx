@@ -24,6 +24,8 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     note: '',
@@ -31,14 +33,19 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
 
   const loadNotes = async () => {
     setLoading(true)
+    setError(null)
     try {
       const response = await fetch(`/api/clients/${accountId}/meeting-notes`)
       if (response.ok) {
         const data = await response.json()
         setNotes(data.notes || [])
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        setError(errorData.error || 'Failed to load meeting notes')
       }
     } catch (error) {
       console.error('Error loading meeting notes:', error)
+      setError('Failed to load meeting notes. Please check your connection.')
     } finally {
       setLoading(false)
     }
@@ -51,9 +58,14 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.note.trim()) return
+    if (!formData.note.trim()) {
+      setError('Please enter a note')
+      return
+    }
 
     setSaving(true)
+    setError(null)
+    setSuccess(null)
     try {
       const response = await fetch(`/api/clients/${accountId}/meeting-notes`, {
         method: 'POST',
@@ -64,15 +76,23 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
       })
 
       if (response.ok) {
+        const data = await response.json()
+        setSuccess('Meeting note saved successfully!')
         setFormData({
           date: new Date().toISOString().split('T')[0],
           note: '',
         })
         setShowForm(false)
-        loadNotes()
+        await loadNotes()
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(null), 3000)
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        setError(errorData.error || 'Failed to save meeting note. Please try again.')
       }
     } catch (error) {
       console.error('Error saving meeting note:', error)
+      setError('Failed to save meeting note. Please check your connection and try again.')
     } finally {
       setSaving(false)
     }
@@ -127,6 +147,20 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Success Message */}
+        {success && (
+          <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
+            {success}
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Add Note Form */}
         {showForm && (
           <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg bg-muted/50">

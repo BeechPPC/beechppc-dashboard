@@ -33,6 +33,8 @@ interface ClientDetailsDialogProps {
 export function ClientDetailsDialog({ open, onClose, accountId, accountName, currency }: ClientDetailsDialogProps) {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [details, setDetails] = useState<ClientDetails>({
     businessName: accountName,
     url: '',
@@ -56,6 +58,7 @@ export function ClientDetailsDialog({ open, onClose, accountId, accountName, cur
 
   const loadClientDetails = async () => {
     setLoading(true)
+    setError(null)
     try {
       const response = await fetch(`/api/clients/${accountId}/details`)
       if (response.ok) {
@@ -63,16 +66,27 @@ export function ClientDetailsDialog({ open, onClose, accountId, accountName, cur
         if (data.details) {
           setDetails({ ...details, ...data.details })
         }
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        setError(errorData.error || 'Failed to load client details')
       }
     } catch (error) {
       console.error('Error loading client details:', error)
+      setError('Failed to load client details. Please check your connection.')
     } finally {
       setLoading(false)
     }
   }
 
   const handleSave = async () => {
+    if (!details.businessName.trim()) {
+      setError('Business name is required')
+      return
+    }
+
     setSaving(true)
+    setError(null)
+    setSuccess(null)
     try {
       const response = await fetch(`/api/clients/${accountId}/details`, {
         method: 'POST',
@@ -83,12 +97,19 @@ export function ClientDetailsDialog({ open, onClose, accountId, accountName, cur
       })
 
       if (response.ok) {
-        onClose()
+        setSuccess('Client details saved successfully!')
+        // Close dialog after a short delay to show success message
+        setTimeout(() => {
+          onClose()
+          setSuccess(null)
+        }, 1000)
       } else {
-        console.error('Failed to save client details')
+        const errorData = await response.json().catch(() => ({}))
+        setError(errorData.error || 'Failed to save client details. Please try again.')
       }
     } catch (error) {
       console.error('Error saving client details:', error)
+      setError('Failed to save client details. Please check your connection and try again.')
     } finally {
       setSaving(false)
     }
@@ -114,6 +135,19 @@ export function ClientDetailsDialog({ open, onClose, accountId, accountName, cur
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Success Message */}
+            {success && (
+              <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
+                {success}
+              </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+                {error}
+              </div>
+            )}
             {/* Business Name */}
             <div className="space-y-2">
               <Label htmlFor="businessName">Business Name *</Label>
