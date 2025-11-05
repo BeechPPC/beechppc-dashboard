@@ -19,9 +19,12 @@ import {
   X,
   ListCheck,
   ChevronDown,
-  MessageCircle
+  MessageCircle,
+  Loader2,
+  Building2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { GoogleAdsAccount } from '@/lib/google-ads/types'
 
 const navigation = [
   { name: 'Chat Assistant', href: '/chat', icon: MessageCircle },
@@ -40,10 +43,6 @@ const automations = [
   { name: 'Alert Notifications', href: '/automations/alerts', icon: Bell },
 ]
 
-const accounts = [
-  { name: 'All Accounts', href: '/accounts', icon: Bell, comingSoon: true },
-]
-
 export function Sidebar() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -51,6 +50,9 @@ export function Sidebar() {
   const [accountsOpen, setAccountsOpen] = useState(true)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [companyName, setCompanyName] = useState<string>('Beech PPC AI')
+  const [accounts, setAccounts] = useState<GoogleAdsAccount[]>([])
+  const [accountsLoading, setAccountsLoading] = useState(true)
+  const [accountsError, setAccountsError] = useState<string | null>(null)
 
   // Load branding settings
   useEffect(() => {
@@ -71,6 +73,33 @@ export function Sidebar() {
       }
     }
     loadBranding()
+  }, [])
+
+  // Load accounts from MCC
+  useEffect(() => {
+    const loadAccounts = async () => {
+      setAccountsLoading(true)
+      setAccountsError(null)
+      try {
+        const response = await fetch('/api/google-ads/accounts')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.accounts) {
+            setAccounts(data.accounts)
+          } else {
+            setAccountsError(data.error || 'Failed to load accounts')
+          }
+        } else {
+          setAccountsError('Failed to fetch accounts')
+        }
+      } catch (error) {
+        console.error('Error loading accounts:', error)
+        setAccountsError('Error loading accounts')
+      } finally {
+        setAccountsLoading(false)
+      }
+    }
+    loadAccounts()
   }, [])
 
   return (
@@ -209,12 +238,46 @@ export function Sidebar() {
             "space-y-1 overflow-hidden transition-all duration-200",
             accountsOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
           )}>
-            {accounts.map((item) => {
-              const isActive = pathname === item.href
+            {/* All Accounts Link */}
+            <Link
+              href="/accounts"
+              onClick={() => setMobileMenuOpen(false)}
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors relative',
+                pathname === '/accounts'
+                  ? 'bg-primary text-white'
+                  : 'text-muted hover:bg-primary-light hover:text-foreground'
+              )}
+            >
+              <Users className="h-5 w-5" />
+              <span className="flex-1">All Accounts</span>
+            </Link>
+
+            {/* Loading State */}
+            {accountsLoading && (
+              <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading accounts...</span>
+              </div>
+            )}
+
+            {/* Error State */}
+            {accountsError && !accountsLoading && (
+              <div className="px-3 py-2 text-xs text-red-600">
+                {accountsError}
+              </div>
+            )}
+
+            {/* Individual Account Links */}
+            {!accountsLoading && !accountsError && accounts.length > 0 && (
+              <>
+                {accounts.map((account) => {
+                  const accountPath = `/accounts/${account.id}`
+                  const isActive = pathname === accountPath
               return (
                 <Link
-                  key={item.name}
-                  href={item.href}
+                      key={account.id}
+                      href={accountPath}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors relative',
@@ -223,16 +286,22 @@ export function Sidebar() {
                       : 'text-muted hover:bg-primary-light hover:text-foreground'
                   )}
                 >
-                  <item.icon className="h-5 w-5" />
-                  <span className="flex-1">{item.name}</span>
-                  {item.comingSoon && (
-                    <span className="text-xs bg-primary-dark text-white px-2 py-0.5 rounded-full">
-                      Soon
+                      <Building2 className="h-5 w-5" />
+                      <span className="flex-1 truncate" title={account.name}>
+                        {account.name}
                     </span>
-                  )}
                 </Link>
               )
             })}
+              </>
+            )}
+
+            {/* No Accounts State */}
+            {!accountsLoading && !accountsError && accounts.length === 0 && (
+              <div className="px-3 py-2 text-xs text-muted">
+                No accounts found
+              </div>
+            )}
           </div>
         </div>
       </nav>

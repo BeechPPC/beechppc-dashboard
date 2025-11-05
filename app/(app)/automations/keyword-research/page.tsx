@@ -197,6 +197,7 @@ export default function KeywordResearchPage() {
                 <option value="2840">United States</option>
                 <option value="2826">United Kingdom</option>
                 <option value="2124">Canada</option>
+                <option value="2276">Germany</option>
               </select>
             </div>
 
