@@ -171,17 +171,30 @@ export function generateTemplateEmail(
     }
 
     @media only screen and (max-width: 600px) {
-      table {
-        font-size: 12px !important;
+      .container {
+        padding: 5px !important;
       }
-      th, td {
-        padding: 8px !important;
+      table {
+        font-size: 10px !important;
+      }
+      th {
+        padding: 6px 4px !important;
+        font-size: 10px !important;
+      }
+      td {
+        padding: 6px 4px !important;
+        font-size: 10px !important;
       }
       h1 {
-        font-size: 24px !important;
+        font-size: 22px !important;
       }
       h2 {
-        font-size: 18px !important;
+        font-size: 16px !important;
+      }
+      /* Make tables horizontally scrollable on very small screens */
+      .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
       }
     }
   </style>
@@ -213,17 +226,19 @@ export function generateTemplateEmail(
     </div>
 
     <!-- Data Table -->
-    <div style="background-color: #fff; padding: 30px; border-radius: 0 0 8px 8px;">
-      <table style="width: 100%; border-collapse: collapse; background-color: #fff;">
-        <thead>
-          <tr>
-            ${tableHeaders}
-          </tr>
-        </thead>
-        <tbody>
-          ${tableRows}
-        </tbody>
-      </table>
+    <div style="background-color: #fff; padding: 15px; border-radius: 0 0 8px 8px;">
+      <div class="table-container" style="overflow-x: auto;">
+        <table style="width: 100%; min-width: 500px; border-collapse: collapse; background-color: #fff;">
+          <thead>
+            <tr>
+              ${tableHeaders}
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Footer -->
