@@ -38,7 +38,7 @@ A modern Next.js 14 web dashboard for managing Google Ads MCC (My Client Center)
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/BeechPPC/Beech-PPC-AI-Agent.git
+git clone https://github.com/BeechPPC/beechppc-dashboard.git
 cd beechppc-dashboard
 ```
 
@@ -177,7 +177,7 @@ The dashboard uses Beech PPC's brand colors:
 
 ## Support
 
-For issues or questions, please open an issue on [GitHub](https://github.com/BeechPPC/Beech-PPC-AI-Agent/issues).
+For issues or questions, please open an issue on [GitHub](https://github.com/BeechPPC/beechppc-dashboard/issues).
 
 ## License
 
