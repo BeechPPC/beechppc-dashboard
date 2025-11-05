@@ -29,7 +29,7 @@ function generateSearchTermsRows(data: SearchTermData[]): string {
   }
 
   return data.map(item => `
-    <tr>
+    <tr class="desktop-row">
       <td style="padding: 12px; border-bottom: 1px solid #fde68a;">${item.searchTerm}</td>
       <td style="padding: 12px; border-bottom: 1px solid #fde68a;">${item.campaign}</td>
       <td style="padding: 12px; border-bottom: 1px solid #fde68a;">${item.adGroup}</td>
@@ -38,6 +38,46 @@ function generateSearchTermsRows(data: SearchTermData[]): string {
       <td style="padding: 12px; border-bottom: 1px solid #fde68a; text-align: right;">${formatPercentage(item.ctr)}</td>
       <td style="padding: 12px; border-bottom: 1px solid #fde68a; text-align: right;">${formatCurrency(item.cost)}</td>
     </tr>
+  `).join('')
+}
+
+/**
+ * Generate mobile cards for search terms report
+ */
+function generateSearchTermsCards(data: SearchTermData[]): string {
+  if (data.length === 0) {
+    return '<div style="text-align: center; padding: 20px; color: #666;">No search terms found matching criteria</div>'
+  }
+
+  return data.map(item => `
+    <div class="mobile-card" style="display: none; background-color: #fefce8; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #f59e0b;">
+      <div style="margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #fde68a;">
+        <strong style="display: block; color: #111827; font-size: 14px; margin-bottom: 3px;">${item.searchTerm}</strong>
+        <div style="color: #6b7280; font-size: 10px;">${item.campaign} › ${item.adGroup}</div>
+      </div>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
+        <tr>
+          <td style="padding: 4px 0; width: 50%;">
+            <div style="color: #6b7280; font-size: 10px;">Impressions</div>
+            <div style="color: #111827; font-size: 14px; font-weight: 600;">${formatNumber(item.impressions)}</div>
+          </td>
+          <td style="padding: 4px 0; width: 50%;">
+            <div style="color: #6b7280; font-size: 10px;">Clicks</div>
+            <div style="color: #111827; font-size: 14px; font-weight: 600;">${item.clicks}</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; width: 50%;">
+            <div style="color: #6b7280; font-size: 10px;">CTR</div>
+            <div style="color: #111827; font-size: 14px; font-weight: 600;">${formatPercentage(item.ctr)}</div>
+          </td>
+          <td style="padding: 4px 0; width: 50%;">
+            <div style="color: #6b7280; font-size: 10px;">Cost</div>
+            <div style="color: #111827; font-size: 14px; font-weight: 600;">${formatCurrency(item.cost)}</div>
+          </td>
+        </tr>
+      </table>
+    </div>
   `).join('')
 }
 
@@ -102,6 +142,7 @@ export function generateTemplateEmail(
 
   let tableHeaders = ''
   let tableRows = ''
+  let mobileCards = ''
 
   // Generate appropriate table based on template type
   switch (template.type) {
@@ -116,6 +157,7 @@ export function generateTemplateEmail(
         <th style="padding: 12px; background-color: #fef3c7; border-bottom: 2px solid #f59e0b; text-align: right;">Cost</th>
       `
       tableRows = generateSearchTermsRows(data as SearchTermData[])
+      mobileCards = generateSearchTermsCards(data as SearchTermData[])
       break
 
     case 'ADS':
@@ -129,6 +171,7 @@ export function generateTemplateEmail(
         <th style="padding: 12px; background-color: #fef3c7; border-bottom: 2px solid #f59e0b; text-align: right;">Cost</th>
       `
       tableRows = generateAdsRows(data as AdData[])
+      mobileCards = generateSearchTermsCards(data as SearchTermData[]) // Simplified for now
       break
 
     case 'KEYWORDS':
@@ -143,6 +186,7 @@ export function generateTemplateEmail(
         <th style="padding: 12px; background-color: #fef3c7; border-bottom: 2px solid #f59e0b; text-align: right;">Cost/Conv</th>
       `
       tableRows = generateKeywordsRows(data as KeywordData[])
+      mobileCards = generateSearchTermsCards(data as SearchTermData[]) // Simplified for now
       break
   }
 
@@ -174,27 +218,25 @@ export function generateTemplateEmail(
       .container {
         padding: 5px !important;
       }
-      table {
-        font-size: 10px !important;
-      }
-      th {
-        padding: 6px 4px !important;
-        font-size: 10px !important;
-      }
-      td {
-        padding: 6px 4px !important;
-        font-size: 10px !important;
-      }
       h1 {
         font-size: 22px !important;
       }
       h2 {
         font-size: 16px !important;
       }
-      /* Make tables horizontally scrollable on very small screens */
+      /* Hide desktop table on mobile */
       .table-container {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
+        display: none !important;
+      }
+      .desktop-row {
+        display: none !important;
+      }
+      /* Show mobile cards */
+      .mobile-card {
+        display: block !important;
+      }
+      .mobile-cards-container {
+        display: block !important;
       }
     }
   </style>
@@ -227,6 +269,7 @@ export function generateTemplateEmail(
 
     <!-- Data Table -->
     <div style="background-color: #fff; padding: 15px; border-radius: 0 0 8px 8px;">
+      <!-- Desktop Table View -->
       <div class="table-container" style="overflow-x: auto;">
         <table style="width: 100%; min-width: 500px; border-collapse: collapse; background-color: #fff;">
           <thead>
@@ -238,6 +281,11 @@ export function generateTemplateEmail(
             ${tableRows}
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Card View -->
+      <div class="mobile-cards-container" style="display: none;">
+        ${mobileCards}
       </div>
     </div>
 

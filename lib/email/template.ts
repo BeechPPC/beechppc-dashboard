@@ -16,24 +16,60 @@ export function generateEmailTemplate(reportData: AccountPerformance[], reportDa
   const accountsHtml = reportData
     .map(
       (account) => `
-    <tr>
+    <tr class="desktop-row">
       <td class="account-cell" style="padding: 12px; border-bottom: 1px solid #fde68a;">
         <strong class="account-name" style="display: block; margin-bottom: 4px;">${account.name}</strong>
         <span class="account-id" style="color: #6b7280; font-size: 12px; display: block;">ID: ${account.id}</span>
       </td>
       <td class="data-cell" style="padding: 12px; border-bottom: 1px solid #fde68a; text-align: right; white-space: nowrap;">
-        <span class="mobile-label" style="display: none; color: #6b7280; font-size: 11px; font-weight: 500;">Spend: </span>${formatCurrency(account.yesterday.cost, account.currency)}
+        ${formatCurrency(account.yesterday.cost, account.currency)}
       </td>
       <td class="data-cell" style="padding: 12px; border-bottom: 1px solid #fde68a; text-align: right; white-space: nowrap;">
-        <span class="mobile-label" style="display: none; color: #6b7280; font-size: 11px; font-weight: 500;">Conv: </span>${Math.round(account.yesterday.conversions)}
+        ${Math.round(account.yesterday.conversions)}
       </td>
       <td class="data-cell" style="padding: 12px; border-bottom: 1px solid #fde68a; text-align: right; white-space: nowrap;">
-        <span class="mobile-label" style="display: none; color: #6b7280; font-size: 11px; font-weight: 500;">Clicks: </span>${formatNumber(account.yesterday.clicks)}
+        ${formatNumber(account.yesterday.clicks)}
       </td>
       <td class="data-cell" style="padding: 12px; border-bottom: 1px solid #fde68a; text-align: right; white-space: nowrap;">
-        <span class="mobile-label" style="display: none; color: #6b7280; font-size: 11px; font-weight: 500;">Impr: </span>${formatNumber(account.yesterday.impressions)}
+        ${formatNumber(account.yesterday.impressions)}
       </td>
     </tr>
+  `
+    )
+    .join('')
+
+  // Mobile card layout
+  const mobileCardsHtml = reportData
+    .map(
+      (account) => `
+    <div class="mobile-card" style="display: none; background-color: #fefce8; border-radius: 8px; padding: 15px; margin-bottom: 12px; border-left: 4px solid #f59e0b;">
+      <div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #fde68a;">
+        <strong style="display: block; color: #111827; font-size: 15px; margin-bottom: 4px;">${account.name}</strong>
+        <span style="color: #6b7280; font-size: 11px;">ID: ${account.id}</span>
+      </div>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 6px 0; width: 50%;">
+            <div style="color: #6b7280; font-size: 11px; margin-bottom: 2px;">Spend</div>
+            <div style="color: #111827; font-size: 16px; font-weight: bold;">${formatCurrency(account.yesterday.cost, account.currency)}</div>
+          </td>
+          <td style="padding: 6px 0; width: 50%;">
+            <div style="color: #6b7280; font-size: 11px; margin-bottom: 2px;">Conversions</div>
+            <div style="color: #111827; font-size: 16px; font-weight: bold;">${Math.round(account.yesterday.conversions)}</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 6px 0; width: 50%;">
+            <div style="color: #6b7280; font-size: 11px; margin-bottom: 2px;">Clicks</div>
+            <div style="color: #111827; font-size: 14px; font-weight: 600;">${formatNumber(account.yesterday.clicks)}</div>
+          </td>
+          <td style="padding: 6px 0; width: 50%;">
+            <div style="color: #6b7280; font-size: 11px; margin-bottom: 2px;">Impressions</div>
+            <div style="color: #111827; font-size: 14px; font-weight: 600;">${formatNumber(account.yesterday.impressions)}</div>
+          </td>
+        </tr>
+      </table>
+    </div>
   `
     )
     .join('')
@@ -79,45 +115,26 @@ export function generateEmailTemplate(reportData: AccountPerformance[], reportDa
         margin-bottom: 10px !important;
         padding: 12px !important;
       }
-      table {
-        font-size: 11px !important;
-        width: 100% !important;
-      }
-      /* Make table scrollable horizontally */
+      /* Hide desktop table on mobile */
       .table-container {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        margin: 0 -5px !important;
-      }
-      th {
-        padding: 8px 6px !important;
-        font-size: 10px !important;
-      }
-      td {
-        padding: 8px 6px !important;
-        font-size: 11px !important;
-      }
-      .account-cell {
-        min-width: 120px !important;
-      }
-      .data-cell {
-        min-width: 70px !important;
-        white-space: nowrap !important;
-      }
-      .mobile-label {
         display: none !important;
+      }
+      .desktop-row {
+        display: none !important;
+      }
+      /* Show mobile cards */
+      .mobile-card {
+        display: block !important;
+      }
+      .mobile-cards-container {
+        display: block !important;
       }
       h1 {
         font-size: 22px !important;
       }
       h2 {
         font-size: 16px !important;
-      }
-      .account-name {
-        font-size: 13px !important;
-      }
-      .account-id {
-        font-size: 10px !important;
+        margin-bottom: 12px !important;
       }
     }
   </style>
@@ -157,6 +174,8 @@ export function generateEmailTemplate(reportData: AccountPerformance[], reportDa
     <!-- Account Performance Table -->
     <div style="background-color: #fff; padding: 15px; border-radius: 0 0 8px 8px;">
       <h2 style="margin: 0 0 15px 10px; color: #111827; font-size: 20px; font-weight: 600;">Account Performance</h2>
+
+      <!-- Desktop Table View -->
       <div class="table-container" style="overflow-x: auto;">
         <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #fff;">
           <thead>
@@ -172,6 +191,11 @@ export function generateEmailTemplate(reportData: AccountPerformance[], reportDa
             ${accountsHtml}
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Card View -->
+      <div class="mobile-cards-container" style="display: none;">
+        ${mobileCardsHtml}
       </div>
     </div>
 
