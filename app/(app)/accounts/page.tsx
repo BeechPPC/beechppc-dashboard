@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getCustomerAccounts, getMccReportData } from '@/lib/google-ads/client'
 import { formatCurrency } from '@/lib/utils'
-import { Building2, TrendingUp, MousePointerClick, Eye, DollarSign, Target } from 'lucide-react'
+import { Building2, MousePointerClick, Eye, DollarSign, Target } from 'lucide-react'
 import Link from 'next/link'
 
 async function getAccountsData() {

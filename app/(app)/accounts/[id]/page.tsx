@@ -97,7 +97,7 @@ export default async function AccountDetailPage({
         <CardHeader>
           <CardTitle>Performance Metrics</CardTitle>
           <CardDescription>
-            Yesterday's performance compared to previous period
+            Yesterday&apos;s performance compared to previous period
           </CardDescription>
         </CardHeader>
         <CardContent>

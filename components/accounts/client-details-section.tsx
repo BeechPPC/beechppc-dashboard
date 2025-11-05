@@ -31,10 +31,6 @@ export function ClientDetailsSection({ accountId, accountName, currency }: Clien
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  useEffect(() => {
-    loadDetails()
-  }, [accountId])
-
   const loadDetails = async () => {
     setLoading(true)
     try {
@@ -51,6 +47,11 @@ export function ClientDetailsSection({ accountId, accountName, currency }: Clien
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadDetails()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId])
 
   const handleDetailsSaved = () => {
     setDialogOpen(false)
@@ -229,7 +230,7 @@ export function ClientDetailsSection({ accountId, accountName, currency }: Clien
             <div className="text-center py-8 text-muted">
               <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No client details added yet</p>
-              <p className="text-sm mt-1">Click "Edit" to add client information</p>
+              <p className="text-sm mt-1">Click &quot;Edit&quot; to add client information</p>
             </div>
           )}
         </CardContent>
