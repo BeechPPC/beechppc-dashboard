@@ -22,15 +22,16 @@ export async function getRedisClient() {
     return redis
   }
 
-  // If not configured, throw error
+  // If not configured, return null (caller should use fallback)
   if (!isRedisConfigured) {
-    throw new Error('Redis is not configured. Set REDIS_URL environment variable.')
+    return null
   }
 
   // Prevent connection spam
   const now = Date.now()
   if (now - lastConnectionAttempt < CONNECTION_RETRY_DELAY && !redisConnecting) {
-    throw new Error('Redis connection retry delay in effect')
+    console.warn('Redis connection retry delay in effect, returning null')
+    return null
   }
 
   // If already connecting, wait for that attempt
@@ -61,8 +62,9 @@ export async function getRedisClient() {
       redis = client
       return client
     } catch (error) {
-      console.error('Failed to connect to Redis:', error)
-      throw error
+      console.warn('Failed to connect to Redis, using fallback storage:', error)
+      redis = null
+      return null
     } finally {
       redisConnecting = null
     }
