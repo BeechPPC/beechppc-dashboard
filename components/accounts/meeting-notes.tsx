@@ -29,10 +29,6 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
     note: '',
   })
 
-  useEffect(() => {
-    loadNotes()
-  }, [accountId])
-
   const loadNotes = async () => {
     setLoading(true)
     try {
@@ -47,6 +43,11 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadNotes()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -188,7 +189,7 @@ export function MeetingNotes({ accountId }: MeetingNotesProps) {
           <div className="text-center py-8 text-muted">
             <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No meeting notes yet</p>
-            <p className="text-sm mt-1">Click "Add Note" to record your first meeting</p>
+            <p className="text-sm mt-1">Click &quot;Add Note&quot; to record your first meeting</p>
           </div>
         ) : (
           <div className="space-y-4">
