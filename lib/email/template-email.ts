@@ -152,7 +152,39 @@ export function generateTemplateEmail(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light only">
+  <meta name="supported-color-schemes" content="light">
   <title>${template.name}</title>
+  <style>
+    /* Prevent email clients from changing colors */
+    :root {
+      color-scheme: light only;
+      supported-color-schemes: light;
+    }
+
+    /* Force light mode colors and prevent dark mode */
+    @media (prefers-color-scheme: dark) {
+      body, .container, div, table, th, td, p, h1, h2, span, strong {
+        background-color: inherit !important;
+        color: inherit !important;
+      }
+    }
+
+    @media only screen and (max-width: 600px) {
+      table {
+        font-size: 12px !important;
+      }
+      th, td {
+        padding: 8px !important;
+      }
+      h1 {
+        font-size: 24px !important;
+      }
+      h2 {
+        font-size: 18px !important;
+      }
+    }
+  </style>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #fefce8;">
   <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
@@ -200,24 +232,6 @@ export function generateTemplateEmail(
       <p style="margin: 5px 0 0 0;">Generated on ${new Date().toLocaleString('en-AU', { timeZone: 'Australia/Melbourne' })}</p>
     </div>
   </div>
-
-  <!-- Mobile Responsive Styles -->
-  <style>
-    @media only screen and (max-width: 600px) {
-      table {
-        font-size: 12px !important;
-      }
-      th, td {
-        padding: 8px !important;
-      }
-      h1 {
-        font-size: 24px !important;
-      }
-      h2 {
-        font-size: 18px !important;
-      }
-    }
-  </style>
 </body>
 </html>
   `.trim()

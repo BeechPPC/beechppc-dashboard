@@ -15,8 +15,24 @@ export function generateAlertEmail(triggers: AlertTrigger[]): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light only">
+  <meta name="supported-color-schemes" content="light">
   <title>Google Ads Alert Notification</title>
   <style>
+    /* Prevent email clients from changing colors */
+    :root {
+      color-scheme: light only;
+      supported-color-schemes: light;
+    }
+
+    /* Force light mode colors and prevent dark mode */
+    @media (prefers-color-scheme: dark) {
+      body, .container, div, table, th, td, p, h1, h2, h3, span, strong {
+        background-color: inherit !important;
+        color: inherit !important;
+      }
+    }
+
     body {
       margin: 0;
       padding: 0;
