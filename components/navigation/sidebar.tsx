@@ -36,7 +36,7 @@ const navigation = [
 ]
 
 const automations = [
-  { name: 'Keyword Research', href: '/automations/keyword-research', icon: Search, comingSoon: true },
+  { name: 'Keyword Research', href: '/automations/keyword-research', icon: Search, comingSoon: false },
   { name: 'Competitor Monitoring', href: '/automations/competitor-monitoring', icon: TrendingUp, comingSoon: true },
   { name: 'Budget Management', href: '/automations/budget-management', icon: DollarSign, comingSoon: true },
   { name: 'Copywriting', href: '/automations/copywriting', icon: PenTool, comingSoon: true },

@@ -471,12 +471,13 @@ export default function ReportsPage() {
                 <label className="block text-sm font-medium mb-2">
                   Report Template
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {[
                     { id: 'executive', label: 'Executive Summary' },
                     { id: 'detailed', label: 'Detailed Performance' },
                     { id: 'auction', label: 'Auction Insights Focus' },
                     { id: 'keyword', label: 'Keyword Deep Dive' },
+                    { id: 'custom', label: 'Custom Report' },
                   ].map((template) => (
                     <Button
                       key={template.id}

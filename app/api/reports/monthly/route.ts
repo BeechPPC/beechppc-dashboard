@@ -4,6 +4,7 @@ import { generateMonthlyReportTemplate, type MonthlyReportData } from '@/lib/ema
 import { generateExecutiveSummaryTemplate } from '@/lib/email/templates/executive-summary'
 import { generateKeywordDeepDiveTemplate } from '@/lib/email/templates/keyword-deep-dive'
 import { generateAuctionInsightsTemplate } from '@/lib/email/templates/auction-insights'
+import { generateCustomReportTemplate } from '@/lib/email/templates/custom-report'
 import { sendEmail } from '@/lib/email/service'
 import { storeReport } from '@/lib/reports/storage'
 import type { CampaignPerformance, KeywordPerformance } from '@/lib/google-ads/client'
@@ -178,6 +179,10 @@ export async function POST(request: Request) {
         case 'auction':
           emailHtml = generateAuctionInsightsTemplate(reportData)
           templateName = 'Auction Insights Focus'
+          break
+        case 'custom':
+          emailHtml = generateCustomReportTemplate(reportData, sections)
+          templateName = 'Custom Report'
           break
         case 'detailed':
         default:
