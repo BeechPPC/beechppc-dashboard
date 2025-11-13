@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getCampaignPerformance, getKeywordPerformance, getAccountMetrics, getCustomerAccounts } from '@/lib/google-ads/client'
 import { generateMonthlyReportTemplate, type MonthlyReportData } from '@/lib/email/monthly-template'
+import { generateExecutiveSummaryTemplate } from '@/lib/email/templates/executive-summary'
+import { generateKeywordDeepDiveTemplate } from '@/lib/email/templates/keyword-deep-dive'
+import { generateAuctionInsightsTemplate } from '@/lib/email/templates/auction-insights'
 import { sendEmail } from '@/lib/email/service'
 import { storeReport } from '@/lib/reports/storage'
 import type { CampaignPerformance, KeywordPerformance } from '@/lib/google-ads/client'
@@ -27,8 +30,7 @@ interface MonthlyReportRequest {
 export async function POST(request: Request) {
   try {
     const body: MonthlyReportRequest = await request.json()
-    const { accountIds, dateFrom, dateTo, sections, recipients } = body
-    // template parameter reserved for future use (executive, detailed, auction, keyword templates)
+    const { accountIds, dateFrom, dateTo, sections, recipients, template } = body
 
     // Validate inputs
     if (!accountIds || accountIds.length === 0) {
@@ -160,8 +162,31 @@ export async function POST(request: Request) {
 
     // Send email and store report HTML for each account
     const emailPromises = reportsData.map(async (reportData, index) => {
-      const emailHtml = generateMonthlyReportTemplate(reportData)
-      const subject = `Monthly Report - ${reportData.accountName} - ${reportData.month}`
+      // Generate HTML using the selected template
+      let emailHtml: string
+      let templateName: string
+
+      switch (template) {
+        case 'executive':
+          emailHtml = generateExecutiveSummaryTemplate(reportData)
+          templateName = 'Executive Summary'
+          break
+        case 'keyword':
+          emailHtml = generateKeywordDeepDiveTemplate(reportData)
+          templateName = 'Keyword Deep Dive'
+          break
+        case 'auction':
+          emailHtml = generateAuctionInsightsTemplate(reportData)
+          templateName = 'Auction Insights Focus'
+          break
+        case 'detailed':
+        default:
+          emailHtml = generateMonthlyReportTemplate(reportData)
+          templateName = 'Detailed Performance'
+          break
+      }
+
+      const subject = `${templateName} - ${reportData.accountName} - ${reportData.month}`
 
       // Store report HTML for PDF download (use unique ID for each account if multiple)
       const uniqueReportId = reportsData.length > 1 ? `${reportId}-${index}` : reportId

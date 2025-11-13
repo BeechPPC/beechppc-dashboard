@@ -1,6 +1,15 @@
 import { formatCurrency, formatNumber } from '../utils'
 import type { CampaignPerformance, KeywordPerformance } from '../google-ads/client'
 
+export interface AuctionInsight {
+  domain: string
+  impressionShare: number
+  overlapRate: number
+  positionAboveRate: number
+  topOfPageRate: number
+  absoluteTopOfPageRate: number
+}
+
 export interface MonthlyReportData {
   accountName: string
   accountId: string
@@ -19,6 +28,7 @@ export interface MonthlyReportData {
   campaigns: CampaignPerformance[]
   topKeywords: KeywordPerformance[]
   poorPerformingKeywords: KeywordPerformance[]
+  auctionInsights?: AuctionInsight[]
   insights: {
     whatWorking: string[]
     poorPerforming: string[]
