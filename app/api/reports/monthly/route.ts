@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getCampaignPerformance, getKeywordPerformance, getAccountMetrics, getCustomerAccounts } from '@/lib/google-ads/client'
 import { generateMonthlyReportTemplate, type MonthlyReportData } from '@/lib/email/monthly-template'
 import { sendEmail } from '@/lib/email/service'
+import { storeReport } from '@/lib/reports/storage'
 import type { CampaignPerformance, KeywordPerformance } from '@/lib/google-ads/client'
 
 interface MonthlyReportRequest {
@@ -154,10 +155,17 @@ export async function POST(request: Request) {
 
     const reportsData = await Promise.all(reportPromises)
 
-    // Send email for each account report
-    const emailPromises = reportsData.map(async (reportData) => {
+    // Generate report ID
+    const reportId = `monthly-${Date.now()}`
+
+    // Send email and store report HTML for each account
+    const emailPromises = reportsData.map(async (reportData, index) => {
       const emailHtml = generateMonthlyReportTemplate(reportData)
       const subject = `Monthly Report - ${reportData.accountName} - ${reportData.month}`
+
+      // Store report HTML for PDF download (use unique ID for each account if multiple)
+      const uniqueReportId = reportsData.length > 1 ? `${reportId}-${index}` : reportId
+      storeReport(uniqueReportId, reportData.accountName, reportData.month, emailHtml)
 
       return sendEmail({
         to: recipients.join(','),
@@ -175,7 +183,7 @@ export async function POST(request: Request) {
       message: `Successfully generated and sent ${reportsData.length} monthly report(s)`,
       reportCount: reportsData.length,
       recipients,
-      reportId: `monthly-${Date.now()}`, // For PDF download functionality
+      reportId, // Return the base report ID for PDF download
     })
   } catch (error) {
     console.error('Monthly report API error:', error)
