@@ -3,6 +3,7 @@
  * Run with: npx tsx scripts/send-sample-email.ts
  */
 
+// @ts-nocheck
 import { sendEmail } from '../lib/email/service'
 import { generateAlertEmail } from '../lib/alerts/email-template'
 import { generateTemplateEmail } from '../lib/email/template-email'

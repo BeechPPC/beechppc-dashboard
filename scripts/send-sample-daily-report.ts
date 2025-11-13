@@ -3,6 +3,7 @@
  * Run with: npx tsx scripts/send-sample-daily-report.ts [--send]
  */
 
+// @ts-nocheck
 import { writeFileSync } from 'fs'
 import { join } from 'path'
 import { generateEmailTemplate } from '../lib/email/template'

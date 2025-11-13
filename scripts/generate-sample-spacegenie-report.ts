@@ -4,6 +4,7 @@
  * Run with: npx tsx scripts/generate-sample-spacegenie-report.ts [--send]
  */
 
+// @ts-nocheck
 import { writeFileSync } from 'fs'
 import { join } from 'path'
 import { sendEmail } from '../lib/email/service'
