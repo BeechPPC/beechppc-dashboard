@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCampaignPerformance, getKeywordPerformance, getAccountMetrics, getCustomerAccounts } from '@/lib/google-ads/client'
+import { getCampaignPerformance, getKeywordPerformance, getAccountMetrics, getCustomerAccounts, getAuctionInsights } from '@/lib/google-ads/client'
 import { generateMonthlyReportTemplate, type MonthlyReportData } from '@/lib/email/monthly-template'
 import { generateExecutiveSummaryTemplate } from '@/lib/email/templates/executive-summary'
 import { generateKeywordDeepDiveTemplate } from '@/lib/email/templates/keyword-deep-dive'
@@ -7,7 +7,7 @@ import { generateAuctionInsightsTemplate } from '@/lib/email/templates/auction-i
 import { generateCustomReportTemplate } from '@/lib/email/templates/custom-report'
 import { sendEmail } from '@/lib/email/service'
 import { storeReport } from '@/lib/reports/storage'
-import type { CampaignPerformance, KeywordPerformance } from '@/lib/google-ads/client'
+import type { CampaignPerformance, KeywordPerformance, AuctionInsight } from '@/lib/google-ads/client'
 
 interface MonthlyReportRequest {
   accountIds: string[]
@@ -100,6 +100,13 @@ export async function POST(request: Request) {
             .slice(0, 5)
         }
 
+        // Fetch auction insights if requested
+        let auctionInsights: AuctionInsight[] = []
+        if (sections.auctionInsights) {
+          auctionInsights = await getAuctionInsights(accountId, 'CUSTOM', dateFrom, dateTo)
+          console.log(`Fetched ${auctionInsights.length} auction insights for ${accountId}`)
+        }
+
         // Calculate summary metrics
         const totalSpend = accountMetrics.cost
         const totalConversions = accountMetrics.conversions
@@ -146,6 +153,7 @@ export async function POST(request: Request) {
           campaigns: sections.campaigns ? campaigns : [],
           topKeywords: sections.keywords ? topKeywords : [],
           poorPerformingKeywords: sections.keywords ? poorKeywords : [],
+          auctionInsights: sections.auctionInsights ? auctionInsights : undefined,
           insights,
         }
 
