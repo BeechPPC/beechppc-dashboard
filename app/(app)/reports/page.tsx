@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Send, Eye, CheckCircle, XCircle, Loader2, FileText, Clock, Save } from 'lucide-react'
+import { Send, Eye, CheckCircle, XCircle, Loader2, FileText, Clock, Save, Calendar, Download, TrendingUp } from 'lucide-react'
 import { useSettings } from '@/lib/settings/context'
 
 interface ReportTemplate {
@@ -35,6 +35,27 @@ export default function ReportsPage() {
   const [timezone, setTimezone] = useState(settings.timezone || 'Australia/Melbourne')
   const [defaultRecipients, setDefaultRecipients] = useState(settings.recipients || 'chris@beechppc.com')
   const [scheduleSaved, setScheduleSaved] = useState(false)
+
+  // Monthly Report Builder state
+  const [monthlyAccounts, setMonthlyAccounts] = useState<string[]>([])
+  const [monthlyDateRange, setMonthlyDateRange] = useState('this_month')
+  const [monthlyCustomFrom, setMonthlyCustomFrom] = useState('')
+  const [monthlyCustomTo, setMonthlyCustomTo] = useState('')
+  const [monthlySections, setMonthlySections] = useState({
+    campaigns: true,
+    keywords: true,
+    auctionInsights: true,
+    qualityScore: true,
+    geographic: false,
+    device: false,
+    adSchedule: false,
+    searchTerms: false,
+    conversions: true,
+  })
+  const [monthlyTemplate, setMonthlyTemplate] = useState('detailed')
+  const [monthlyRecipients, setMonthlyRecipients] = useState('chris@beechppc.com')
+  const [generatingMonthly, setGeneratingMonthly] = useState(false)
+  const [monthlyResult, setMonthlyResult] = useState<{ success: boolean; message: string; reportId?: string } | null>(null)
 
   // Sync with settings changes
   useEffect(() => {
@@ -176,6 +197,120 @@ export default function ReportsPage() {
     window.open('/api/reports/preview', '_blank')
   }
 
+  const handleToggleAccount = (accountId: string) => {
+    setMonthlyAccounts(prev =>
+      prev.includes(accountId)
+        ? prev.filter(id => id !== accountId)
+        : [...prev, accountId]
+    )
+  }
+
+  const handleToggleAllAccounts = () => {
+    if (monthlyAccounts.length === accounts.length) {
+      setMonthlyAccounts([])
+    } else {
+      setMonthlyAccounts(accounts.map(a => a.id))
+    }
+  }
+
+  const handleToggleSection = (section: keyof typeof monthlySections) => {
+    setMonthlySections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
+
+  const handleGenerateMonthlyReport = async () => {
+    if (monthlyAccounts.length === 0) {
+      setMonthlyResult({ success: false, message: 'Please select at least one account' })
+      return
+    }
+
+    setGeneratingMonthly(true)
+    setMonthlyResult(null)
+
+    try {
+      // Determine date range
+      let dateFrom = ''
+      let dateTo = ''
+
+      if (monthlyDateRange === 'this_month') {
+        const now = new Date()
+        dateFrom = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+        dateTo = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+      } else if (monthlyDateRange === 'last_month') {
+        const now = new Date()
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        const lastDay = new Date(now.getFullYear(), now.getMonth(), 0).getDate()
+        dateFrom = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}-01`
+        dateTo = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+      } else {
+        dateFrom = monthlyCustomFrom
+        dateTo = monthlyCustomTo
+      }
+
+      if (!dateFrom || !dateTo) {
+        setMonthlyResult({ success: false, message: 'Please select a valid date range' })
+        setGeneratingMonthly(false)
+        return
+      }
+
+      const res = await fetch('/api/reports/monthly', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accountIds: monthlyAccounts,
+          dateFrom,
+          dateTo,
+          sections: monthlySections,
+          template: monthlyTemplate,
+          recipients: monthlyRecipients.split(',').map(email => email.trim()).filter(Boolean),
+        }),
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setMonthlyResult({
+          success: true,
+          message: data.message || 'Monthly report generated and sent successfully!',
+          reportId: data.reportId,
+        })
+      } else {
+        setMonthlyResult({
+          success: false,
+          message: data.error || 'Failed to generate monthly report',
+        })
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An error occurred'
+      setMonthlyResult({
+        success: false,
+        message,
+      })
+    } finally {
+      setGeneratingMonthly(false)
+    }
+  }
+
+  const handleDownloadPDF = async (reportId: string) => {
+    try {
+      const res = await fetch(`/api/reports/download/${reportId}`)
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `monthly-report-${reportId}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Error downloading PDF:', error)
+      alert('Failed to download PDF')
+    }
+  }
+
   const selectedTemplateData = templates.find(t => t.id === selectedTemplate)
 
   return (
@@ -187,6 +322,244 @@ export default function ReportsPage() {
           Generate and send performance reports from pre-made templates
         </p>
       </div>
+
+      {/* Monthly Report Builder Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Monthly Report Builder
+          </CardTitle>
+          <CardDescription>
+            Generate comprehensive monthly reports for selected accounts with customizable sections
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {loadingData ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <>
+              {/* Account Multi-Select */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium">
+                    Select Accounts ({monthlyAccounts.length} selected)
+                  </label>
+                  <Button
+                    onClick={handleToggleAllAccounts}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {monthlyAccounts.length === accounts.length ? 'Deselect All' : 'Select All'}
+                  </Button>
+                </div>
+                <div className="border border-border rounded-lg p-4 max-h-48 overflow-y-auto space-y-2">
+                  {accounts.map((account) => (
+                    <label
+                      key={account.id}
+                      className="flex items-center gap-2 p-2 hover:bg-accent rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={monthlyAccounts.includes(account.id)}
+                        onChange={() => handleToggleAccount(account.id)}
+                        className="w-4 h-4 rounded border-border"
+                      />
+                      <span className="text-sm">{account.name}</span>
+                    </label>
+                  ))}
+                  {accounts.length === 0 && (
+                    <p className="text-sm text-muted text-center py-4">
+                      No accounts found. Please check your Google Ads API configuration.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Date Range Picker */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  <Calendar className="inline h-4 w-4 mr-1" />
+                  Date Range
+                </label>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setMonthlyDateRange('this_month')}
+                      variant={monthlyDateRange === 'this_month' ? 'default' : 'outline'}
+                      size="sm"
+                    >
+                      This Month
+                    </Button>
+                    <Button
+                      onClick={() => setMonthlyDateRange('last_month')}
+                      variant={monthlyDateRange === 'last_month' ? 'default' : 'outline'}
+                      size="sm"
+                    >
+                      Last Month
+                    </Button>
+                    <Button
+                      onClick={() => setMonthlyDateRange('custom')}
+                      variant={monthlyDateRange === 'custom' ? 'default' : 'outline'}
+                      size="sm"
+                    >
+                      Custom Range
+                    </Button>
+                  </div>
+                  {monthlyDateRange === 'custom' && (
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <label className="block text-xs text-muted mb-1">From</label>
+                        <input
+                          type="date"
+                          value={monthlyCustomFrom}
+                          onChange={(e) => setMonthlyCustomFrom(e.target.value)}
+                          className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs text-muted mb-1">To</label>
+                        <input
+                          type="date"
+                          value={monthlyCustomTo}
+                          onChange={(e) => setMonthlyCustomTo(e.target.value)}
+                          className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Report Sections */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Report Sections
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {Object.entries({
+                    campaigns: 'Campaign Performance',
+                    keywords: 'Keyword Analysis',
+                    auctionInsights: 'Auction Insights',
+                    qualityScore: 'Quality Score',
+                    geographic: 'Geographic Performance',
+                    device: 'Device Performance',
+                    adSchedule: 'Ad Schedule',
+                    searchTerms: 'Search Terms',
+                    conversions: 'Conversion Tracking',
+                  }).map(([key, label]) => (
+                    <label
+                      key={key}
+                      className="flex items-center gap-2 p-3 border border-border rounded-lg hover:bg-accent cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={monthlySections[key as keyof typeof monthlySections]}
+                        onChange={() => handleToggleSection(key as keyof typeof monthlySections)}
+                        className="w-4 h-4 rounded border-border"
+                      />
+                      <span className="text-sm">{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Template Selector */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Report Template
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'executive', label: 'Executive Summary' },
+                    { id: 'detailed', label: 'Detailed Performance' },
+                    { id: 'auction', label: 'Auction Insights Focus' },
+                    { id: 'keyword', label: 'Keyword Deep Dive' },
+                  ].map((template) => (
+                    <Button
+                      key={template.id}
+                      onClick={() => setMonthlyTemplate(template.id)}
+                      variant={monthlyTemplate === template.id ? 'default' : 'outline'}
+                      size="sm"
+                    >
+                      {template.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recipients */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Email Recipients
+                </label>
+                <input
+                  type="text"
+                  value={monthlyRecipients}
+                  onChange={(e) => setMonthlyRecipients(e.target.value)}
+                  placeholder="email1@example.com, email2@example.com"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <p className="text-xs text-muted mt-1">
+                  Separate multiple emails with commas
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleGenerateMonthlyReport}
+                  disabled={generatingMonthly || monthlyAccounts.length === 0 || !monthlyRecipients.trim()}
+                  size="lg"
+                  className="flex-1"
+                >
+                  {generatingMonthly ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      Generate & Send Report
+                    </>
+                  )}
+                </Button>
+                {monthlyResult?.reportId && (
+                  <Button
+                    onClick={() => handleDownloadPDF(monthlyResult.reportId!)}
+                    variant="outline"
+                    size="lg"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download PDF
+                  </Button>
+                )}
+              </div>
+
+              {/* Result Message */}
+              {monthlyResult && (
+                <div
+                  className={`flex items-center gap-2 p-4 rounded-lg ${
+                    monthlyResult.success
+                      ? 'bg-success/10 text-success'
+                      : 'bg-error/10 text-error'
+                  }`}
+                >
+                  {monthlyResult.success ? (
+                    <CheckCircle className="h-5 w-5" />
+                  ) : (
+                    <XCircle className="h-5 w-5" />
+                  )}
+                  <span>{monthlyResult.message}</span>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Template Report Card */}
       <Card>
