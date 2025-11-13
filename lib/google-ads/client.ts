@@ -405,7 +405,9 @@ export async function getDisapprovedAds(customerId: string): Promise<Disapproved
  */
 export async function getCampaignPerformance(
   customerId: string,
-  dateRange: string = 'LAST_7_DAYS'
+  dateRange: string = 'LAST_7_DAYS',
+  customDateFrom?: string,
+  customDateTo?: string
 ): Promise<CampaignPerformance[]> {
   try {
     const accountCustomer = client.Customer({
@@ -413,6 +415,14 @@ export async function getCampaignPerformance(
       refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
       login_customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
     })
+
+    // Use custom date range if provided, otherwise use preset
+    let dateCondition: string
+    if (customDateFrom && customDateTo) {
+      dateCondition = `segments.date BETWEEN '${customDateFrom}' AND '${customDateTo}'`
+    } else {
+      dateCondition = `segments.date DURING ${dateRange}`
+    }
 
     const query = `
       SELECT
@@ -428,7 +438,7 @@ export async function getCampaignPerformance(
         metrics.ctr,
         metrics.average_cpc
       FROM campaign
-      WHERE segments.date DURING ${dateRange}
+      WHERE ${dateCondition}
         AND campaign.status IN ('ENABLED', 'PAUSED')
       ORDER BY metrics.cost_micros DESC
     `
@@ -469,7 +479,9 @@ export async function getCampaignPerformance(
 export async function getKeywordPerformance(
   customerId: string,
   dateRange: string = 'LAST_7_DAYS',
-  limit: number = 50
+  limit: number = 50,
+  customDateFrom?: string,
+  customDateTo?: string
 ): Promise<KeywordPerformance[]> {
   try {
     const accountCustomer = client.Customer({
@@ -477,6 +489,14 @@ export async function getKeywordPerformance(
       refresh_token: process.env.GOOGLE_ADS_REFRESH_TOKEN!,
       login_customer_id: process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID!,
     })
+
+    // Use custom date range if provided, otherwise use preset
+    let dateCondition: string
+    if (customDateFrom && customDateTo) {
+      dateCondition = `segments.date BETWEEN '${customDateFrom}' AND '${customDateTo}'`
+    } else {
+      dateCondition = `segments.date DURING ${dateRange}`
+    }
 
     const query = `
       SELECT
@@ -492,7 +512,7 @@ export async function getKeywordPerformance(
         metrics.ctr,
         metrics.average_cpc
       FROM keyword_view
-      WHERE segments.date DURING ${dateRange}
+      WHERE ${dateCondition}
         AND ad_group_criterion.status = 'ENABLED'
         AND metrics.impressions > 0
       ORDER BY metrics.cost_micros DESC
