@@ -246,12 +246,19 @@ export function generateCustomReportTemplate(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Custom Report - ${accountName} - ${month}</title>
   <style>
-    @media only screen and (max-width: 600px) {
+    @media only screen and (max-width: 768px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
+    }
+    @media only screen and (max-width: 480px) {
       .metrics-grid {
         grid-template-columns: 1fr !important;
+        gap: 10px !important;
       }
       .metric-tile {
-        margin-bottom: 12px;
+        margin-bottom: 8px;
       }
       .header-title {
         font-size: 24px !important;
@@ -287,7 +294,7 @@ export function generateCustomReportTemplate(
           Key Performance Metrics
         </h2>
 
-        <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+        <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
           <!-- Cost -->
           <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
             <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Cost</div>

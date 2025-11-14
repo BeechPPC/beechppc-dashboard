@@ -154,7 +154,13 @@ export function generateMonthlyReportTemplate(data: MonthlyReportData): string {
       }
     }
 
-    @media only screen and (max-width: 600px) {
+    @media only screen and (max-width: 768px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
+    }
+    @media only screen and (max-width: 480px) {
       .container {
         padding: 10px !important;
       }
@@ -169,9 +175,10 @@ export function generateMonthlyReportTemplate(data: MonthlyReportData): string {
       }
       .metrics-grid {
         grid-template-columns: 1fr !important;
+        gap: 10px !important;
       }
       .metric-tile {
-        margin-bottom: 12px;
+        margin-bottom: 8px;
       }
       .table-container {
         overflow-x: auto !important;
@@ -193,7 +200,7 @@ export function generateMonthlyReportTemplate(data: MonthlyReportData): string {
     <div style="background-color: #fff; padding: 20px; border-bottom: 1px solid #fde68a;">
       <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 22px; font-weight: 600; padding-bottom: 10px; border-bottom: 3px solid #fbbf24;">Key Performance Metrics</h2>
 
-      <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+      <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
         <!-- Cost -->
         <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
           <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Cost</div>
