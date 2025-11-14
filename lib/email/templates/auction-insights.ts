@@ -1,4 +1,4 @@
-import { formatNumber } from '../../utils'
+import { formatCurrency, formatNumber } from '../../utils'
 import type { MonthlyReportData } from '../monthly-template'
 
 /**
@@ -7,7 +7,7 @@ import type { MonthlyReportData } from '../monthly-template'
  * Includes impression share, overlap rates, and competitive positioning
  */
 export function generateAuctionInsightsTemplate(data: MonthlyReportData): string {
-  const { accountName, month, summary, auctionInsights, campaigns, insights } = data
+  const { accountName, month, summary, auctionInsights, campaigns, insights, currency } = data
 
   // Sort campaigns by impressions to show which are most competitive
   const topCompetitiveCampaigns = [...campaigns]
@@ -27,6 +27,22 @@ export function generateAuctionInsightsTemplate(data: MonthlyReportData): string
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auction Insights Report - ${accountName} - ${month}</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      .metrics-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .metric-tile {
+        margin-bottom: 12px;
+      }
+      .header-title {
+        font-size: 24px !important;
+      }
+      .section-title {
+        font-size: 18px !important;
+      }
+    }
+  </style>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f9fafb;">
   <div style="max-width: 900px; margin: 0 auto; padding: 40px 20px;">
@@ -47,23 +63,59 @@ export function generateAuctionInsightsTemplate(data: MonthlyReportData): string
     <!-- Main Content -->
     <div style="background-color: #ffffff; padding: 40px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
 
-      <!-- Competitive Overview -->
-      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 24px; border-radius: 12px; margin-bottom: 32px;">
-        <h2 style="color: #1f2937; font-size: 20px; font-weight: 600; margin: 0 0 16px 0;">
-          📊 Competitive Position Overview
+      <!-- Key Performance Metrics -->
+      <div style="margin-bottom: 32px;">
+        <h2 class="section-title" style="color: #1f2937; font-size: 20px; font-weight: 600; margin: 0 0 20px 0; padding-bottom: 10px; border-bottom: 3px solid #fbbf24;">
+          Key Performance Metrics
         </h2>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-          <div>
-            <div style="color: #6b7280; font-size: 12px; font-weight: 500; margin-bottom: 4px;">TOTAL IMPRESSIONS</div>
-            <div style="color: #1f2937; font-size: 24px; font-weight: 700;">${formatNumber(summary.totalImpressions)}</div>
+
+        <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+          <!-- Cost -->
+          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Cost</div>
+            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.totalSpend, currency)}</div>
           </div>
-          <div>
-            <div style="color: #6b7280; font-size: 12px; font-weight: 500; margin-bottom: 4px;">AVG CTR</div>
-            <div style="color: #1f2937; font-size: 24px; font-weight: 700;">${summary.avgCtr.toFixed(2)}%</div>
+
+          <!-- Impr Share -->
+          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Impr Share</div>
+            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.searchImpressionShare.toFixed(1)}%</div>
           </div>
-          <div>
-            <div style="color: #6b7280; font-size: 12px; font-weight: 500; margin-bottom: 4px;">ACTIVE CAMPAIGNS</div>
-            <div style="color: #1f2937; font-size: 24px; font-weight: 700;">${campaigns.filter(c => c.status === 'ENABLED').length}</div>
+
+          <!-- Clicks -->
+          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Clicks</div>
+            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatNumber(summary.totalClicks)}</div>
+          </div>
+
+          <!-- CTR -->
+          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">CTR</div>
+            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.avgCtr.toFixed(2)}%</div>
+          </div>
+
+          <!-- Avg CPC -->
+          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Avg CPC</div>
+            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.avgCpc, currency)}</div>
+          </div>
+
+          <!-- Conversions -->
+          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Conversions</div>
+            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatNumber(summary.totalConversions)}</div>
+          </div>
+
+          <!-- Conv Rate -->
+          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Conv Rate</div>
+            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.conversionRate.toFixed(2)}%</div>
+          </div>
+
+          <!-- Cost/Conv -->
+          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Cost/Conv</div>
+            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.costPerConversion, currency)}</div>
           </div>
         </div>
       </div>

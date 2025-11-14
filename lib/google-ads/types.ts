@@ -13,6 +13,7 @@ export interface AccountMetrics {
   impressions: number
   avgCpc: number
   costPerConv: number
+  searchImpressionShare: number
 }
 
 export interface AccountPerformance {

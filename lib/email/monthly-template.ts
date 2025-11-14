@@ -24,6 +24,7 @@ export interface MonthlyReportData {
     avgCpc: number
     costPerConversion: number
     conversionRate: number
+    searchImpressionShare: number
   }
   campaigns: CampaignPerformance[]
   topKeywords: KeywordPerformance[]
@@ -166,13 +167,11 @@ export function generateMonthlyReportTemplate(data: MonthlyReportData): string {
       h3 {
         font-size: 16px !important;
       }
-      .summary-grid tr {
-        display: block !important;
+      .metrics-grid {
+        grid-template-columns: 1fr !important;
       }
-      .summary-grid td {
-        display: block !important;
-        width: 100% !important;
-        margin-bottom: 10px !important;
+      .metric-tile {
+        margin-bottom: 12px;
       }
       .table-container {
         overflow-x: auto !important;
@@ -190,32 +189,59 @@ export function generateMonthlyReportTemplate(data: MonthlyReportData): string {
       <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">${month}</p>
     </div>
 
-    <!-- Executive Summary -->
+    <!-- Key Performance Metrics -->
     <div style="background-color: #fff; padding: 20px; border-bottom: 1px solid #fde68a;">
-      <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 22px; font-weight: 600;">Executive Summary</h2>
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="summary-grid" style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td style="text-align: center; padding: 20px; background-color: #fefce8; border-radius: 8px; width: 25%;">
-            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; font-weight: 500;">Total Spend</p>
-            <p style="margin: 0; color: #111827; font-size: 24px; font-weight: bold;">${formatCurrency(summary.totalSpend, data.currency)}</p>
-          </td>
-          <td style="width: 10px;"></td>
-          <td style="text-align: center; padding: 20px; background-color: #fefce8; border-radius: 8px; width: 25%;">
-            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; font-weight: 500;">Conversions</p>
-            <p style="margin: 0; color: #111827; font-size: 24px; font-weight: bold;">${Math.round(summary.totalConversions)}</p>
-          </td>
-          <td style="width: 10px;"></td>
-          <td style="text-align: center; padding: 20px; background-color: #fefce8; border-radius: 8px; width: 25%;">
-            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; font-weight: 500;">Avg CPC</p>
-            <p style="margin: 0; color: #111827; font-size: 24px; font-weight: bold;">${formatCurrency(summary.avgCpc, data.currency)}</p>
-          </td>
-          <td style="width: 10px;"></td>
-          <td style="text-align: center; padding: 20px; background-color: #fefce8; border-radius: 8px; width: 25%;">
-            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; font-weight: 500;">Cost/Conv</p>
-            <p style="margin: 0; color: #111827; font-size: 24px; font-weight: bold;">${formatCurrency(summary.costPerConversion, data.currency)}</p>
-          </td>
-        </tr>
-      </table>
+      <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 22px; font-weight: 600; padding-bottom: 10px; border-bottom: 3px solid #fbbf24;">Key Performance Metrics</h2>
+
+      <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+        <!-- Cost -->
+        <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+          <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Cost</div>
+          <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.totalSpend, data.currency)}</div>
+        </div>
+
+        <!-- Impr Share -->
+        <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+          <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Impr Share</div>
+          <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.searchImpressionShare.toFixed(1)}%</div>
+        </div>
+
+        <!-- Clicks -->
+        <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+          <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Clicks</div>
+          <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatNumber(summary.totalClicks)}</div>
+        </div>
+
+        <!-- CTR -->
+        <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+          <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">CTR</div>
+          <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.avgCtr.toFixed(2)}%</div>
+        </div>
+
+        <!-- Avg CPC -->
+        <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+          <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Avg CPC</div>
+          <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.avgCpc, data.currency)}</div>
+        </div>
+
+        <!-- Conversions -->
+        <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+          <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Conversions</div>
+          <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatNumber(summary.totalConversions)}</div>
+        </div>
+
+        <!-- Conv Rate -->
+        <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+          <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Conv Rate</div>
+          <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.conversionRate.toFixed(2)}%</div>
+        </div>
+
+        <!-- Cost/Conv -->
+        <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+          <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Cost/Conv</div>
+          <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.costPerConversion, data.currency)}</div>
+        </div>
+      </div>
     </div>
 
     <!-- What's Working Well -->

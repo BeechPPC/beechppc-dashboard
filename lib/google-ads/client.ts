@@ -81,6 +81,7 @@ export async function getAccountMetrics(
         metrics.conversions,
         metrics.clicks,
         metrics.impressions,
+        metrics.search_impression_share,
         segments.date
       FROM campaign
       WHERE ${dateCondition}
@@ -100,14 +101,30 @@ export async function getAccountMetrics(
           acc.conversions += row.metrics.conversions || 0
           acc.clicks += row.metrics.clicks || 0
           acc.impressions += row.metrics.impressions || 0
+
+          // For impression share, calculate weighted average
+          if (row.metrics.impressions && row.metrics.search_impression_share) {
+            acc.impression_share_sum += (row.metrics.search_impression_share || 0) * row.metrics.impressions
+            acc.impression_share_impressions += row.metrics.impressions
+          }
         }
         return acc
       },
-      { cost_micros: 0, conversions: 0, clicks: 0, impressions: 0 }
+      {
+        cost_micros: 0,
+        conversions: 0,
+        clicks: 0,
+        impressions: 0,
+        impression_share_sum: 0,
+        impression_share_impressions: 0
+      }
     )
 
     const avgCpc = aggregated.clicks > 0 ? aggregated.cost_micros / aggregated.clicks : 0
     const costPerConv = aggregated.conversions > 0 ? aggregated.cost_micros / aggregated.conversions : 0
+    const searchImpressionShare = aggregated.impression_share_impressions > 0
+      ? (aggregated.impression_share_sum / aggregated.impression_share_impressions) * 100
+      : 0
 
     return {
       cost: aggregated.cost_micros / 1_000_000,
@@ -116,6 +133,7 @@ export async function getAccountMetrics(
       impressions: aggregated.impressions,
       avgCpc: avgCpc / 1_000_000,
       costPerConv: costPerConv / 1_000_000,
+      searchImpressionShare,
     }
   } catch (error) {
     console.error(`Error fetching metrics for customer ${customerId}:`, error)

@@ -149,6 +149,7 @@ export async function POST(request: Request) {
             avgCpc,
             costPerConversion,
             conversionRate,
+            searchImpressionShare: accountMetrics.searchImpressionShare,
           },
           campaigns: sections.campaigns ? campaigns : [],
           topKeywords: sections.keywords ? topKeywords : [],

@@ -97,6 +97,7 @@ async function main() {
         avgCpc,
         costPerConversion,
         conversionRate,
+        searchImpressionShare: monthMetrics.searchImpressionShare,
       },
       campaigns,
       topKeywords: topPerformingKeywords,
