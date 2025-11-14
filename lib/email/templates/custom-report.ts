@@ -294,55 +294,63 @@ export function generateCustomReportTemplate(
           Key Performance Metrics
         </h2>
 
-        <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
-          <!-- Cost -->
-          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
-            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Cost</div>
-            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.totalSpend, currency)}</div>
-          </div>
+        <!-- Row 1: First 4 metrics -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 12px;">
+          <tr>
+            <!-- Cost -->
+            <td width="23%" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+              <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Cost</div>
+              <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.totalSpend, currency)}</div>
+            </td>
+            <td width="2%"></td>
+            <!-- Impr Share -->
+            <td width="23%" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+              <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Impr Share</div>
+              <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.searchImpressionShare.toFixed(1)}%</div>
+            </td>
+            <td width="2%"></td>
+            <!-- Clicks -->
+            <td width="23%" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+              <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Clicks</div>
+              <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatNumber(summary.totalClicks)}</div>
+            </td>
+            <td width="2%"></td>
+            <!-- CTR -->
+            <td width="23%" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+              <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">CTR</div>
+              <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.avgCtr.toFixed(2)}%</div>
+            </td>
+          </tr>
+        </table>
 
-          <!-- Impr Share -->
-          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
-            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Impr Share</div>
-            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.searchImpressionShare.toFixed(1)}%</div>
-          </div>
-
-          <!-- Clicks -->
-          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
-            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Clicks</div>
-            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatNumber(summary.totalClicks)}</div>
-          </div>
-
-          <!-- CTR -->
-          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
-            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">CTR</div>
-            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.avgCtr.toFixed(2)}%</div>
-          </div>
-
-          <!-- Avg CPC -->
-          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
-            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Avg CPC</div>
-            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.avgCpc, currency)}</div>
-          </div>
-
-          <!-- Conversions -->
-          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
-            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Conversions</div>
-            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatNumber(summary.totalConversions)}</div>
-          </div>
-
-          <!-- Conv Rate -->
-          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
-            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Conv Rate</div>
-            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.conversionRate.toFixed(2)}%</div>
-          </div>
-
-          <!-- Cost/Conv -->
-          <div class="metric-tile" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
-            <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Cost/Conv</div>
-            <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.costPerConversion, currency)}</div>
-          </div>
-        </div>
+        <!-- Row 2: Last 4 metrics -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <!-- Avg CPC -->
+            <td width="23%" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+              <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Avg CPC</div>
+              <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.avgCpc, currency)}</div>
+            </td>
+            <td width="2%"></td>
+            <!-- Conversions -->
+            <td width="23%" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+              <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Conversions</div>
+              <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatNumber(summary.totalConversions)}</div>
+            </td>
+            <td width="2%"></td>
+            <!-- Conv Rate -->
+            <td width="23%" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+              <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Conv Rate</div>
+              <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${summary.conversionRate.toFixed(2)}%</div>
+            </td>
+            <td width="2%"></td>
+            <!-- Cost/Conv -->
+            <td width="23%" style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+              <div style="color: #78716c; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Cost/Conv</div>
+              <div style="color: #1f2937; font-size: 22px; font-weight: 700;">${formatCurrency(summary.costPerConversion, currency)}</div>
+            </td>
+          </tr>
+        </table>
       </div>
 
       <!-- Dynamic Sections Based on User Selection -->
