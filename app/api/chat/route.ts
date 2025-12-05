@@ -231,6 +231,62 @@ async function executeFunctionCall(functionName: string, args: Record<string, un
         }
       }
 
+      case 'get_upcoming_meetings': {
+        const days = (args.days as number) || 7
+        const startDate = args.startDate as string | undefined
+        const endDate = args.endDate as string | undefined
+
+        try {
+          // Call the meetings API endpoint
+          const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+          const url = new URL(`${baseUrl}/api/meetings`)
+          
+          if (startDate && endDate) {
+            const response = await fetch(`${baseUrl}/api/meetings`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ startDate, endDate }),
+            })
+            const data = await response.json()
+            
+            if (!response.ok) {
+              return {
+                success: false,
+                message: `Failed to fetch meetings: ${data.error || 'Unknown error'}`,
+              }
+            }
+
+            return {
+              success: true,
+              data: data.meetings || [],
+              message: `Found ${data.total || 0} meeting${data.total !== 1 ? 's' : ''} in the specified date range`,
+            }
+          } else {
+            url.searchParams.set('days', days.toString())
+            const response = await fetch(url.toString())
+            const data = await response.json()
+
+            if (!response.ok) {
+              return {
+                success: false,
+                message: `Failed to fetch meetings: ${data.error || 'Unknown error'}`,
+              }
+            }
+
+            return {
+              success: true,
+              data: data.meetings || [],
+              message: `Found ${data.total || 0} upcoming meeting${data.total !== 1 ? 's' : ''} in the next ${days} day${days !== 1 ? 's' : ''}`,
+            }
+          }
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error fetching meetings: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          }
+        }
+      }
+
       default:
         return {
           success: false,
@@ -309,6 +365,11 @@ AVAILABLE CAPABILITIES:
 5. Reporting:
    - Generate and email performance reports
    - Create custom reports by account or date range
+
+6. Calendar & Meetings:
+   - View upcoming meetings from email calendar invites
+   - Check meeting schedule for specific date ranges
+   - Get meeting details including location, attendees, and times
 
 ANALYSIS GUIDELINES:
 - When analyzing performance, always consider: ROAS/ROI, conversion rate, CPC trends

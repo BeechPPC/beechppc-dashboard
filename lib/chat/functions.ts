@@ -177,4 +177,27 @@ export const CHAT_FUNCTIONS: FunctionTool[] = [
       required: ['customerId'],
     },
   },
+  {
+    name: 'get_upcoming_meetings',
+    description:
+      'Get upcoming meetings and calendar events extracted from email. Returns meeting details including title, start/end time, location, organizer, and attendees. Useful for checking what meetings are scheduled.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        days: {
+          type: 'number',
+          description: 'Number of days ahead to look for meetings (default: 7)',
+        },
+        startDate: {
+          type: 'string',
+          description: 'Start date in YYYY-MM-DD format (optional, for custom date range)',
+        },
+        endDate: {
+          type: 'string',
+          description: 'End date in YYYY-MM-DD format (optional, for custom date range)',
+        },
+      },
+      required: [],
+    },
+  },
 ]

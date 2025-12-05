@@ -21,7 +21,8 @@ import {
   ChevronDown,
   MessageCircle,
   Loader2,
-  Building2
+  Building2,
+  Calendar
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { GoogleAdsAccount } from '@/lib/google-ads/types'
@@ -29,6 +30,7 @@ import type { GoogleAdsAccount } from '@/lib/google-ads/types'
 const navigation = [
   { name: 'Chat Assistant', href: '/chat', icon: MessageCircle },
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Meetings', href: '/meetings', icon: Calendar },
   { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Settings', href: '/settings', icon: Settings },
