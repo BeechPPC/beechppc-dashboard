@@ -26,6 +26,10 @@ interface MeetingsCalendarProps {
 }
 
 export function MeetingsCalendar({ meetings, currentMonth, onMonthChange, onDateClick }: MeetingsCalendarProps) {
+  // Helper function to format date as YYYY-MM-DD
+  const formatDateKey = (date: Date): string => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  }
 
   // Get first day of current month
   const firstDayOfMonth = useMemo(() => {
@@ -79,10 +83,6 @@ export function MeetingsCalendar({ meetings, currentMonth, onMonthChange, onDate
     })
     return grouped
   }, [meetings])
-
-  const formatDateKey = (date: Date): string => {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-  }
 
   const isToday = (date: Date): boolean => {
     const today = new Date()
