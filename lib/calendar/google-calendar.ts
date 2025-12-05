@@ -3,7 +3,7 @@
  * Fetches meetings directly from Google Calendar
  */
 
-import { google } from 'googleapis'
+import { google, calendar_v3 } from 'googleapis'
 import type { Meeting } from '@/lib/email/meeting-parser'
 
 // Initialize OAuth2 client
@@ -41,7 +41,7 @@ function getCalendarClient() {
  * Fetch events from a specific Google Calendar
  */
 async function fetchEventsFromCalendar(
-  calendar: any,
+  calendar: calendar_v3.Calendar,
   calendarId: string,
   timeMin: Date,
   timeMax: Date
