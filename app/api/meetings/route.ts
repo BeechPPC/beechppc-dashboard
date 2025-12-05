@@ -62,13 +62,31 @@ export async function GET(request: NextRequest) {
     let calendarError: Error | null = null
 
     try {
-      // Use Google Calendar API to get all meetings
-      const calendarMeetings = await fetchCalendarEvents(dateStart || undefined, dateEnd || undefined)
+      // Expand date range for calendar view to include buffer weeks
+      let calendarStart = dateStart
+      let calendarEnd = dateEnd
+
+      if (dateStart && dateEnd) {
+        // Add buffer for calendar grid (shows partial weeks)
+        calendarStart = new Date(dateStart)
+        calendarStart.setDate(calendarStart.getDate() - 7) // Week before
+        
+        calendarEnd = new Date(dateEnd)
+        calendarEnd.setDate(calendarEnd.getDate() + 7) // Week after
+      }
+
+      // Use Google Calendar API to get all meetings from all accessible calendars
+      const calendarMeetings = await fetchCalendarEvents(calendarStart || undefined, calendarEnd || undefined)
       allMeetings = calendarMeetings
-      console.log(`Fetched ${calendarMeetings.length} meetings from Google Calendar`)
+      console.log(`✅ Fetched ${calendarMeetings.length} meetings from Google Calendar API`)
     } catch (error) {
       calendarError = error instanceof Error ? error : new Error('Unknown calendar error')
-      console.warn('Google Calendar API failed, falling back to email parsing:', calendarError.message)
+      console.warn('⚠️ Google Calendar API failed, falling back to email parsing:', calendarError.message)
+      console.warn('   Error details:', {
+        message: calendarError.message,
+        name: calendarError.name,
+        stack: calendarError.stack?.split('\n').slice(0, 3).join('\n'),
+      })
 
       // Fallback to email parsing if Calendar API fails
       let emails
@@ -92,7 +110,7 @@ export async function GET(request: NextRequest) {
 
       // Extract meetings from emails
       allMeetings = extractMeetingsFromEmails(emails)
-      console.log(`Fetched ${allMeetings.length} meetings from email parsing (fallback)`)
+      console.log(`📧 Fetched ${allMeetings.length} meetings from email parsing (fallback)`)
     }
 
     // Filter meetings by date range
@@ -113,8 +131,15 @@ export async function GET(request: NextRequest) {
       total: filteredMeetings.length,
       source: calendarError ? 'email' : 'google_calendar',
       warning: calendarError
-        ? 'Using email parsing as fallback. Google Calendar API is not configured or accessible.'
+        ? `Using email parsing as fallback. Google Calendar API error: ${calendarError.message}. Visit /api/meetings/test to diagnose.`
         : undefined,
+      debug: process.env.NODE_ENV === 'development' ? {
+        calendarError: calendarError?.message,
+        dateRange: dateStart && dateEnd ? {
+          start: dateStart.toISOString(),
+          end: dateEnd.toISOString(),
+        } : undefined,
+      } : undefined,
     })
   } catch (error) {
     console.error('Error fetching meetings:', error)
@@ -175,7 +200,7 @@ export async function POST(request: NextRequest) {
 
       // Extract meetings from emails
       allMeetings = extractMeetingsFromEmails(emails)
-      console.log(`Fetched ${allMeetings.length} meetings from email parsing (fallback)`)
+      console.log(`📧 Fetched ${allMeetings.length} meetings from email parsing (fallback)`)
     }
 
     // Filter meetings
@@ -196,8 +221,15 @@ export async function POST(request: NextRequest) {
       total: filteredMeetings.length,
       source: calendarError ? 'email' : 'google_calendar',
       warning: calendarError
-        ? 'Using email parsing as fallback. Google Calendar API is not configured or accessible.'
+        ? `Using email parsing as fallback. Google Calendar API error: ${calendarError.message}. Visit /api/meetings/test to diagnose.`
         : undefined,
+      debug: process.env.NODE_ENV === 'development' ? {
+        calendarError: calendarError?.message,
+        dateRange: startDate && endDate ? {
+          start: startDate,
+          end: endDate,
+        } : undefined,
+      } : undefined,
     })
   } catch (error) {
     console.error('Error searching meetings:', error)
