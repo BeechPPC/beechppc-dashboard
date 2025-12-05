@@ -29,6 +29,7 @@ The skill will automatically:
    - Proof & credibility (testimonials, case studies, awards)
    - PPC strategy opportunities (keywords, audiences, messaging)
 
+
 3. **Create two professional reports**:
    - **Google Slides (.pptx)** - Professional presentation with Beech PPC branding
    - **PDF Report** - Comprehensive written report
