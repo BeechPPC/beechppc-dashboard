@@ -5,6 +5,7 @@
 
 import Imap from 'imap'
 import { simpleParser, ParsedMail } from 'mailparser'
+import { Readable } from 'stream'
 
 export interface EmailMessage {
   uid: number
@@ -77,7 +78,7 @@ export async function fetchEmails(
   const imap = await connectImap()
 
   return new Promise((resolve, reject) => {
-    imap.openBox('INBOX', false, (err, box) => {
+    imap.openBox('INBOX', false, (err) => {
       if (err) {
         imap.end()
         reject(err)
@@ -85,6 +86,7 @@ export async function fetchEmails(
       }
 
       // Build search criteria
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const criteria: any[] = [...searchCriteria]
       if (since) {
         criteria.push(['SINCE', since])
@@ -118,7 +120,7 @@ export async function fetchEmails(
           let emailData: ParsedMail | null = null
 
           msg.on('body', (stream) => {
-            simpleParser(stream, (err, parsed) => {
+            simpleParser(stream as Readable, (err, parsed) => {
               if (err) {
                 console.error('Error parsing email:', err)
                 processedCount++
@@ -193,6 +195,7 @@ export async function searchEmails(
       }
 
       // Build search criteria
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const criteria: any[] = [['SUBJECT', query], ['OR', ['BODY', query], ['TEXT', query]]]
       if (since) {
         criteria.push(['SINCE', since])
@@ -225,7 +228,7 @@ export async function searchEmails(
           let emailData: ParsedMail | null = null
 
           msg.on('body', (stream) => {
-            simpleParser(stream, (err, parsed) => {
+            simpleParser(stream as Readable, (err, parsed) => {
               if (err) {
                 console.error('Error parsing email:', err)
                 processedCount++

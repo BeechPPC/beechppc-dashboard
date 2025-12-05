@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
 import { Calendar, Clock, MapPin, Users, Mail } from 'lucide-react'
 
@@ -24,7 +24,7 @@ export default function MeetingsPage() {
   const [error, setError] = useState<string | null>(null)
   const [days, setDays] = useState(7)
 
-  const fetchMeetings = async () => {
+  const fetchMeetings = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
@@ -42,11 +42,11 @@ export default function MeetingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [days])
 
   useEffect(() => {
     fetchMeetings()
-  }, [days])
+  }, [fetchMeetings])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
