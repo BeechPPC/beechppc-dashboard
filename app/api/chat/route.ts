@@ -13,6 +13,8 @@ import {
 } from '@/lib/google-ads/client'
 import { sendEmail } from '@/lib/email/service'
 import { generateEmailTemplate } from '@/lib/email/template'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 // Initialize Anthropic client (lazy initialization)
 let anthropic: Anthropic | null = null
@@ -27,6 +29,46 @@ function getAnthropicClient() {
     anthropic = new Anthropic({ apiKey })
   }
   return anthropic
+}
+
+/**
+ * Load skill content from local files
+ * This embeds skill instructions directly in the system prompt
+ * (Alternative to Skills API which may not be available yet)
+ */
+function loadSkillContent(skillName: string): string | null {
+  try {
+    const skillPath = join(process.cwd(), 'skills', skillName, 'SKILL.md')
+    const content = readFileSync(skillPath, 'utf-8')
+    // Remove YAML frontmatter (lines between --- and ---)
+    const contentWithoutFrontmatter = content.replace(/^---\n[\s\S]*?\n---\n/, '')
+    return contentWithoutFrontmatter.trim()
+  } catch (error) {
+    // Skill file not found or error reading - that's okay, just skip it
+    return null
+  }
+}
+
+/**
+ * Get skill IDs from environment variables (for future Skills API support)
+ * Currently, we embed skill content directly in system prompts
+ */
+function getSkillIds(): Array<{ id: string }> {
+  const skillIds: Array<{ id: string }> = []
+  
+  // Add Google Ads Analysis skill if configured
+  const googleAdsAnalysisSkillId = process.env.SKILL_GOOGLE_ADS_ANALYSIS
+  if (googleAdsAnalysisSkillId) {
+    skillIds.push({ id: googleAdsAnalysisSkillId })
+  }
+  
+  // Add more skills here as you create them
+  // const reportGenerationSkillId = process.env.SKILL_REPORT_GENERATION
+  // if (reportGenerationSkillId) {
+  //   skillIds.push({ id: reportGenerationSkillId })
+  // }
+  
+  return skillIds
 }
 
 /**
@@ -318,6 +360,9 @@ export async function POST(request: NextRequest) {
 
     const client = getAnthropicClient()
 
+    // Get skill IDs (optional - skills enhance but don't replace system prompts)
+    const skills = getSkillIds()
+
     // Build conversation history for Claude
     const messages: Anthropic.MessageParam[] = [
       ...history.map((msg) => ({
@@ -330,8 +375,13 @@ export async function POST(request: NextRequest) {
       },
     ]
 
+    // Load skill content and embed in system prompt
+    // (Skills API may not be available yet, so we embed content directly)
+    const googleAdsAnalysisSkill = loadSkillContent('google-ads-analysis')
+    
     // System prompt to guide Claude's behavior
-    const systemPrompt = `You are a helpful Google Ads assistant for BeechPPC. You help users analyze their Google Ads account data, generate reports, and answer questions about their advertising performance.
+    // Note: Skills complement system prompts - use both for best results
+    let systemPrompt = `You are a helpful Google Ads assistant for BeechPPC. You help users analyze their Google Ads account data, generate reports, and answer questions about their advertising performance.
 
 IMPORTANT INSTRUCTIONS:
 - Always use the available functions to fetch real data from their Google Ads accounts
@@ -393,12 +443,18 @@ TONE:
 
 Always be proactive in suggesting relevant follow-up questions or analysis the user might find valuable.`
 
-    // Initial request to Claude with function calling
+    // Append skill content if available
+    if (googleAdsAnalysisSkill) {
+      systemPrompt += `\n\n## Google Ads Analysis Guidelines\n\n${googleAdsAnalysisSkill}`
+    }
+
+    // Initial request to Claude with function calling and skills
     let response = await client.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 4096,
       system: systemPrompt,
       tools: CHAT_FUNCTIONS,
+      ...(skills.length > 0 && { skills }), // Only include skills if configured
       messages,
     })
 
@@ -431,12 +487,13 @@ Always be proactive in suggesting relevant follow-up questions or analysis the u
 
       console.log('Function result:', JSON.stringify(functionResult, null, 2))
 
-      // Send the result back to Claude
+      // Send the result back to Claude (include skills in follow-up calls too)
       response = await client.messages.create({
         model: 'claude-sonnet-4-5',
         max_tokens: 4096,
         system: systemPrompt,
         tools: CHAT_FUNCTIONS,
+        ...(skills.length > 0 && { skills }), // Include skills in follow-up calls
         messages: [
           ...messages,
           {
