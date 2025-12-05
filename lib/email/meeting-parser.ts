@@ -14,7 +14,7 @@ export interface Meeting {
   organizer: string
   attendees: string[]
   description?: string
-  source: 'calendar_invite' | 'email_text' | 'manual'
+  source: 'calendar_invite' | 'email_text' | 'manual' | 'google_calendar'
   emailSubject: string
   emailFrom: string
   emailDate: Date

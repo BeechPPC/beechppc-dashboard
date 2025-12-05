@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchEmails, getRecentEmails } from '@/lib/email/reader'
+import { fetchEmails } from '@/lib/email/reader'
 import {
   extractMeetingsFromEmails,
   getUpcomingMeetings,
