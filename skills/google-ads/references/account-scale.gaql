@@ -1,0 +1,26 @@
+-- Account Scale Assessment Query
+-- Returns conversion action counts to determine query strategy
+--
+-- PURPOSE:
+-- Run this FIRST to understand tracking complexity before executing conversion queries.
+-- Results determine whether to use:
+-- - Full queries (simple tracking setups)
+-- - Focused queries (complex multi-conversion setups)
+--
+-- USAGE:
+-- Based on conversion action counts, choose strategy:
+-- - < 10 conversion actions: Simple setup (full audit)
+-- - 10-30 conversion actions: Standard setup (standard audit)
+-- - 30-50 conversion actions: Complex setup (focused audit)
+-- - > 50 conversion actions: Enterprise setup (strategic audit)
+--
+-- This query is fast (no aggregation across dates) and cheap (single row result)
+--
+-- NOTE: Most accounts have 5-15 conversion actions. >30 is uncommon and indicates
+-- complex tracking with multiple goal types, cross-platform tracking, or
+-- legacy conversion actions that should be reviewed for cleanup.
+
+SELECT
+  COUNT(conversion_action.id) AS total_conversion_actions
+FROM conversion_action
+WHERE conversion_action.status != 'REMOVED'

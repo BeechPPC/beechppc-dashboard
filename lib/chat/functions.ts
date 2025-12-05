@@ -200,4 +200,19 @@ export const CHAT_FUNCTIONS: FunctionTool[] = [
       required: [],
     },
   },
+  {
+    name: 'fetch_website_content',
+    description:
+      'Fetch and parse website content from a URL. Returns structured data including title, meta description, headings, paragraphs, links, and full text content. Useful for analyzing business websites, creating clarity reports, or extracting information from web pages.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'The URL to fetch. Can include or omit http:// or https:// protocol.',
+        },
+      },
+      required: ['url'],
+    },
+  },
 ]

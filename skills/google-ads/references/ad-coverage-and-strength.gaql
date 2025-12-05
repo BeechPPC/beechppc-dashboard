@@ -1,0 +1,21 @@
+SELECT
+  campaign.name,
+  ad_group.name,
+  ad_group_ad.ad.id,
+  ad_group_ad.ad.type,
+  ad_group_ad.status,
+  ad_group_ad.ad.responsive_search_ad.headlines,
+  ad_group_ad.ad.responsive_search_ad.descriptions,
+  ad_group_ad.policy_summary.approval_status,
+  ad_group_ad.policy_summary.review_status,
+  ad_group_ad.strength,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.ctr,
+  metrics.cost_micros,
+  metrics.conversions
+FROM ad_group_ad
+WHERE segments.date {DATE_RANGE}
+  AND campaign.status = 'ENABLED'
+  AND ad_group.status = 'ENABLED'
+ORDER BY campaign.name, ad_group.name, metrics.impressions DESC

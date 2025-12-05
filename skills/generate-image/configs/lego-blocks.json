@@ -1,0 +1,48 @@
+{
+  "theme": {
+    "concept": "hand-drawn sketch of scattered building blocks on pure white background",
+    "visual_metaphor": "modular building blocks representing components that can be assembled",
+    "flow_direction": "scattered arrangement",
+    "transformation": {
+      "from": "individual blocks",
+      "to": "potential for assembly"
+    }
+  },
+  "composition": {
+    "layout": "scattered casual arrangement",
+    "perspective": "slightly overhead angle",
+    "depth_technique": "none - flat sketch",
+    "focal_point": "cluster of blocks"
+  },
+  "colors": {
+    "primary": ["bright red", "bright blue", "bright yellow", "green"],
+    "accents": ["black outlines"],
+    "transitions": [],
+    "distribution": "colorful blocks with black sketch outlines on PURE WHITE background, hand-drawn sketch aesthetic, background must be completely white with no shadows or gradients"
+  },
+  "style": {
+    "forms": "hand-drawn imperfect lines",
+    "shapes": "rectangular building blocks with circular studs sketched loosely",
+    "texture": "pencil or marker sketch texture",
+    "overlay": "none",
+    "aesthetic": "whiteboard sketch or notebook doodle",
+    "detail_level": "simple and minimal"
+  },
+  "elements": {
+    "foreground": "five to eight interlocking building blocks scattered casually, drawn in simple black line sketch style",
+    "midground": "none",
+    "background": "pure white seamless background",
+    "key_objects": ["sketched building blocks", "scattered arrangement", "hand-drawn lines"]
+  },
+  "technical": {
+    "aspect_ratio": "16:9",
+    "orientation": "landscape",
+    "exclusions": ["text", "words", "letters", "numbers", "labels", "people", "hands", "logos", "brand names", "realistic rendering", "shadows", "gradients", "gray background", "any background color"]
+  },
+  "metadata": {
+    "name": "lego-blocks-sketch",
+    "use_case": "modular components visual for slide presentation",
+    "tags": ["hand-drawn", "sketch", "blocks", "modular", "building"],
+    "notes": "Hand-drawn sketch style building blocks on white background"
+  }
+}

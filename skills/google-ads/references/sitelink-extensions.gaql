@@ -1,0 +1,15 @@
+SELECT
+  campaign.name,
+  ad_group.name,
+  asset.sitelink_asset.link_text,
+  asset.sitelink_asset.description1,
+  asset.sitelink_asset.description2,
+  asset.final_urls,
+  metrics.clicks,
+  metrics.impressions,
+  metrics.ctr
+FROM ad_group_ad_asset_view
+WHERE segments.date {DATE_RANGE}
+  AND asset.type = 'SITELINK'
+  AND campaign.status = 'ENABLED'
+ORDER BY campaign.name, metrics.impressions DESC

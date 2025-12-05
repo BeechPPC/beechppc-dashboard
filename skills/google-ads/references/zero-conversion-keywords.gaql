@@ -1,0 +1,14 @@
+SELECT
+  campaign.name,
+  ad_group.name,
+  ad_group_criterion.keyword.text,
+  ad_group_criterion.keyword.match_type,
+  metrics.cost_micros,
+  metrics.clicks,
+  metrics.conversions
+FROM keyword_view
+WHERE segments.date BETWEEN "2025-07-21" AND "2025-10-19"
+  AND metrics.conversions = 0
+  AND metrics.cost_micros > 0
+  AND campaign.status = 'ENABLED'
+ORDER BY metrics.cost_micros DESC

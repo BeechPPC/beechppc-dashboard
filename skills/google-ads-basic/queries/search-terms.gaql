@@ -1,0 +1,12 @@
+SELECT
+  search_term_view.search_term,
+  campaign.name,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.cost_micros,
+  metrics.conversions
+FROM search_term_view
+WHERE segments.date {DATE_RANGE}
+  AND metrics.impressions > 0
+ORDER BY metrics.cost_micros DESC
+LIMIT 10

@@ -1,0 +1,48 @@
+{
+  "theme": {
+    "concept": "hand-drawn diagram showing multiple arrows at different angles all pointing into a central rectangular box",
+    "visual_metaphor": "convergence of multiple inputs into single processing point",
+    "flow_direction": "multiple angles converging to center-right",
+    "transformation": {
+      "from": "scattered arrows at various angles",
+      "to": "single central collection box"
+    }
+  },
+  "composition": {
+    "layout": "centered with arrows from left",
+    "perspective": "flat 2D diagram",
+    "depth_technique": "none - flat illustration",
+    "focal_point": "rectangular box on right receiving arrows"
+  },
+  "colors": {
+    "primary": ["charcoal gray", "black"],
+    "accents": ["white"],
+    "transitions": [],
+    "distribution": "black line drawings on white background, hand-drawn sketch aesthetic"
+  },
+  "style": {
+    "forms": "hand-drawn imperfect lines",
+    "shapes": "arrows at various angles and rectangle with sketchy hand-drawn quality",
+    "texture": "pencil or marker sketch texture",
+    "overlay": "none",
+    "aesthetic": "whiteboard sketch or notebook doodle",
+    "detail_level": "simple and minimal"
+  },
+  "elements": {
+    "foreground": "five or six arrows on left side at different angles - one at 45 degrees down, two horizontal, two at angles up including one at 45 degrees up - all pointing toward rectangular box on right side",
+    "midground": "none",
+    "background": "clean white or off-white",
+    "key_objects": ["multiple arrows at various angles", "rectangular box receiving arrows"]
+  },
+  "technical": {
+    "aspect_ratio": "1:1",
+    "orientation": "square",
+    "exclusions": ["text", "words", "letters", "numbers", "labels", "people", "faces", "realistic elements", "3D effects", "gradients"]
+  },
+  "metadata": {
+    "name": "multiple-inputs-box",
+    "use_case": "multiple data sources diagram for slide presentation",
+    "tags": ["diagram", "inputs", "convergence", "hand-drawn"],
+    "notes": "Hand-drawn style showing multiple arrows at different angles converging on a box"
+  }
+}

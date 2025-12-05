@@ -1,0 +1,16 @@
+SELECT
+  asset.name,
+  asset.type,
+  asset.text_asset.text,
+  ad_group_ad_asset_view.performance_label,
+  ad_group_ad_asset_view.pinned_field,
+  campaign.name,
+  ad_group.name,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.conversions_value
+FROM ad_group_ad_asset_view
+WHERE segments.date {DATE_RANGE}
+ORDER BY metrics.impressions DESC

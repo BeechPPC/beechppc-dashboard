@@ -1,0 +1,10 @@
+SELECT
+  landing_page_view.unexpanded_final_url,
+  metrics.clicks,
+  metrics.impressions,
+  metrics.cost_micros,
+  metrics.conversions
+FROM landing_page_view
+WHERE segments.date {DATE_RANGE}
+ORDER BY metrics.cost_micros DESC
+LIMIT 10

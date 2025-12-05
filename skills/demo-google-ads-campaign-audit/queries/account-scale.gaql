@@ -1,0 +1,6 @@
+-- Account scale assessment - returns campaign.id and status for client-side counting
+SELECT
+  campaign.id,
+  campaign.status
+FROM campaign
+WHERE campaign.status != 'REMOVED'

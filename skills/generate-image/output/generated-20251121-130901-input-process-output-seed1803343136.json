@@ -1,0 +1,79 @@
+{
+  "config": {
+    "theme": {
+      "concept": "hand-drawn style process diagram with arrow flowing into rectangular box then arrow flowing out",
+      "visual_metaphor": "simple sketch-style flow diagram showing input arrow, central processing box, output arrow",
+      "flow_direction": "left-to-right horizontal",
+      "transformation": {
+        "from": "input arrow on left",
+        "to": "output arrow on right through central box"
+      }
+    },
+    "composition": {
+      "layout": "horizontal centered",
+      "perspective": "flat 2D diagram",
+      "depth_technique": "none - flat illustration",
+      "focal_point": "central rectangular box"
+    },
+    "colors": {
+      "primary": [
+        "charcoal gray",
+        "black"
+      ],
+      "accents": [
+        "white"
+      ],
+      "transitions": [],
+      "distribution": "black line drawings on white background, hand-drawn sketch aesthetic"
+    },
+    "style": {
+      "forms": "hand-drawn imperfect lines",
+      "shapes": "arrows and rectangles with sketchy hand-drawn quality",
+      "texture": "pencil or marker sketch texture",
+      "overlay": "none",
+      "aesthetic": "whiteboard sketch or notebook doodle",
+      "detail_level": "simple and minimal"
+    },
+    "elements": {
+      "foreground": "horizontal arrow pointing right into a rectangle, rectangle in center, arrow pointing right out of rectangle",
+      "midground": "none",
+      "background": "clean white or off-white",
+      "key_objects": [
+        "left-pointing arrow into box",
+        "rectangular box",
+        "right-pointing arrow out of box"
+      ]
+    },
+    "technical": {
+      "aspect_ratio": "16:9",
+      "orientation": "landscape",
+      "exclusions": [
+        "text",
+        "words",
+        "letters",
+        "numbers",
+        "labels",
+        "people",
+        "faces",
+        "realistic elements",
+        "3D effects",
+        "gradients"
+      ]
+    },
+    "metadata": {
+      "name": "input-process-output",
+      "use_case": "systems thinking diagram for slide presentation",
+      "tags": [
+        "diagram",
+        "process",
+        "flow",
+        "hand-drawn"
+      ],
+      "notes": "Simple hand-drawn style input-process-output flow diagram"
+    }
+  },
+  "generated_prompt": "Abstract flowing simple sketch-style flow diagram showing input arrow, central processing box, output arrow showing hand-drawn style process diagram with arrow flowing into rectangular box then arrow flowing out, left-to-right horizontal, transforming from input arrow on left to output arrow on right through central box, clean white or off-white in background, none in middle layer, horizontal arrow pointing right into a rectangle, rectangle in center, arrow pointing right out of rectangle in foreground, featuring left-pointing arrow into box, rectangular box, right-pointing arrow out of box, arrows and rectangles with sketchy hand-drawn quality hand-drawn imperfect lines throughout, none - flat illustration creating depth and dimension, none surfaces, horizontal centered composition, various shades of charcoal gray and deeper black, white accents,  transition zones, black line drawings on white background, hand-drawn sketch aesthetic, pencil or marker sketch texture texture, whiteboard sketch or notebook doodle illustration, professional brand aesthetic, absolutely no text or numbers or letters anywhere in the image, purely visual abstract representation, landscape orientation 16 by 9 aspect ratio",
+  "seed": 1803343136,
+  "timestamp": "2025-11-21T13:09:05.357507",
+  "model": "fal-ai/bytedance/seedream/v4/text-to-image"
+}

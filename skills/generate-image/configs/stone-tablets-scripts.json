@@ -1,0 +1,51 @@
+{
+  "metadata": {
+    "name": "Stone Tablets - PMax Scripts",
+    "use_case": "Homepage PMax Scripts section hero image",
+    "tags": ["scripts", "automation", "ancient", "hieroglyphics"],
+    "notes": "Abstract stone tablets with hieroglyphic-like symbols representing code/scripts"
+  },
+  "theme": {
+    "concept": "ancient stone tablets with abstract hieroglyphic symbols flowing into modern automation",
+    "visual_metaphor": "timeless knowledge carved in stone transforming into executable code",
+    "flow_direction": "left-to-right",
+    "transformation": {
+      "from": "carved stone symbols on weathered tablets",
+      "to": "flowing fluid patterns",
+      "transition_zone": "symbols dissolving and becoming liquid"
+    }
+  },
+  "composition": {
+    "layout": "asymmetric",
+    "visual_flow": "stone tablets on left dissolving into fluid patterns on right",
+    "perspective": "atmospheric",
+    "depth_technique": "translucent overlapping layers",
+    "focal_point": "center-left where tablets are most defined"
+  },
+  "colors": {
+    "palette_name": "brand-standard",
+    "primary": ["cobalt blue", "navy blue"],
+    "accents": ["orange", "burnt orange"],
+    "transitions": ["purple-gray", "mauve"],
+    "distribution": "stone tablets in blue tones, carved symbols highlighted with orange accents, background fading to purple-gray"
+  },
+  "style": {
+    "forms": "solid stone tablet forms dissolving into organic flowing shapes",
+    "shapes": "angular stone edges transitioning to soft rounded fluid forms",
+    "texture": "weathered stone texture with carved indentations, subtle grain",
+    "overlay": "seamless gradient mesh",
+    "aesthetic": "contemporary minimalist abstract with ancient elements",
+    "detail_level": "moderate"
+  },
+  "elements": {
+    "foreground": "weathered stone tablets with carved abstract hieroglyphic-like symbols",
+    "midground": "symbols dissolving and flowing rightward into fluid patterns",
+    "background": "atmospheric blue gradient suggesting depth and transformation"
+  },
+  "technical": {
+    "aspect_ratio": "16:9",
+    "orientation": "landscape",
+    "image_size": "landscape_16_9",
+    "exclusions": ["readable text", "actual letters", "words", "numbers", "recognizable alphabet", "language characters", "mechanical elements", "geometric grids"]
+  }
+}

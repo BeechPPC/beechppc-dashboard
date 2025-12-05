@@ -1,0 +1,47 @@
+-- Ad Spend Concentration Analysis Query
+-- Returns top 100 ads by spend to calculate concentration
+--
+-- PURPOSE:
+-- Run this SECOND (after account-scale.gaql) to understand ad performance distribution.
+-- Helps determine whether to focus on top performers or need broader sampling.
+--
+-- INTERPRETATION:
+-- Sum the cost_micros from all 100 rows, then calculate:
+-- - Concentration % = (sum of top 100) ÷ (total ad spend) × 100
+--
+-- If top 100 ads = 90%+ of spend:
+--   → HIGH CONCENTRATION: Focus analysis on top performers only
+--   → Few ads driving most results (common with RSAs)
+--   → Example: "Top 50 ads drive 95% of impressions, analyze those"
+--
+-- If top 100 ads = 70-90% of spend:
+--   → MODERATE CONCENTRATION: Standard approach
+--   → Analyze top 200-500 ads
+--
+-- If top 100 ads = <70% of spend:
+--   → DISTRIBUTED SPEND: Many ads active
+--   → Sample top 500-1000 ads for patterns
+--
+-- DATA FORMATTING:
+-- - cost_micros ÷ 1,000,000 = currency amount
+--
+-- STRATEGIC INSIGHT:
+-- In RSA-dominant accounts, top ads often represent 95%+ of impressions due to
+-- Google's automated ad rotation favoring highest-performing combinations
+
+SELECT
+  campaign.name,
+  ad_group.name,
+  ad_group_ad.ad.id,
+  ad_group_ad.ad.type,
+  metrics.impressions,
+  metrics.cost_micros,
+  metrics.conversions
+FROM ad_group_ad
+WHERE segments.date {DATE_RANGE}
+  AND campaign.status = 'ENABLED'
+  AND ad_group.status = 'ENABLED'
+  AND ad_group_ad.status = 'ENABLED'
+  AND metrics.impressions > 0
+ORDER BY metrics.cost_micros DESC
+LIMIT 100

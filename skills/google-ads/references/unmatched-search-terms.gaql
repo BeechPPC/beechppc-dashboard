@@ -1,0 +1,14 @@
+SELECT
+  search_term_view.search_term,
+  search_term_view.status,
+  campaign.name,
+  ad_group.name,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.conversions_value,
+  metrics.ctr
+FROM search_term_view
+WHERE segments.date {DATE_RANGE}
+ORDER BY metrics.cost_micros DESC

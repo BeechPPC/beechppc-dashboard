@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "name": "Knowledge Network",
+    "use_case": "Course materials, learning content",
+    "tags": ["learning", "knowledge", "connections"],
+    "notes": "Interconnected nodes showing knowledge building and connections"
+  },
+  "theme": {
+    "concept": "knowledge network with interconnected nodes spreading outward from center",
+    "visual_metaphor": "neural network or mycelium spreading and connecting",
+    "flow_direction": "center-outward"
+  },
+  "composition": {
+    "layout": "radial",
+    "visual_flow": "radiating outward from central hub with interconnecting pathways",
+    "perspective": "atmospheric",
+    "depth_technique": "translucent overlapping",
+    "focal_point": "center"
+  },
+  "colors": {
+    "palette_name": "brand-standard",
+    "primary": ["cobalt blue", "navy blue"],
+    "accents": ["orange", "burnt orange"],
+    "transitions": ["purple-gray", "mauve"],
+    "distribution": "blue nodes and connections, orange highlights on key connection points"
+  },
+  "style": {
+    "forms": "organic flowing shapes",
+    "shapes": "soft rounded",
+    "texture": "subtle fine grain",
+    "overlay": "seamless gradient mesh",
+    "aesthetic": "contemporary minimalist abstract",
+    "detail_level": "moderate"
+  },
+  "elements": {
+    "background": "smaller distant nodes with soft edges",
+    "midground": "connecting pathways and medium nodes",
+    "foreground": "larger clearer central hub and primary nodes",
+    "key_objects": [
+      "central hub node",
+      "radiating connection pathways",
+      "distributed satellite nodes",
+      "intersection points where connections meet"
+    ]
+  },
+  "technical": {
+    "aspect_ratio": "16:9",
+    "orientation": "landscape",
+    "image_size": "landscape_16_9",
+    "exclusions": ["text", "numbers", "letters", "geometric forms", "mechanical elements"]
+  }
+}

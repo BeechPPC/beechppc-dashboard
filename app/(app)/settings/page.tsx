@@ -22,7 +22,7 @@ export default function SettingsPage() {
   const [companyName, setCompanyName] = useState(settings.companyName || 'Beech PPC AI')
   const [colorScheme, setColorScheme] = useState(settings.colorScheme || 'beech-yellow')
   const [fontFamily, setFontFamily] = useState(settings.fontFamily || 'inter')
-  const [themeMode, setThemeMode] = useState(settings.themeMode || 'system')
+  const [themeMode, setThemeMode] = useState(settings.themeMode || 'light')
   const [dashboardLayout, setDashboardLayout] = useState(settings.dashboardLayout || 'spacious')
 
   // Sync local state when settings load
@@ -31,7 +31,7 @@ export default function SettingsPage() {
       setCompanyName(settings.companyName || 'Beech PPC AI')
       setColorScheme(settings.colorScheme || 'beech-yellow')
       setFontFamily(settings.fontFamily || 'inter')
-      setThemeMode(settings.themeMode || 'system')
+      setThemeMode(settings.themeMode || 'light')
       setDashboardLayout(settings.dashboardLayout || 'spacious')
     }
   })

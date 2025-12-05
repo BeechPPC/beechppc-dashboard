@@ -1,0 +1,14 @@
+SELECT
+  campaign.name,
+  ad_group.name,
+  segments.search_term_match_type,
+  search_term_view.search_term,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.conversions_value
+FROM search_term_view
+WHERE segments.date BETWEEN "2025-09-19" AND "2025-10-19"
+  AND metrics.impressions > 0
+ORDER BY metrics.cost_micros DESC

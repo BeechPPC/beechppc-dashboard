@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "name": "Emma Rodriguez Headshot",
+    "use_case": "Professional testimonial photo for website",
+    "tags": ["portrait", "headshot", "professional", "testimonial"],
+    "notes": "Photorealistic headshot for Emma Rodriguez (Agency Operations Director, 40s)"
+  },
+  "theme": {
+    "concept": "professional business headshot of a confident woman in her 40s with warm expression",
+    "visual_metaphor": "approachable leadership and operational excellence",
+    "flow_direction": "centered"
+  },
+  "composition": {
+    "layout": "centered",
+    "visual_flow": "focused on subject with natural eye contact",
+    "perspective": "flat",
+    "depth_technique": "blur gradient",
+    "focal_point": "center"
+  },
+  "colors": {
+    "palette_name": "custom",
+    "primary": ["warm skin tones", "natural brown"],
+    "accents": ["navy blue", "charcoal gray"],
+    "transitions": ["soft gray", "warm beige"],
+    "distribution": "natural skin tones with professional business attire in navy or gray, soft neutral background"
+  },
+  "style": {
+    "forms": "photorealistic human portrait",
+    "shapes": "natural human features",
+    "texture": "photographic quality with natural skin texture",
+    "overlay": "subtle professional lighting",
+    "aesthetic": "professional corporate headshot photography",
+    "detail_level": "high"
+  },
+  "elements": {
+    "foreground": "professional woman in her 40s, confident warm smile, shoulder-length dark hair, business professional attire",
+    "midground": "upper body and shoulders in professional clothing",
+    "background": "soft neutral gray or warm beige backdrop, slightly out of focus"
+  },
+  "technical": {
+    "aspect_ratio": "1:1",
+    "orientation": "square",
+    "image_size": "square_hd",
+    "exclusions": ["cartoonish", "illustration", "painting", "abstract", "distorted features", "multiple people", "text", "logos"]
+  }
+}

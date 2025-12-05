@@ -1,0 +1,80 @@
+{
+  "config": {
+    "metadata": {
+      "name": "Stone Tablets - PMax Scripts",
+      "use_case": "Homepage PMax Scripts section hero image",
+      "tags": [
+        "scripts",
+        "automation",
+        "ancient",
+        "hieroglyphics"
+      ],
+      "notes": "Abstract stone tablets with hieroglyphic-like symbols representing code/scripts"
+    },
+    "theme": {
+      "concept": "ancient stone tablets with abstract hieroglyphic symbols flowing into modern automation",
+      "visual_metaphor": "timeless knowledge carved in stone transforming into executable code",
+      "flow_direction": "left-to-right",
+      "transformation": {
+        "from": "carved stone symbols on weathered tablets",
+        "to": "flowing fluid patterns",
+        "transition_zone": "symbols dissolving and becoming liquid"
+      }
+    },
+    "composition": {
+      "layout": "asymmetric",
+      "visual_flow": "stone tablets on left dissolving into fluid patterns on right",
+      "perspective": "atmospheric",
+      "depth_technique": "translucent overlapping layers",
+      "focal_point": "center-left where tablets are most defined"
+    },
+    "colors": {
+      "palette_name": "brand-standard",
+      "primary": [
+        "cobalt blue",
+        "navy blue"
+      ],
+      "accents": [
+        "orange",
+        "burnt orange"
+      ],
+      "transitions": [
+        "purple-gray",
+        "mauve"
+      ],
+      "distribution": "stone tablets in blue tones, carved symbols highlighted with orange accents, background fading to purple-gray"
+    },
+    "style": {
+      "forms": "solid stone tablet forms dissolving into organic flowing shapes",
+      "shapes": "angular stone edges transitioning to soft rounded fluid forms",
+      "texture": "weathered stone texture with carved indentations, subtle grain",
+      "overlay": "seamless gradient mesh",
+      "aesthetic": "contemporary minimalist abstract with ancient elements",
+      "detail_level": "moderate"
+    },
+    "elements": {
+      "foreground": "weathered stone tablets with carved abstract hieroglyphic-like symbols",
+      "midground": "symbols dissolving and flowing rightward into fluid patterns",
+      "background": "atmospheric blue gradient suggesting depth and transformation"
+    },
+    "technical": {
+      "aspect_ratio": "16:9",
+      "orientation": "landscape",
+      "image_size": "landscape_16_9",
+      "exclusions": [
+        "readable text",
+        "actual letters",
+        "words",
+        "numbers",
+        "recognizable alphabet",
+        "language characters",
+        "mechanical elements",
+        "geometric grids"
+      ]
+    }
+  },
+  "generated_prompt": "Abstract flowing timeless knowledge carved in stone transforming into executable code showing ancient stone tablets with abstract hieroglyphic symbols flowing into modern automation, flowing from left to right, transforming from carved stone symbols on weathered tablets to flowing fluid patterns, with symbols dissolving and becoming liquid in transition zones, atmospheric blue gradient suggesting depth and transformation in background, symbols dissolving and flowing rightward into fluid patterns in middle layer, weathered stone tablets with carved abstract hieroglyphic-like symbols in foreground, angular stone edges transitioning to soft rounded fluid forms solid stone tablet forms dissolving into organic flowing shapes throughout, translucent overlapping layers creating depth and dimension, seamless gradient mesh surfaces, asymmetric composition, with stone tablets on left dissolving into fluid patterns on right, atmospheric perspective with foreground elements larger and clearer, various shades of cobalt blue and deeper navy blue, orange and warm burnt orange accents, purple-gray and mauve transition zones, stone tablets in blue tones, carved symbols highlighted with orange accents, background fading to purple-gray, weathered stone texture with carved indentations, subtle grain texture, contemporary minimalist abstract with ancient elements illustration, professional brand aesthetic, no geometric forms or technical mechanical elements, natural flowing organic forms, absolutely no text or numbers or letters anywhere in the image, purely visual abstract representation, landscape orientation 16 by 9 aspect ratio",
+  "seed": 711673860,
+  "timestamp": "2025-11-18T14:02:04.265118",
+  "model": "fal-ai/bytedance/seedream/v4/text-to-image"
+}

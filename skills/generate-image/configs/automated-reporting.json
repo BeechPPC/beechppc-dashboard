@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "name": "Automated Reporting",
+    "use_case": "Blog post about Google Ads automation",
+    "tags": ["automation", "reporting", "time-saving"],
+    "notes": "Shows transformation from manual chaos to automated efficiency"
+  },
+  "theme": {
+    "concept": "assembly line transforming chaotic data into organized reports",
+    "visual_metaphor": "conveyor system with transformation showing time compression",
+    "flow_direction": "diagonal-upper-left-to-lower-right",
+    "transformation": {
+      "from": "chaotic scattered data fragments representing five hours of manual work",
+      "to": "neat organized stacked reports representing thirty minutes of automated work",
+      "transition_zone": "gradual alignment as elements touch conveyor and transform"
+    }
+  },
+  "composition": {
+    "layout": "asymmetric",
+    "visual_flow": "chaos on left through system in center to order on right",
+    "perspective": "atmospheric",
+    "depth_technique": "translucent overlapping",
+    "focal_point": "right-third"
+  },
+  "colors": {
+    "palette_name": "brand-standard",
+    "primary": ["cobalt blue", "navy blue"],
+    "accents": ["orange", "burnt orange"],
+    "transitions": ["purple-gray", "mauve"],
+    "distribution": "blue dominant for data elements, orange for conveyor and organized outputs"
+  },
+  "style": {
+    "forms": "organic flowing shapes",
+    "shapes": "soft rounded",
+    "texture": "subtle fine grain",
+    "overlay": "seamless gradient mesh",
+    "aesthetic": "contemporary minimalist abstract",
+    "detail_level": "moderate"
+  },
+  "elements": {
+    "background": "scattered chaotic data fragments floating in disorganized cloud in upper left corner",
+    "midground": "smooth curved orange conveyor pathway cutting diagonally through center",
+    "foreground": "neat organized stacked blocks with orange edges and blue fills in lower right",
+    "key_objects": [
+      "scattered fragments gradually aligning along conveyor",
+      "transformation from scattered to organized"
+    ]
+  },
+  "technical": {
+    "aspect_ratio": "16:9",
+    "orientation": "landscape",
+    "image_size": "landscape_16_9",
+    "exclusions": ["text", "numbers", "letters", "geometric forms", "mechanical elements"]
+  }
+}

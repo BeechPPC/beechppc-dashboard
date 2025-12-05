@@ -1,0 +1,39 @@
+{
+  "metadata": {
+    "name": "Brand Standard Template",
+    "use_case": "General purpose abstract illustration",
+    "notes": "Baseline template with brand colors and style. Replace theme.concept with your specific subject."
+  },
+  "theme": {
+    "concept": "flowing transformation from complexity to clarity",
+    "visual_metaphor": "organic transformation",
+    "flow_direction": "left-to-right"
+  },
+  "composition": {
+    "layout": "asymmetric",
+    "visual_flow": "natural progression from left to right",
+    "perspective": "atmospheric",
+    "depth_technique": "translucent overlapping",
+    "focal_point": "center"
+  },
+  "colors": {
+    "palette_name": "brand-standard",
+    "primary": ["cobalt blue", "navy blue"],
+    "accents": ["orange", "burnt orange"],
+    "transitions": ["purple-gray", "mauve"]
+  },
+  "style": {
+    "forms": "organic flowing shapes",
+    "shapes": "soft rounded",
+    "texture": "subtle fine grain",
+    "overlay": "seamless gradient mesh",
+    "aesthetic": "contemporary minimalist abstract",
+    "detail_level": "moderate"
+  },
+  "technical": {
+    "aspect_ratio": "16:9",
+    "orientation": "landscape",
+    "image_size": "landscape_16_9",
+    "exclusions": ["text", "numbers", "letters", "geometric forms", "mechanical elements"]
+  }
+}

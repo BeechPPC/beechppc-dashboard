@@ -1,0 +1,13 @@
+-- Budget performance and lost impression share (last 7 days)
+SELECT
+  campaign.name,
+  campaign_budget.amount_micros,
+  metrics.cost_micros,
+  metrics.search_budget_lost_impression_share,
+  metrics.search_rank_lost_impression_share,
+  metrics.search_impression_share,
+  metrics.conversions
+FROM campaign
+WHERE segments.date {DATE_RANGE}
+  AND campaign.status = 'ENABLED'
+ORDER BY metrics.search_budget_lost_impression_share DESC

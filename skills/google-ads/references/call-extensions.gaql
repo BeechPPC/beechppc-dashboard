@@ -1,0 +1,11 @@
+SELECT
+  campaign.name,
+  asset.call_asset.phone_number,
+  asset.call_asset.country_code,
+  metrics.impressions,
+  metrics.clicks
+FROM campaign_asset
+WHERE segments.date {DATE_RANGE}
+  AND asset.type = 'CALL'
+  AND campaign.status = 'ENABLED'
+ORDER BY campaign.name

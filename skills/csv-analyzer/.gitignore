@@ -1,0 +1,26 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Generated files
+*.png
+*.pdf
+correlation_heatmap.png
+time_series_analysis.png
+distributions.png
+categorical_distributions.png
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

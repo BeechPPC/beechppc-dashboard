@@ -1,0 +1,81 @@
+{
+  "config": {
+    "theme": {
+      "concept": "photorealistic scattered LEGO building blocks on clean white surface",
+      "visual_metaphor": "modular building blocks representing components that can be assembled",
+      "flow_direction": "scattered arrangement",
+      "transformation": {
+        "from": "individual blocks",
+        "to": "potential for assembly"
+      }
+    },
+    "composition": {
+      "layout": "scattered casual arrangement",
+      "perspective": "slightly overhead angle looking down at blocks",
+      "depth_technique": "shallow depth of field",
+      "focal_point": "cluster of colorful blocks"
+    },
+    "colors": {
+      "primary": [
+        "bright red",
+        "bright blue",
+        "bright yellow"
+      ],
+      "accents": [
+        "green",
+        "white"
+      ],
+      "transitions": [],
+      "distribution": "colorful blocks against pure white background, classic LEGO primary colors"
+    },
+    "style": {
+      "forms": "rectangular interlocking brick shapes with studs on top",
+      "shapes": "classic rectangular building blocks with circular studs",
+      "texture": "smooth matte plastic",
+      "overlay": "none",
+      "aesthetic": "clean product photography",
+      "detail_level": "high detail photorealistic"
+    },
+    "elements": {
+      "foreground": "five to eight colorful interlocking building blocks scattered casually",
+      "midground": "none",
+      "background": "pure white seamless background",
+      "key_objects": [
+        "red building block",
+        "blue building block",
+        "yellow building block",
+        "scattered arrangement"
+      ]
+    },
+    "technical": {
+      "aspect_ratio": "16:9",
+      "orientation": "landscape",
+      "exclusions": [
+        "text",
+        "words",
+        "letters",
+        "numbers",
+        "labels",
+        "people",
+        "hands",
+        "logos",
+        "brand names"
+      ]
+    },
+    "metadata": {
+      "name": "lego-blocks",
+      "use_case": "modular components visual for slide presentation",
+      "tags": [
+        "photorealistic",
+        "blocks",
+        "modular",
+        "building"
+      ],
+      "notes": "Photorealistic LEGO-style building blocks on white background"
+    }
+  },
+  "generated_prompt": "Abstract flowing modular building blocks representing components that can be assembled showing photorealistic scattered LEGO building blocks on clean white surface, scattered arrangement, transforming from individual blocks to potential for assembly, pure white seamless background in background, none in middle layer, five to eight colorful interlocking building blocks scattered casually in foreground, featuring red building block, blue building block, yellow building block, scattered arrangement, classic rectangular building blocks with circular studs rectangular interlocking brick shapes with studs on top throughout, shallow depth of field creating depth and dimension, none surfaces, scattered casual arrangement composition, various shades of bright red and deeper bright blue and deeper bright yellow, green and warm white accents,  transition zones, colorful blocks against pure white background, classic LEGO primary colors, smooth matte plastic texture, clean product photography illustration, professional brand aesthetic, absolutely no text or numbers or letters anywhere in the image, purely visual abstract representation, landscape orientation 16 by 9 aspect ratio",
+  "seed": 1007434651,
+  "timestamp": "2025-11-21T13:09:47.215842",
+  "model": "fal-ai/bytedance/seedream/v4/text-to-image"
+}

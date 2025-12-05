@@ -1,0 +1,75 @@
+{
+  "config": {
+    "metadata": {
+      "name": "Sarah Mitchell Headshot",
+      "use_case": "Professional testimonial photo for website",
+      "tags": [
+        "portrait",
+        "headshot",
+        "professional",
+        "testimonial"
+      ],
+      "notes": "Photorealistic headshot for Sarah Mitchell (Senior PPC Manager, 20s)"
+    },
+    "theme": {
+      "concept": "professional business headshot of an energetic woman in her late 20s with friendly expression",
+      "visual_metaphor": "technical competence and approachable expertise",
+      "flow_direction": "centered"
+    },
+    "composition": {
+      "layout": "centered",
+      "visual_flow": "focused on subject with natural eye contact",
+      "perspective": "flat",
+      "depth_technique": "blur gradient",
+      "focal_point": "center"
+    },
+    "colors": {
+      "palette_name": "custom",
+      "primary": [
+        "warm skin tones",
+        "natural blonde brown"
+      ],
+      "accents": [
+        "teal",
+        "soft blue"
+      ],
+      "transitions": [
+        "soft gray",
+        "cool beige"
+      ],
+      "distribution": "natural skin tones with professional business attire in teal or blue, soft neutral background"
+    },
+    "style": {
+      "forms": "photorealistic human portrait",
+      "shapes": "natural human features",
+      "texture": "photographic quality with natural skin texture",
+      "overlay": "subtle professional lighting",
+      "aesthetic": "professional corporate headshot photography",
+      "detail_level": "high"
+    },
+    "elements": {
+      "foreground": "professional woman in her late 20s, bright friendly smile, medium-length hair, modern business professional attire",
+      "midground": "upper body and shoulders in professional clothing",
+      "background": "soft neutral gray or cool white backdrop, slightly out of focus"
+    },
+    "technical": {
+      "aspect_ratio": "1:1",
+      "orientation": "square",
+      "image_size": "square_hd",
+      "exclusions": [
+        "cartoonish",
+        "illustration",
+        "painting",
+        "abstract",
+        "distorted features",
+        "multiple people",
+        "text",
+        "logos"
+      ]
+    }
+  },
+  "generated_prompt": "Abstract flowing technical competence and approachable expertise showing professional business headshot of an energetic woman in her late 20s with friendly expression, centered, soft neutral gray or cool white backdrop, slightly out of focus in background, upper body and shoulders in professional clothing in middle layer, professional woman in her late 20s, bright friendly smile, medium-length hair, modern business professional attire in foreground, natural human features photorealistic human portrait throughout, blur gradient creating depth and dimension, subtle professional lighting surfaces, centered composition, with focused on subject with natural eye contact, various shades of warm skin tones and deeper natural blonde brown, teal and warm soft blue accents, soft gray and cool beige transition zones, natural skin tones with professional business attire in teal or blue, soft neutral background, photographic quality with natural skin texture texture, professional corporate headshot photography illustration, professional brand aesthetic, absolutely no text or numbers or letters anywhere in the image, purely visual abstract representation, square orientation 1 by 1 aspect ratio",
+  "seed": 1988353792,
+  "timestamp": "2025-11-18T14:20:27.339956",
+  "model": "fal-ai/bytedance/seedream/v4/text-to-image"
+}

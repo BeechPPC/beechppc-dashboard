@@ -1,0 +1,7 @@
+SELECT
+  campaign.name,
+  campaign_criterion.keyword.text,
+  campaign_criterion.keyword.match_type,
+  campaign_criterion.negative
+FROM campaign_criterion
+ORDER BY campaign.name

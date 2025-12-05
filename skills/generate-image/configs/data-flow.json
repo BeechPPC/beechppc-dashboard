@@ -1,0 +1,51 @@
+{
+  "metadata": {
+    "name": "Data Flow Streams",
+    "use_case": "Technical content about data processing",
+    "tags": ["data", "processing", "flow"],
+    "notes": "Multiple data streams converging into unified processing hub"
+  },
+  "theme": {
+    "concept": "multiple data streams flowing and converging into central processing hub",
+    "visual_metaphor": "rivers merging into delta",
+    "flow_direction": "edges-inward"
+  },
+  "composition": {
+    "layout": "asymmetric",
+    "visual_flow": "multiple streams from edges converging toward center",
+    "perspective": "atmospheric",
+    "depth_technique": "translucent overlapping",
+    "focal_point": "center"
+  },
+  "colors": {
+    "palette_name": "brand-standard",
+    "primary": ["cobalt blue", "navy blue"],
+    "accents": ["orange", "burnt orange"],
+    "transitions": ["purple-gray", "mauve"],
+    "distribution": "blue streams with orange central hub, purple-gray where streams merge"
+  },
+  "style": {
+    "forms": "organic flowing shapes",
+    "shapes": "soft rounded",
+    "texture": "subtle fine grain",
+    "overlay": "seamless gradient mesh",
+    "aesthetic": "contemporary minimalist abstract",
+    "detail_level": "moderate"
+  },
+  "elements": {
+    "background": "source points at edges where streams originate",
+    "midground": "flowing stream pathways with particle-like elements",
+    "foreground": "central processing hub where streams converge",
+    "key_objects": [
+      "three to five distinct streams",
+      "central convergence point",
+      "flowing particles along stream paths"
+    ]
+  },
+  "technical": {
+    "aspect_ratio": "16:9",
+    "orientation": "landscape",
+    "image_size": "landscape_16_9",
+    "exclusions": ["text", "numbers", "letters", "geometric forms", "mechanical elements"]
+  }
+}

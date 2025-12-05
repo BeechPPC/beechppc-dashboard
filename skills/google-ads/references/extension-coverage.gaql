@@ -1,0 +1,10 @@
+SELECT
+  campaign.name,
+  asset.type,
+  COUNT(asset.id) as asset_count,
+  SUM(metrics.impressions) as total_impressions
+FROM campaign_asset
+WHERE segments.date {DATE_RANGE}
+  AND campaign.status = 'ENABLED'
+GROUP BY campaign.name, asset.type
+ORDER BY campaign.name, asset.type

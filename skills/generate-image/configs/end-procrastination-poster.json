@@ -1,0 +1,48 @@
+{
+  "theme": {
+    "concept": "bold motivational poster with dynamic forward momentum breaking through barriers",
+    "visual_metaphor": "explosive breakthrough moment with shattered obstacles and clear path forward",
+    "flow_direction": "center-outward with upward momentum",
+    "transformation": {
+      "from": "stagnation and barriers",
+      "to": "explosive forward action"
+    }
+  },
+  "composition": {
+    "layout": "centered dramatic",
+    "perspective": "dynamic front-facing",
+    "depth_technique": "radial burst from center",
+    "focal_point": "central breakthrough moment"
+  },
+  "colors": {
+    "primary": ["deep black", "charcoal gray"],
+    "accents": ["bright orange", "electric yellow", "white"],
+    "transitions": ["orange to yellow gradient"],
+    "distribution": "dark background with explosive bright accents bursting from center, high contrast for impact"
+  },
+  "style": {
+    "forms": "bold geometric shapes with sharp edges",
+    "shapes": "angular shards, arrows, lightning bolts",
+    "texture": "smooth with sharp contrasts",
+    "overlay": "none",
+    "aesthetic": "bold motivational poster",
+    "detail_level": "simplified for impact"
+  },
+  "elements": {
+    "foreground": "shattered barrier fragments flying outward, bold angular shapes",
+    "midground": "explosive energy burst with radiating lines and momentum",
+    "background": "deep dark void being pierced by light",
+    "key_objects": ["shattered geometric barriers", "radiating energy lines", "forward-pointing arrows"]
+  },
+  "technical": {
+    "aspect_ratio": "3:4",
+    "orientation": "portrait",
+    "exclusions": ["text", "words", "letters", "numbers", "people", "faces", "hands"]
+  },
+  "metadata": {
+    "name": "end-procrastination-poster",
+    "use_case": "motivational poster for productivity content",
+    "tags": ["motivation", "action", "breakthrough", "poster"],
+    "notes": "Bold, high-contrast poster style emphasizing explosive action and breaking through barriers"
+  }
+}

@@ -1,0 +1,20 @@
+SELECT
+  campaign.name,
+  ad_group.name,
+  ad_group_criterion.keyword.text,
+  ad_group_criterion.keyword.match_type,
+  ad_group_criterion.quality_info.quality_score,
+  ad_group_criterion.quality_info.creative_quality_score,
+  ad_group_criterion.quality_info.post_click_quality_score,
+  ad_group_criterion.quality_info.search_predicted_ctr,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.average_cpc
+FROM keyword_view
+WHERE segments.date BETWEEN "2025-07-21" AND "2025-10-19"
+  AND campaign.status = 'ENABLED'
+  AND ad_group.status = 'ENABLED'
+  AND ad_group_criterion.status = 'ENABLED'
+ORDER BY metrics.impressions DESC

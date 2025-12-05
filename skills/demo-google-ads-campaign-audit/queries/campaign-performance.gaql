@@ -1,0 +1,24 @@
+-- Comprehensive campaign performance metrics (last 30 days, enabled campaigns only)
+SELECT
+  campaign.id,
+  campaign.name,
+  campaign.status,
+  campaign.advertising_channel_type,
+  campaign_budget.amount_micros,
+  campaign.bidding_strategy_type,
+  campaign.target_cpa.target_cpa_micros,
+  campaign.target_roas.target_roas,
+  campaign.maximize_conversions.target_cpa_micros,
+  campaign.maximize_conversion_value.target_roas,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.ctr,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.cost_per_conversion,
+  metrics.conversions_value,
+  metrics.average_cpc
+FROM campaign
+WHERE campaign.status = 'ENABLED'
+  AND segments.date DURING LAST_30_DAYS
+ORDER BY metrics.cost_micros DESC

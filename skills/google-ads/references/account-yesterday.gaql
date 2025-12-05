@@ -1,0 +1,7 @@
+SELECT
+  customer.descriptive_name,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.conversions_value
+FROM customer
+WHERE segments.date DURING YESTERDAY

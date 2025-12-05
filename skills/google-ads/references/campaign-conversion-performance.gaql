@@ -1,0 +1,13 @@
+SELECT
+  campaign.id,
+  campaign.name,
+  segments.conversion_action,
+  segments.conversion_action_name,
+  metrics.conversions,
+  metrics.all_conversions,
+  metrics.conversions_value,
+  metrics.cost_micros
+FROM campaign
+WHERE campaign.status != 'REMOVED'
+  AND segments.date {DATE_RANGE}
+ORDER BY metrics.cost_micros DESC

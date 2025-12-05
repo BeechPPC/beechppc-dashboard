@@ -1,0 +1,7 @@
+SELECT
+  shared_set.name,
+  shared_set.type,
+  shared_criterion.keyword.text,
+  shared_criterion.keyword.match_type
+FROM shared_criterion
+ORDER BY shared_set.name

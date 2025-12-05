@@ -1,0 +1,17 @@
+SELECT
+  campaign.name,
+  ad_group.name,
+  ad_group_criterion.keyword.text,
+  ad_group_criterion.keyword.match_type,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.ctr,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.cost_per_conversion,
+  metrics.average_cpc
+FROM keyword_view
+WHERE segments.date BETWEEN "2025-09-19" AND "2025-10-19"
+  AND campaign.status = 'ENABLED'
+  AND ad_group.status = 'ENABLED'
+ORDER BY metrics.cost_micros DESC

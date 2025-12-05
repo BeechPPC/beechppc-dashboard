@@ -1,0 +1,15 @@
+SELECT
+  campaign.id,
+  campaign.name,
+  campaign.status,
+  campaign.advertising_channel_type,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.conversions_value,
+  metrics.ctr,
+  metrics.average_cpc
+FROM campaign
+WHERE segments.date {DATE_RANGE}
+ORDER BY metrics.cost_micros DESC

@@ -1,0 +1,11 @@
+SELECT
+  campaign.name,
+  ad_group.name,
+  asset.callout_asset.callout_text,
+  metrics.impressions,
+  metrics.clicks
+FROM ad_group_ad_asset_view
+WHERE segments.date {DATE_RANGE}
+  AND asset.type = 'CALLOUT'
+  AND campaign.status = 'ENABLED'
+ORDER BY campaign.name, metrics.impressions DESC

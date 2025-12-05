@@ -1,0 +1,12 @@
+SELECT
+  campaign.name,
+  campaign.status,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.conversions_value
+FROM campaign
+WHERE segments.date {DATE_RANGE}
+ORDER BY metrics.cost_micros DESC
+LIMIT 10

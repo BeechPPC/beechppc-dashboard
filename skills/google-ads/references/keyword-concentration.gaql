@@ -1,0 +1,45 @@
+-- Keyword Spend Concentration Analysis Query
+-- Returns top 100 keywords by spend to calculate concentration
+--
+-- PURPOSE:
+-- Run this SECOND (after account-scale.gaql) to understand spend distribution.
+-- Helps determine whether to focus on top performers or need broader sampling.
+--
+-- INTERPRETATION:
+-- Sum the cost_micros from all 100 rows, then calculate:
+-- - Concentration % = (sum of top 100) ÷ (total keyword spend) × 100
+--
+-- If top 100 keywords = 90%+ of spend:
+--   → HIGH CONCENTRATION: Focus analysis on top performers only
+--   → Use aggressive filtering and limits in other queries
+--   → Example: "Top 100 keywords drive 95% of results, analyze those deeply"
+--
+-- If top 100 keywords = 70-90% of spend:
+--   → MODERATE CONCENTRATION: Standard approach
+--   → Analyze top 500-1000 keywords with normal filtering
+--
+-- If top 100 keywords = <70% of spend:
+--   → DISTRIBUTED SPEND: Need broader sampling
+--   → Use lighter filtering to capture more keywords
+--   → Example: "Spend distributed across 5,000 keywords, sample top 1,000"
+--
+-- DATA FORMATTING:
+-- - cost_micros ÷ 1,000,000 = currency amount
+--
+-- STRATEGIC INSIGHT:
+-- Brad Geddes "Follow the Money" principle: Start audits with highest spend areas
+
+SELECT
+  campaign.name,
+  ad_group.name,
+  ad_group_criterion.keyword.text,
+  ad_group_criterion.keyword.match_type,
+  metrics.cost_micros,
+  metrics.conversions
+FROM keyword_view
+WHERE segments.date {DATE_RANGE}
+  AND campaign.status = 'ENABLED'
+  AND ad_group.status = 'ENABLED'
+  AND metrics.cost_micros > 0
+ORDER BY metrics.cost_micros DESC
+LIMIT 100

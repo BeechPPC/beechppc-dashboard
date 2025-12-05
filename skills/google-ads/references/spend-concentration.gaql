@@ -1,0 +1,10 @@
+-- Top 50 campaigns by spend (last 30 days) to calculate spend concentration
+SELECT
+  campaign.id,
+  campaign.name,
+  metrics.cost_micros
+FROM campaign
+WHERE segments.date {DATE_RANGE}
+  AND campaign.status = 'ENABLED'
+ORDER BY metrics.cost_micros DESC
+LIMIT 50

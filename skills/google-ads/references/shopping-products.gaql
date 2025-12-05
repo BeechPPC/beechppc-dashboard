@@ -1,0 +1,12 @@
+SELECT
+  segments.product_title,
+  segments.product_item_id,
+  segments.product_image_url,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.conversions_value
+FROM shopping_performance_view
+WHERE segments.date {DATE_RANGE}
+ORDER BY metrics.cost_micros DESC

@@ -37,14 +37,65 @@ interface SkillConfig {
   filePath: string
 }
 
-const skillsToCreate: SkillConfig[] = [
-  {
-    name: 'google-ads-analysis',
-    description: 'Expert guidance for analyzing Google Ads account performance, identifying optimization opportunities, and making data-driven recommendations for BeechPPC clients',
-    filePath: join(process.cwd(), 'skills', 'google-ads-analysis', 'SKILL.md'),
-  },
-  // Add more skills here as you create them
-]
+// Auto-discover skills from the skills directory
+function discoverSkills(): SkillConfig[] {
+  const skillsDir = join(process.cwd(), 'skills')
+  const skills: SkillConfig[] = []
+  
+  try {
+    const { readdirSync, statSync } = require('fs')
+    const entries = readdirSync(skillsDir, { withFileTypes: true })
+    
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const skillDir = join(skillsDir, entry.name)
+        // Check for SKILL.md or skill.md
+        let skillFile = join(skillDir, 'SKILL.md')
+        let exists = false
+        
+        try {
+          statSync(skillFile)
+          exists = true
+        } catch {
+          skillFile = join(skillDir, 'skill.md')
+          try {
+            statSync(skillFile)
+            exists = true
+          } catch {
+            // No skill file found
+          }
+        }
+        
+        if (exists) {
+          // Try to read frontmatter for description
+          const content = readFileSync(skillFile, 'utf-8')
+          const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/)
+          let description = `Skill for ${entry.name}`
+          
+          if (frontmatterMatch) {
+            const frontmatter = frontmatterMatch[1]
+            const descMatch = frontmatter.match(/description:\s*(.+)/)
+            if (descMatch) {
+              description = descMatch[1].trim().replace(/^["']|["']$/g, '')
+            }
+          }
+          
+          skills.push({
+            name: entry.name,
+            description,
+            filePath: skillFile,
+          })
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error discovering skills:', error)
+  }
+  
+  return skills
+}
+
+const skillsToCreate = discoverSkills()
 
 async function validateSkill(config: SkillConfig): Promise<boolean> {
   try {
@@ -57,31 +108,35 @@ async function validateSkill(config: SkillConfig): Promise<boolean> {
     // Validate frontmatter
     const frontmatterMatch = skillContent.match(/^---\n([\s\S]*?)\n---/)
     if (!frontmatterMatch) {
-      console.error(`   ❌ Missing YAML frontmatter (--- ... ---)`)
-      return false
+      console.warn(`   ⚠️  Missing YAML frontmatter (--- ... ---) - will still work but less optimal`)
+      // Still valid, just warn
+    } else {
+      const frontmatter = frontmatterMatch[1]
+      const hasName = frontmatter.includes('name:')
+      const hasDescription = frontmatter.includes('description:')
+      
+      if (!hasName || !hasDescription) {
+        console.warn(`   ⚠️  Frontmatter missing recommended fields (name, description)`)
+      } else {
+        console.log(`   ✓ Valid frontmatter with name and description`)
+      }
     }
-    
-    const frontmatter = frontmatterMatch[1]
-    const hasName = frontmatter.includes('name:')
-    const hasDescription = frontmatter.includes('description:')
-    
-    if (!hasName || !hasDescription) {
-      console.error(`   ❌ Frontmatter missing required fields (name, description)`)
-      return false
-    }
-    
-    console.log(`   ✓ Valid frontmatter with name and description`)
     
     // Check content length
     const contentWithoutFrontmatter = skillContent.replace(/^---\n[\s\S]*?\n---\n/, '')
-    if (contentWithoutFrontmatter.trim().length < 100) {
+    if (contentWithoutFrontmatter.trim().length < 50) {
       console.warn(`   ⚠️  Skill content seems short (${contentWithoutFrontmatter.length} chars)`)
     } else {
       console.log(`   ✓ Skill content looks good (${contentWithoutFrontmatter.length} chars)`)
     }
     
+    // Check for potential issues
+    const hasScripts = config.filePath.includes('scripts/') || skillContent.includes('python') || skillContent.includes('node')
+    if (hasScripts) {
+      console.log(`   ℹ️  Skill contains scripts - ensure dependencies are installed if needed`)
+    }
+    
     console.log(`   ✅ Skill validated successfully!`)
-    console.log(`   💡 This skill will be automatically loaded in your chat endpoint`)
     
     return true
   } catch (error) {

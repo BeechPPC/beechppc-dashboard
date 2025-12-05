@@ -1,0 +1,44 @@
+-- Conversion Action Volume Concentration Query
+-- Returns top 20 conversion actions by volume to calculate concentration
+--
+-- PURPOSE:
+-- Run this SECOND (after account-scale.gaql) to understand conversion distribution.
+-- Helps determine which conversion actions drive business results.
+--
+-- INTERPRETATION:
+-- Sum the conversions from all 20 rows, then calculate:
+-- - Concentration % = (sum of top 20) ÷ (total conversions) × 100
+--
+-- If top 5 conversion actions = 95%+ of conversions:
+--   → HIGH CONCENTRATION: Focus tracking audit on primary goals only
+--   → Many conversion actions may be legacy/unused
+--   → Example: "5 conversion actions drive 98% of volume, 15 others are legacy"
+--
+-- If top 10 conversion actions = 80-95% of conversions:
+--   → MODERATE CONCENTRATION: Standard approach
+--   → Multiple valuable conversion goals
+--
+-- If top 20 conversion actions = <80% of conversions:
+--   → DISTRIBUTED TRACKING: Many active conversion types
+--   → Likely e-commerce with product-specific goals or complex funnel
+--
+-- TRACKING HEALTH INDICATORS:
+-- - Many conversion actions with zero conversions = Tracking bloat (cleanup needed)
+-- - One conversion action = 100% of volume = Single-goal tracking (review if appropriate)
+-- - Even distribution = May indicate conversion import issues or attribution modeling
+--
+-- DATA FORMATTING:
+-- - Conversions already in count format (not micros)
+
+SELECT
+  conversion_action.name,
+  conversion_action.type,
+  conversion_action.category,
+  metrics.all_conversions,
+  metrics.conversions,
+  metrics.conversions_value
+FROM conversion_action
+WHERE segments.date {DATE_RANGE}
+  AND conversion_action.status != 'REMOVED'
+ORDER BY metrics.conversions DESC
+LIMIT 20

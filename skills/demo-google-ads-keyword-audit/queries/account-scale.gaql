@@ -1,0 +1,24 @@
+-- Account Scale Assessment Query
+-- Returns keyword and ad group counts to determine query strategy
+--
+-- PURPOSE:
+-- Run this FIRST to understand account scale before executing keyword queries.
+-- Results determine whether to use:
+-- - Full queries (small accounts)
+-- - Focused queries with limits (large accounts)
+-- - Strategic queries on top performers only (enterprise accounts)
+--
+-- USAGE:
+-- Based on keyword counts, choose strategy:
+-- - < 500 keywords: Small account (full audit)
+-- - 500-5,000 keywords: Medium account (standard audit)
+-- - 5,000-20,000 keywords: Large account (focused audit)
+-- - > 20,000 keywords: Enterprise account (strategic audit)
+--
+-- This query is fast (no aggregation across dates) and cheap (single row result)
+
+SELECT
+  COUNT(ad_group_criterion.keyword.text) AS total_keywords
+FROM keyword_view
+WHERE campaign.status != 'REMOVED'
+  AND ad_group.status != 'REMOVED'

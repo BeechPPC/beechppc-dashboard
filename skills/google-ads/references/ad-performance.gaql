@@ -1,0 +1,18 @@
+SELECT
+  campaign.name,
+  ad_group.name,
+  ad_group_ad.ad.id,
+  ad_group_ad.status,
+  ad_group_ad.strength,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.ctr,
+  metrics.conversions,
+  metrics.conversion_rate,
+  metrics.cost_per_conversion
+FROM ad_group_ad
+WHERE segments.date {DATE_RANGE}
+  AND campaign.status = 'ENABLED'
+  AND ad_group.status = 'ENABLED'
+  AND ad_group_ad.status = 'ENABLED'
+ORDER BY ad_group.name, metrics.impressions DESC

@@ -276,7 +276,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   companyName: 'Beech PPC AI',
   colorScheme: 'beech-yellow',
   fontFamily: 'inter',
-  themeMode: 'system',
+  themeMode: 'light',
   dashboardLayout: 'spacious',
   schedule: '0 11 * * *',
   timezone: 'Australia/Melbourne',

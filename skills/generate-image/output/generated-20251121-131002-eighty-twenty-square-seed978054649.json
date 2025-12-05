@@ -1,0 +1,80 @@
+{
+  "config": {
+    "theme": {
+      "concept": "hand-drawn square divided by vertical line showing 80-20 split proportions",
+      "visual_metaphor": "Pareto principle visualization with unequal division",
+      "flow_direction": "static divided rectangle",
+      "transformation": {
+        "from": "whole square",
+        "to": "divided into 80% and 20% sections"
+      }
+    },
+    "composition": {
+      "layout": "centered single shape",
+      "perspective": "flat 2D diagram",
+      "depth_technique": "none - flat illustration",
+      "focal_point": "the dividing line showing unequal proportions"
+    },
+    "colors": {
+      "primary": [
+        "charcoal gray",
+        "black"
+      ],
+      "accents": [
+        "white"
+      ],
+      "transitions": [],
+      "distribution": "black line drawing on white background, hand-drawn sketch aesthetic"
+    },
+    "style": {
+      "forms": "hand-drawn imperfect lines",
+      "shapes": "square with vertical dividing line one-fifth from right edge",
+      "texture": "pencil or marker sketch texture",
+      "overlay": "none",
+      "aesthetic": "whiteboard sketch or notebook doodle",
+      "detail_level": "extremely simple and minimal"
+    },
+    "elements": {
+      "foreground": "single square outline with one vertical line dividing it into larger left section (80%) and smaller right section (20%)",
+      "midground": "none",
+      "background": "clean white or off-white",
+      "key_objects": [
+        "square outline",
+        "vertical dividing line positioned at 80-20 split"
+      ]
+    },
+    "technical": {
+      "aspect_ratio": "1:1",
+      "orientation": "square",
+      "exclusions": [
+        "text",
+        "words",
+        "letters",
+        "numbers",
+        "labels",
+        "people",
+        "faces",
+        "realistic elements",
+        "3D effects",
+        "gradients",
+        "shading",
+        "fill colors"
+      ]
+    },
+    "metadata": {
+      "name": "eighty-twenty-square",
+      "use_case": "80/20 Pareto principle diagram for slide presentation",
+      "tags": [
+        "diagram",
+        "pareto",
+        "80-20",
+        "hand-drawn"
+      ],
+      "notes": "Simple hand-drawn square with vertical line showing 80-20 division, no text"
+    }
+  },
+  "generated_prompt": "Abstract flowing Pareto principle visualization with unequal division showing hand-drawn square divided by vertical line showing 80-20 split proportions, static divided rectangle, transforming from whole square to divided into 80% and 20% sections, clean white or off-white in background, none in middle layer, single square outline with one vertical line dividing it into larger left section (80%) and smaller right section (20%) in foreground, featuring square outline, vertical dividing line positioned at 80-20 split, square with vertical dividing line one-fifth from right edge hand-drawn imperfect lines throughout, none - flat illustration creating depth and dimension, none surfaces, centered single shape composition, various shades of charcoal gray and deeper black, white accents,  transition zones, black line drawing on white background, hand-drawn sketch aesthetic, pencil or marker sketch texture texture, whiteboard sketch or notebook doodle illustration, professional brand aesthetic, absolutely no text or numbers or letters anywhere in the image, purely visual abstract representation, square orientation 1 by 1 aspect ratio",
+  "seed": 978054649,
+  "timestamp": "2025-11-21T13:10:05.926408",
+  "model": "fal-ai/bytedance/seedream/v4/text-to-image"
+}

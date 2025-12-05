@@ -1,0 +1,13 @@
+-- Campaign performance by device type (last 30 days)
+SELECT
+  campaign.name,
+  segments.device,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.ctr,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.cost_per_conversion
+FROM campaign
+WHERE segments.date {DATE_RANGE}
+ORDER BY campaign.name, metrics.cost_micros DESC

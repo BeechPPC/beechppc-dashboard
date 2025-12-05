@@ -1,0 +1,78 @@
+{
+  "config": {
+    "theme": {
+      "concept": "hand-drawn diagram showing multiple arrows at different angles all pointing into a central rectangular box",
+      "visual_metaphor": "convergence of multiple inputs into single processing point",
+      "flow_direction": "multiple angles converging to center-right",
+      "transformation": {
+        "from": "scattered arrows at various angles",
+        "to": "single central collection box"
+      }
+    },
+    "composition": {
+      "layout": "centered with arrows from left",
+      "perspective": "flat 2D diagram",
+      "depth_technique": "none - flat illustration",
+      "focal_point": "rectangular box on right receiving arrows"
+    },
+    "colors": {
+      "primary": [
+        "charcoal gray",
+        "black"
+      ],
+      "accents": [
+        "white"
+      ],
+      "transitions": [],
+      "distribution": "black line drawings on white background, hand-drawn sketch aesthetic"
+    },
+    "style": {
+      "forms": "hand-drawn imperfect lines",
+      "shapes": "arrows at various angles and rectangle with sketchy hand-drawn quality",
+      "texture": "pencil or marker sketch texture",
+      "overlay": "none",
+      "aesthetic": "whiteboard sketch or notebook doodle",
+      "detail_level": "simple and minimal"
+    },
+    "elements": {
+      "foreground": "five or six arrows on left side at different angles - one at 45 degrees down, two horizontal, two at angles up including one at 45 degrees up - all pointing toward rectangular box on right side",
+      "midground": "none",
+      "background": "clean white or off-white",
+      "key_objects": [
+        "multiple arrows at various angles",
+        "rectangular box receiving arrows"
+      ]
+    },
+    "technical": {
+      "aspect_ratio": "1:1",
+      "orientation": "square",
+      "exclusions": [
+        "text",
+        "words",
+        "letters",
+        "numbers",
+        "labels",
+        "people",
+        "faces",
+        "realistic elements",
+        "3D effects",
+        "gradients"
+      ]
+    },
+    "metadata": {
+      "name": "multiple-inputs-box",
+      "use_case": "multiple data sources diagram for slide presentation",
+      "tags": [
+        "diagram",
+        "inputs",
+        "convergence",
+        "hand-drawn"
+      ],
+      "notes": "Hand-drawn style showing multiple arrows at different angles converging on a box"
+    }
+  },
+  "generated_prompt": "Abstract flowing convergence of multiple inputs into single processing point showing hand-drawn diagram showing multiple arrows at different angles all pointing into a central rectangular box, multiple angles converging to center-right, transforming from scattered arrows at various angles to single central collection box, clean white or off-white in background, none in middle layer, five or six arrows on left side at different angles - one at 45 degrees down, two horizontal, two at angles up including one at 45 degrees up - all pointing toward rectangular box on right side in foreground, featuring multiple arrows at various angles, rectangular box receiving arrows, arrows at various angles and rectangle with sketchy hand-drawn quality hand-drawn imperfect lines throughout, none - flat illustration creating depth and dimension, none surfaces, centered with arrows from left composition, various shades of charcoal gray and deeper black, white accents,  transition zones, black line drawings on white background, hand-drawn sketch aesthetic, pencil or marker sketch texture texture, whiteboard sketch or notebook doodle illustration, professional brand aesthetic, absolutely no text or numbers or letters anywhere in the image, purely visual abstract representation, square orientation 1 by 1 aspect ratio",
+  "seed": 1079562761,
+  "timestamp": "2025-11-21T13:09:25.949725",
+  "model": "fal-ai/bytedance/seedream/v4/text-to-image"
+}

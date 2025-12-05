@@ -1,0 +1,8 @@
+SELECT
+  segments.date,
+  segments.conversion_action_name,
+  metrics.conversions,
+  metrics.conversions_value
+FROM customer
+WHERE segments.date {DATE_RANGE}
+ORDER BY segments.date DESC, segments.conversion_action_name

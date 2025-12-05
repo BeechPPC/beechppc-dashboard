@@ -1,0 +1,14 @@
+SELECT
+  campaign.name,
+  campaign.advertising_channel_type,
+  ad_group.name,
+  ad_group.status,
+  ad_group.type,
+  metrics.impressions,
+  metrics.clicks,
+  metrics.cost_micros,
+  metrics.conversions,
+  metrics.conversions_value
+FROM ad_group
+WHERE segments.date {DATE_RANGE}
+ORDER BY campaign.name, metrics.cost_micros DESC
