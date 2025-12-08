@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMccReportData } from '@/lib/google-ads/client'
 import { calculatePercentageChange } from '@/lib/utils'
+import { requireAuth } from '@/lib/auth/helpers'
 import type { DashboardMetrics } from '@/lib/google-ads/types'
 
 export async function GET(request: NextRequest) {
+  // Require authentication
+  const userId = await requireAuth()
+  if (userId instanceof NextResponse) return userId
+
   try {
     const searchParams = request.nextUrl.searchParams
     const dateFrom = searchParams.get('dateFrom') || undefined

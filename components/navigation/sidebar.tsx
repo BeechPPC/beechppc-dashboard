@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
+import { useUser, useClerk } from '@clerk/nextjs'
 import {
   LayoutDashboard,
   FileText,
@@ -22,7 +23,8 @@ import {
   MessageCircle,
   Loader2,
   Building2,
-  Calendar
+  Calendar,
+  LogOut
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { GoogleAdsAccount } from '@/lib/google-ads/types'
@@ -30,7 +32,7 @@ import type { GoogleAdsAccount } from '@/lib/google-ads/types'
 const navigation = [
   { name: 'Chat Assistant', href: '/chat', icon: MessageCircle },
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Meetings', href: '/meetings', icon: Calendar },
+  { name: 'Calendar', href: '/meetings', icon: Calendar },
   { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Settings', href: '/settings', icon: Settings },
@@ -47,6 +49,8 @@ const automations = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { user } = useUser()
+  const { signOut } = useClerk()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [automationsOpen, setAutomationsOpen] = useState(true)
   const [accountsOpen, setAccountsOpen] = useState(true)
@@ -308,16 +312,37 @@ export function Sidebar() {
         </div>
       </nav>
 
-      {/* User info (placeholder for now) */}
+      {/* User info */}
       <div className="border-t border-border p-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
-            CB
+          {user?.imageUrl ? (
+            <Image
+              src={user.imageUrl}
+              alt={user.fullName || 'User'}
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+          ) : (
+            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
+              {user?.firstName?.[0] || user?.emailAddresses[0]?.emailAddress[0]?.toUpperCase() || 'U'}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">
+              {user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User'}
+            </p>
+            <p className="text-xs text-muted truncate">
+              {user?.emailAddresses[0]?.emailAddress}
+            </p>
           </div>
-          <div>
-            <p className="text-sm font-medium">Chris Beechey</p>
-            <p className="text-xs text-muted">chris@beechppc.com</p>
-          </div>
+          <button
+            onClick={() => signOut()}
+            className="p-2 hover:bg-primary-light rounded-lg transition-colors"
+            title="Sign out"
+          >
+            <LogOut className="h-4 w-4 text-muted" />
+          </button>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Roboto, Open_Sans, Montserrat, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
+import { ClerkProvider } from '@clerk/nextjs';
 import { SettingsProvider } from "@/lib/settings/context";
 import { DynamicFavicon } from "@/components/dynamic-favicon";
 
@@ -42,18 +43,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <DynamicFavicon />
-      </head>
-      <body
-        className={`${inter.variable} ${roboto.variable} ${openSans.variable} ${montserrat.variable} ${sourceSans.variable} antialiased`}
-        style={{ fontFamily: 'var(--font-sans, var(--font-inter))' }}
-      >
-        <SettingsProvider>
-          {children}
-        </SettingsProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <DynamicFavicon />
+        </head>
+        <body
+          className={`${inter.variable} ${roboto.variable} ${openSans.variable} ${montserrat.variable} ${sourceSans.variable} antialiased`}
+          style={{ fontFamily: 'var(--font-sans, var(--font-inter))' }}
+        >
+          <SettingsProvider>
+            {children}
+          </SettingsProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

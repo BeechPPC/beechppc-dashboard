@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllAlerts, createAlert, updateAlert, deleteAlert } from '@/lib/alerts/storage-kv'
+import { requireAuth } from '@/lib/auth/helpers'
 
 // GET /api/alerts - Get all alerts
 export async function GET() {
+  // Require authentication
+  const userId = await requireAuth()
+  if (userId instanceof NextResponse) return userId
+
   try {
     const alerts = await getAllAlerts()
     return NextResponse.json({ success: true, alerts })
@@ -17,6 +22,10 @@ export async function GET() {
 
 // POST /api/alerts - Create new alert
 export async function POST(request: NextRequest) {
+  // Require authentication
+  const userId = await requireAuth()
+  if (userId instanceof NextResponse) return userId
+
   try {
     const body = await request.json()
     const { name, description, type, condition, threshold, accountId, recipients, frequency } = body
@@ -52,6 +61,10 @@ export async function POST(request: NextRequest) {
 
 // PATCH /api/alerts - Update alert
 export async function PATCH(request: NextRequest) {
+  // Require authentication
+  const userId = await requireAuth()
+  if (userId instanceof NextResponse) return userId
+
   try {
     const body = await request.json()
     const { id, ...updates } = body
@@ -83,6 +96,10 @@ export async function PATCH(request: NextRequest) {
 
 // DELETE /api/alerts - Delete alert
 export async function DELETE(request: NextRequest) {
+  // Require authentication
+  const userId = await requireAuth()
+  if (userId instanceof NextResponse) return userId
+
   try {
     const body = await request.json()
     const { id } = body

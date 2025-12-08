@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { CHAT_FUNCTIONS } from '@/lib/chat/functions'
+import { requireAuth } from '@/lib/auth/helpers'
 import type { ChatRequest } from '@/lib/chat/types'
 import {
   getCustomerAccounts,
@@ -421,6 +422,10 @@ async function executeFunctionCall(functionName: string, args: Record<string, un
  * Main chat endpoint - handles conversation with Claude using function calling
  */
 export async function POST(request: NextRequest) {
+  // Require authentication
+  const userId = await requireAuth()
+  if (userId instanceof NextResponse) return userId
+
   try {
     const { message, history = [] }: ChatRequest = await request.json()
 
