@@ -44,7 +44,7 @@ export async function requireAuth(): Promise<string | NextResponse> {
  */
 export async function getUserOrgId(): Promise<string | null> {
   const { orgId } = await auth()
-  return orgId
+  return orgId || null
 }
 
 /**
