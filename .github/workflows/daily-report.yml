@@ -38,18 +38,22 @@ jobs:
             echo "❌ EMAIL_TO secret is not set"
             exit 1
           fi
-          
+          if [ -z "${{ secrets.REPORTS_API_KEY }}" ]; then
+            echo "❌ REPORTS_API_KEY secret is not set"
+            exit 1
+          fi
+
           # Validate URL format
           if [[ ! "${{ secrets.VERCEL_URL }}" =~ ^https?:// ]]; then
             echo "❌ VERCEL_URL must start with http:// or https://"
             echo "Current value: ${{ secrets.VERCEL_URL }}"
             exit 1
           fi
-          
+
           # Remove trailing slash if present
           VERCEL_URL_CLEAN="${{ secrets.VERCEL_URL }}"
           VERCEL_URL_CLEAN="${VERCEL_URL_CLEAN%/}"
-          
+
           echo "✅ All secrets are configured"
           echo "Vercel URL: $VERCEL_URL_CLEAN"
           echo "Email to: ${{ secrets.EMAIL_TO }}"
@@ -57,20 +61,21 @@ jobs:
       - name: Send Daily Report
         run: |
           echo "🚀 Sending daily report..."
-          
+
           # Follow redirects and handle 308 redirects properly
           response=$(curl -s -w "\n%{http_code}" -L -X POST "${{ secrets.VERCEL_URL }}/api/reports/send" \
             -H "Content-Type: application/json" \
+            -H "x-api-key: ${{ secrets.REPORTS_API_KEY }}" \
             -d '{"recipients": ["${{ secrets.EMAIL_TO }}"]}')
-          
+
           # Extract HTTP status code (last line)
           http_code=$(echo "$response" | tail -n1)
           # Extract response body (all but last line)
           response_body=$(echo "$response" | head -n -1)
-          
+
           echo "HTTP Status: $http_code"
           echo "Response: $response_body"
-          
+
           if [ "$http_code" -eq 200 ]; then
             echo "✅ Report sent successfully"
           else
@@ -81,7 +86,8 @@ jobs:
             echo "1. Check that VERCEL_URL includes https://"
             echo "2. Ensure the URL doesn't have a trailing slash"
             echo "3. Verify your Vercel deployment is running"
-            echo "4. Test the URL manually: curl ${{ secrets.VERCEL_URL }}/api/reports/send"
+            echo "4. Verify REPORTS_API_KEY is set correctly"
+            echo "5. Test the URL manually: curl ${{ secrets.VERCEL_URL }}/api/reports/send"
             exit 1
           fi
         
@@ -102,3 +108,4 @@ jobs:
 # Required GitHub Secrets:
 # - VERCEL_URL: Your Vercel deployment URL (e.g., https://your-app.vercel.app)
 # - EMAIL_TO: Recipient email address (e.g., chris@beechppc.com)
+# - REPORTS_API_KEY: API key for authenticating report requests

@@ -5,6 +5,17 @@ import { sendDailyReport } from '@/lib/email/service'
 
 export async function POST(request: Request) {
   try {
+    // Check API key for authentication
+    const apiKey = request.headers.get('x-api-key')
+    const expectedApiKey = process.env.REPORTS_API_KEY
+
+    if (expectedApiKey && apiKey !== expectedApiKey) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     const { recipients } = body
 
