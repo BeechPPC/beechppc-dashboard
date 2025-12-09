@@ -23,7 +23,7 @@ export default function ReportsPage() {
   const { settings, updateSettings } = useSettings()
   const [sending, setSending] = useState(false)
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
-  const [recipients, setRecipients] = useState('chris@beechppc.com')
+  const [recipients, setRecipients] = useState('')
   const [templates, setTemplates] = useState<ReportTemplate[]>([])
   const [accounts, setAccounts] = useState<Account[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
@@ -33,7 +33,7 @@ export default function ReportsPage() {
   // Schedule settings
   const [schedule, setSchedule] = useState(settings.schedule || '0 11 * * *')
   const [timezone, setTimezone] = useState(settings.timezone || 'Australia/Melbourne')
-  const [defaultRecipients, setDefaultRecipients] = useState(settings.recipients || 'chris@beechppc.com')
+  const [defaultRecipients, setDefaultRecipients] = useState(settings.recipients || '')
   const [scheduleSaved, setScheduleSaved] = useState(false)
 
   // Monthly Report Builder state
@@ -53,7 +53,7 @@ export default function ReportsPage() {
     conversions: true,
   })
   const [monthlyTemplate, setMonthlyTemplate] = useState('detailed')
-  const [monthlyRecipients, setMonthlyRecipients] = useState('chris@beechppc.com')
+  const [monthlyRecipients, setMonthlyRecipients] = useState('')
   const [generatingMonthly, setGeneratingMonthly] = useState(false)
   const [monthlyResult, setMonthlyResult] = useState<{ success: boolean; message: string; reportId?: string } | null>(null)
 
@@ -61,8 +61,8 @@ export default function ReportsPage() {
   useEffect(() => {
     setSchedule(settings.schedule || '0 11 * * *')
     setTimezone(settings.timezone || 'Australia/Melbourne')
-    setDefaultRecipients(settings.recipients || 'chris@beechppc.com')
-    setRecipients(settings.recipients || 'chris@beechppc.com')
+    setDefaultRecipients(settings.recipients || '')
+    setRecipients(settings.recipients || '')
   }, [settings])
 
   // Load templates and accounts on mount

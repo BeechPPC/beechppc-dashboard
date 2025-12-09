@@ -29,7 +29,7 @@ export function CreateAlertForm({ onSuccess, onCancel }: CreateAlertFormProps) {
     condition: 'above',
     threshold: '',
     accountId: '',
-    recipients: 'chris@beechppc.com',
+    recipients: '',
     frequency: 'daily',
   })
 

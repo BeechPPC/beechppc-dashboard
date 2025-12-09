@@ -10,7 +10,7 @@ const http = require('http');
 
 // Configuration - update these values
 const VERCEL_URL = process.env.VERCEL_URL || 'https://your-app.vercel.app';
-const EMAIL_TO = process.env.EMAIL_TO || 'chris@beechppc.com';
+const EMAIL_TO = process.env.EMAIL_TO || 'test@example.com';
 
 console.log('🧪 Testing Daily Report API');
 console.log('============================');

@@ -273,13 +273,13 @@ export const FONT_FAMILIES = {
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  companyName: 'Beech PPC AI',
+  companyName: undefined,
   colorScheme: 'beech-yellow',
   fontFamily: 'inter',
   themeMode: 'light',
   dashboardLayout: 'spacious',
   schedule: '0 11 * * *',
   timezone: 'Australia/Melbourne',
-  recipients: 'chris@beechppc.com',
+  recipients: '',
   updatedAt: new Date().toISOString(),
 }

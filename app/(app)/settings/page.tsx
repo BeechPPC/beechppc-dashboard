@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import {
   Save, CheckCircle, Upload, Palette, Image as ImageIcon,
-  Type, Moon, Sun, Monitor, Layout, Building2
+  Type, Moon, Sun, Monitor, Layout, Building2, Mail
 } from 'lucide-react'
 import { COLOR_SCHEMES, FONT_FAMILIES } from '@/lib/settings/types'
 import { useSettings } from '@/lib/settings/context'
@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [fontFamily, setFontFamily] = useState(settings.fontFamily || 'inter')
   const [themeMode, setThemeMode] = useState(settings.themeMode || 'light')
   const [dashboardLayout, setDashboardLayout] = useState(settings.dashboardLayout || 'spacious')
+  const [recipients, setRecipients] = useState(settings.recipients || '')
 
   // Sync local state when settings load
   useState(() => {
@@ -33,6 +34,7 @@ export default function SettingsPage() {
       setFontFamily(settings.fontFamily || 'inter')
       setThemeMode(settings.themeMode || 'light')
       setDashboardLayout(settings.dashboardLayout || 'spacious')
+      setRecipients(settings.recipients || '')
     }
   })
 
@@ -44,6 +46,7 @@ export default function SettingsPage() {
         fontFamily,
         themeMode,
         dashboardLayout,
+        recipients,
       })
 
       setSaved(true)
@@ -158,6 +161,49 @@ export default function SettingsPage() {
           <p className="text-xs text-muted mt-2">
             This will appear in the sidebar and throughout the application
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Notifications & Reports */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Notifications & Reports
+          </CardTitle>
+          <CardDescription>
+            Configure default email address for alerts, reports, and scheduled notifications
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Default Email Recipients
+              </label>
+              <input
+                type="email"
+                value={recipients}
+                onChange={(e) => setRecipients(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="you@example.com, team@example.com"
+              />
+            </div>
+            <div className="bg-primary-light/20 border border-primary/20 rounded-lg p-3">
+              <p className="text-xs text-muted">
+                <strong>Where this is used:</strong>
+              </p>
+              <ul className="text-xs text-muted mt-1 space-y-1 ml-4 list-disc">
+                <li>Default recipients for automated daily reports</li>
+                <li>Alert notifications (high spend, low conversions, etc.)</li>
+                <li>Scheduled report deliveries</li>
+                <li>Pre-filled recipient field when creating new reports</li>
+              </ul>
+              <p className="text-xs text-muted mt-2">
+                You can enter multiple email addresses separated by commas. You can also override this default for individual alerts and reports.
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
