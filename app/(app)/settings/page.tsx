@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,8 +26,8 @@ export default function SettingsPage() {
   const [dashboardLayout, setDashboardLayout] = useState(settings.dashboardLayout || 'spacious')
   const [recipients, setRecipients] = useState(settings.recipients || '')
 
-  // Sync local state when settings load
-  useState(() => {
+  // Sync local state when settings load from API
+  useEffect(() => {
     if (!loading) {
       setCompanyName(settings.companyName || 'Beech PPC AI')
       setColorScheme(settings.colorScheme || 'beech-yellow')
@@ -36,7 +36,7 @@ export default function SettingsPage() {
       setDashboardLayout(settings.dashboardLayout || 'spacious')
       setRecipients(settings.recipients || '')
     }
-  })
+  }, [loading, settings])
 
   const handleSave = async () => {
     try {
@@ -51,10 +51,11 @@ export default function SettingsPage() {
 
       setSaved(true)
       applyTheme()
-      setTimeout(() => setSaved(false), 3000)
-
-      // Reload to update company name in sidebar
-      window.location.reload()
+      setTimeout(() => {
+        setSaved(false)
+        // Reload to update company name in sidebar
+        window.location.reload()
+      }, 1500)
     } catch (error) {
       console.error('Error saving settings:', error)
       alert('Failed to save settings')
