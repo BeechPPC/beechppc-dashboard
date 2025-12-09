@@ -3,6 +3,7 @@ import { getEnabledAlerts, updateAlert } from '@/lib/alerts/storage-kv'
 import { checkAllAlerts } from '@/lib/alerts/checker'
 import { generateAlertEmail, generateAlertEmailSubject } from '@/lib/alerts/email-template'
 import { sendEmail } from '@/lib/email/service'
+import { getSettings } from '@/lib/settings/storage'
 
 /**
  * POST /api/alerts/check
@@ -22,6 +23,10 @@ export async function POST() {
       })
     }
 
+    // Get business name from settings
+    const settings = await getSettings()
+    const businessName = settings.companyName || 'PPC AI'
+
     // Check all alerts
     const results = await checkAllAlerts(alerts)
 
@@ -37,7 +42,7 @@ export async function POST() {
 
         // Generate email
         const subject = generateAlertEmailSubject(result.triggers)
-        const html = generateAlertEmail(result.triggers)
+        const html = generateAlertEmail(result.triggers, businessName)
 
         try {
           // Send email to all recipients

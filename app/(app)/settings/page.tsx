@@ -53,7 +53,7 @@ export default function SettingsPage() {
       applyTheme()
       setTimeout(() => {
         setSaved(false)
-        // Reload to update company name in sidebar
+        // Reload to update business name in sidebar
         window.location.reload()
       }, 1500)
     } catch (error) {
@@ -140,15 +140,15 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Company Name */}
+      {/* Business Name */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Company Name
+            Business Name
           </CardTitle>
           <CardDescription>
-            Customize your company or agency name displayed in the dashboard
+            Customize your business or agency name displayed in the dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>

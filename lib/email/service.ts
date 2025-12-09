@@ -22,15 +22,30 @@ function createTransporter() {
 }
 
 /**
+ * Get business name from settings
+ */
+async function getBusinessName(): Promise<string> {
+  try {
+    const { getSettings } = await import('@/lib/settings/storage')
+    const settings = await getSettings()
+    return settings.companyName || 'PPC AI Agent'
+  } catch (error) {
+    console.error('Error loading business name for email:', error)
+    return 'PPC AI Agent'
+  }
+}
+
+/**
  * Send email
  */
 export async function sendEmail({ to, subject, html }: EmailOptions) {
   try {
     const transporter = createTransporter()
+    const businessName = await getBusinessName()
 
     const mailOptions = {
       from: {
-        name: 'Beech PPC AI Agent',
+        name: businessName,
         address: process.env.EMAIL_USER!,
       },
       to: Array.isArray(to) ? to.join(', ') : to,

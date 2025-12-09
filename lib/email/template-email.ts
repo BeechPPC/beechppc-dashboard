@@ -130,7 +130,8 @@ function generateKeywordsRows(data: KeywordData[]): string {
 export function generateTemplateEmail(
   template: ReportTemplate,
   accountData: TemplateReportData,
-  reportDate: Date
+  reportDate: Date,
+  businessName: string = 'PPC AI'
 ): string {
   const { accountName, data } = accountData
   const dateStr = reportDate.toLocaleDateString('en-AU', {
@@ -245,7 +246,7 @@ export function generateTemplateEmail(
   <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
-      <h1 style="margin: 0; color: #111827; font-size: 28px; font-weight: 600;">Beech PPC</h1>
+      <h1 style="margin: 0; color: #111827; font-size: 28px; font-weight: 600;">${businessName}</h1>
       <p style="margin: 10px 0 0 0; color: #374151; font-size: 16px;">${template.name}</p>
     </div>
 
@@ -291,7 +292,7 @@ export function generateTemplateEmail(
 
     <!-- Footer -->
     <div style="margin-top: 20px; padding: 20px; text-align: center; color: #9ca3af; font-size: 12px;">
-      <p style="margin: 0;">This is an automated report from Beech PPC</p>
+      <p style="margin: 0;">This is an automated report from ${businessName}</p>
       <p style="margin: 5px 0 0 0;">Generated on ${new Date().toLocaleString('en-AU', { timeZone: 'Australia/Melbourne' })}</p>
     </div>
   </div>
