@@ -61,4 +61,12 @@ export async function POST(request: Request) {
   }
 }
 
+// Add GET handler for testing connectivity
+export async function GET() {
+  return NextResponse.json({
+    message: 'Reports endpoint is accessible. Use POST to send reports.',
+    timestamp: new Date().toISOString()
+  })
+}
+
 export const dynamic = 'force-dynamic'
