@@ -19,22 +19,22 @@ export default function SettingsPage() {
   const faviconInputRef = useRef<HTMLInputElement>(null)
 
   // Local state for form fields
-  const [companyName, setCompanyName] = useState(settings.companyName || 'Beech PPC AI')
+  const [companyName, setCompanyName] = useState(settings.companyName ?? '')
   const [colorScheme, setColorScheme] = useState(settings.colorScheme || 'beech-yellow')
   const [fontFamily, setFontFamily] = useState(settings.fontFamily || 'inter')
   const [themeMode, setThemeMode] = useState(settings.themeMode || 'light')
   const [dashboardLayout, setDashboardLayout] = useState(settings.dashboardLayout || 'spacious')
-  const [recipients, setRecipients] = useState(settings.recipients || '')
+  const [recipients, setRecipients] = useState(settings.recipients ?? '')
 
   // Sync local state when settings load from API
   useEffect(() => {
     if (!loading) {
-      setCompanyName(settings.companyName || 'Beech PPC AI')
+      setCompanyName(settings.companyName ?? '')
       setColorScheme(settings.colorScheme || 'beech-yellow')
       setFontFamily(settings.fontFamily || 'inter')
       setThemeMode(settings.themeMode || 'light')
       setDashboardLayout(settings.dashboardLayout || 'spacious')
-      setRecipients(settings.recipients || '')
+      setRecipients(settings.recipients ?? '')
     }
   }, [loading, settings])
 
