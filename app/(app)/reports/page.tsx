@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Send, Eye, CheckCircle, XCircle, Loader2, FileText, Clock, Save, Calendar, Download, TrendingUp } from 'lucide-react'
 import { useSettings } from '@/lib/settings/context'
+import cronstrue from 'cronstrue'
 
 interface ReportTemplate {
   id: string
@@ -30,11 +31,73 @@ export default function ReportsPage() {
   const [selectedAccount, setSelectedAccount] = useState<string>('all')
   const [loadingData, setLoadingData] = useState(true)
 
+  // Email validation helper
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+  }
+
+  const parseRecipients = (recipientsString: string) => {
+    const emails = recipientsString.split(',').map(e => e.trim()).filter(Boolean)
+    const valid = emails.filter(validateEmail)
+    const invalid = emails.filter(e => !validateEmail(e))
+    return { valid, invalid, total: emails.length }
+  }
+
   // Schedule settings
   const [schedule, setSchedule] = useState(settings.schedule || '0 11 * * *')
   const [timezone, setTimezone] = useState(settings.timezone || 'Australia/Melbourne')
   const [defaultRecipients, setDefaultRecipients] = useState(settings.recipients || '')
   const [scheduleSaved, setScheduleSaved] = useState(false)
+
+  // User-friendly schedule settings
+  const [scheduleFrequency, setScheduleFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily')
+  const [scheduleHour, setScheduleHour] = useState('11')
+  const [scheduleMinute, setScheduleMinute] = useState('00')
+  const [scheduleDayOfWeek, setScheduleDayOfWeek] = useState('1') // Monday
+  const [scheduleDayOfMonth, setScheduleDayOfMonth] = useState('1')
+
+  // Parse existing cron to populate UI
+  useEffect(() => {
+    const parts = schedule.split(' ')
+    if (parts.length === 5) {
+      setScheduleMinute(parts[0])
+      setScheduleHour(parts[1])
+
+      // Determine frequency
+      if (parts[4] !== '*') {
+        setScheduleFrequency('weekly')
+        setScheduleDayOfWeek(parts[4])
+      } else if (parts[2] !== '*') {
+        setScheduleFrequency('monthly')
+        setScheduleDayOfMonth(parts[2])
+      } else {
+        setScheduleFrequency('daily')
+      }
+    }
+  }, [schedule])
+
+  // Generate cron from user-friendly inputs
+  const generateCronExpression = () => {
+    const minute = scheduleMinute
+    const hour = scheduleHour
+
+    switch (scheduleFrequency) {
+      case 'daily':
+        return `${minute} ${hour} * * *`
+      case 'weekly':
+        return `${minute} ${hour} * * ${scheduleDayOfWeek}`
+      case 'monthly':
+        return `${minute} ${hour} ${scheduleDayOfMonth} * *`
+      default:
+        return `${minute} ${hour} * * *`
+    }
+  }
+
+  // Update cron when user-friendly inputs change
+  useEffect(() => {
+    const newCron = generateCronExpression()
+    setSchedule(newCron)
+  }, [scheduleFrequency, scheduleHour, scheduleMinute, scheduleDayOfWeek, scheduleDayOfMonth])
 
   // Monthly Report Builder state
   const [monthlyAccounts, setMonthlyAccounts] = useState<string[]>([])
@@ -503,9 +566,27 @@ export default function ReportsPage() {
                   placeholder="email1@example.com, email2@example.com"
                   className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-                <p className="text-xs text-muted mt-1">
-                  Separate multiple emails with commas
-                </p>
+                {monthlyRecipients && (() => {
+                  const { valid, invalid, total } = parseRecipients(monthlyRecipients)
+                  if (total === 0) return null
+                  if (invalid.length > 0) {
+                    return (
+                      <p className="text-xs text-error mt-1">
+                        ⚠ {invalid.length} invalid email{invalid.length > 1 ? 's' : ''}: {invalid.join(', ')}
+                      </p>
+                    )
+                  }
+                  return (
+                    <p className="text-xs text-success mt-1">
+                      ✓ {valid.length} valid recipient{valid.length > 1 ? 's' : ''}
+                    </p>
+                  )
+                })()}
+                {!monthlyRecipients && (
+                  <p className="text-xs text-muted mt-1">
+                    Separate multiple emails with commas
+                  </p>
+                )}
               </div>
 
               {/* Action Buttons */}
@@ -634,9 +715,27 @@ export default function ReportsPage() {
                   placeholder="email1@example.com, email2@example.com"
                   className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-                <p className="text-xs text-muted mt-1">
-                  Separate multiple emails with commas
-                </p>
+                {recipients && (() => {
+                  const { valid, invalid, total } = parseRecipients(recipients)
+                  if (total === 0) return null
+                  if (invalid.length > 0) {
+                    return (
+                      <p className="text-xs text-error mt-1">
+                        ⚠ {invalid.length} invalid email{invalid.length > 1 ? 's' : ''}: {invalid.join(', ')}
+                      </p>
+                    )
+                  }
+                  return (
+                    <p className="text-xs text-success mt-1">
+                      ✓ {valid.length} valid recipient{valid.length > 1 ? 's' : ''}
+                    </p>
+                  )
+                })()}
+                {!recipients && (
+                  <p className="text-xs text-muted mt-1">
+                    Separate multiple emails with commas
+                  </p>
+                )}
               </div>
 
               {/* Action Button */}
@@ -702,9 +801,27 @@ export default function ReportsPage() {
               placeholder="email1@example.com, email2@example.com"
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
-            <p className="text-xs text-muted mt-1">
-              Separate multiple emails with commas
-            </p>
+            {recipients && (() => {
+              const { valid, invalid, total } = parseRecipients(recipients)
+              if (total === 0) return null
+              if (invalid.length > 0) {
+                return (
+                  <p className="text-xs text-error mt-1">
+                    ⚠ {invalid.length} invalid email{invalid.length > 1 ? 's' : ''}: {invalid.join(', ')}
+                  </p>
+                )
+              }
+              return (
+                <p className="text-xs text-success mt-1">
+                  ✓ {valid.length} valid recipient{valid.length > 1 ? 's' : ''}
+                </p>
+              )
+            })()}
+            {!recipients && (
+              <p className="text-xs text-muted mt-1">
+                Separate multiple emails with commas
+              </p>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -771,20 +888,123 @@ export default function ReportsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Frequency Selector */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Schedule (Cron Expression)
+              Frequency
             </label>
-            <input
-              type="text"
-              value={schedule}
-              onChange={(e) => setSchedule(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
-              placeholder="0 11 * * *"
-            />
-            <p className="text-xs text-muted mt-1">
-              Current: Daily at 11:00 AM
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setScheduleFrequency('daily')}
+                variant={scheduleFrequency === 'daily' ? 'default' : 'outline'}
+                size="sm"
+              >
+                Daily
+              </Button>
+              <Button
+                onClick={() => setScheduleFrequency('weekly')}
+                variant={scheduleFrequency === 'weekly' ? 'default' : 'outline'}
+                size="sm"
+              >
+                Weekly
+              </Button>
+              <Button
+                onClick={() => setScheduleFrequency('monthly')}
+                variant={scheduleFrequency === 'monthly' ? 'default' : 'outline'}
+                size="sm"
+              >
+                Monthly
+              </Button>
+            </div>
+          </div>
+
+          {/* Time Picker */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Time
+            </label>
+            <div className="flex gap-3 items-center">
+              <select
+                value={scheduleHour}
+                onChange={(e) => setScheduleHour(e.target.value)}
+                className="px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              >
+                {Array.from({ length: 24 }, (_, i) => (
+                  <option key={i} value={String(i).padStart(2, '0')}>
+                    {String(i).padStart(2, '0')}
+                  </option>
+                ))}
+              </select>
+              <span className="text-muted">:</span>
+              <select
+                value={scheduleMinute}
+                onChange={(e) => setScheduleMinute(e.target.value)}
+                className="px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              >
+                {['00', '15', '30', '45'].map((min) => (
+                  <option key={min} value={min}>
+                    {min}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Day of Week Selector (for Weekly) */}
+          {scheduleFrequency === 'weekly' && (
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Day of Week
+              </label>
+              <select
+                value={scheduleDayOfWeek}
+                onChange={(e) => setScheduleDayOfWeek(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              >
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+            </div>
+          )}
+
+          {/* Day of Month Selector (for Monthly) */}
+          {scheduleFrequency === 'monthly' && (
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Day of Month
+              </label>
+              <select
+                value={scheduleDayOfMonth}
+                onChange={(e) => setScheduleDayOfMonth(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              >
+                {Array.from({ length: 31 }, (_, i) => (
+                  <option key={i + 1} value={String(i + 1)}>
+                    {i + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Generated Schedule Preview */}
+          <div className="bg-muted/50 p-3 rounded-lg">
+            <p className="text-xs text-muted font-medium mb-1">Schedule Preview:</p>
+            <p className="text-sm font-medium">
+              {(() => {
+                try {
+                  return cronstrue.toString(schedule)
+                } catch (e) {
+                  return 'Invalid schedule'
+                }
+              })()}
             </p>
+            <p className="text-xs text-muted mt-1 font-mono">{schedule}</p>
           </div>
 
           <div>
@@ -816,9 +1036,27 @@ export default function ReportsPage() {
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="email1@example.com, email2@example.com"
             />
-            <p className="text-xs text-muted mt-1">
-              Separate multiple emails with commas
-            </p>
+            {defaultRecipients && (() => {
+              const { valid, invalid, total } = parseRecipients(defaultRecipients)
+              if (total === 0) return null
+              if (invalid.length > 0) {
+                return (
+                  <p className="text-xs text-error mt-1">
+                    ⚠ {invalid.length} invalid email{invalid.length > 1 ? 's' : ''}: {invalid.join(', ')}
+                  </p>
+                )
+              }
+              return (
+                <p className="text-xs text-success mt-1">
+                  ✓ {valid.length} valid recipient{valid.length > 1 ? 's' : ''}
+                </p>
+              )
+            })()}
+            {!defaultRecipients && (
+              <p className="text-xs text-muted mt-1">
+                Separate multiple emails with commas
+              </p>
+            )}
           </div>
 
           <div className="flex items-center justify-between pt-4 border-t border-border">
