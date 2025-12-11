@@ -1,15 +1,21 @@
 import { NextResponse } from 'next/server'
+import { auth } from '@clerk/nextjs/server'
 import { getMccReportData } from '@/lib/google-ads/client'
 import { generateEmailTemplate } from '@/lib/email/template'
 import { sendDailyReport } from '@/lib/email/service'
 
 export async function POST(request: Request) {
   try {
-    // Check API key for authentication
+    // Check authentication: Either Clerk (for frontend) OR API key (for cron/external)
+    const { userId } = await auth()
     const apiKey = request.headers.get('x-api-key')
     const expectedApiKey = process.env.REPORTS_API_KEY
 
-    if (expectedApiKey && apiKey !== expectedApiKey) {
+    // Allow if either authenticated via Clerk OR has valid API key
+    const isClerkAuth = !!userId
+    const isApiKeyAuth = expectedApiKey && apiKey === expectedApiKey
+
+    if (!isClerkAuth && !isApiKeyAuth) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
