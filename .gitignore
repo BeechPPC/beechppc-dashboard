@@ -51,3 +51,5 @@ test-keyword-api.js
 # credentials
 google-ads-credentials.json
 *credentials*.json
+
+/lib/generated/prisma
