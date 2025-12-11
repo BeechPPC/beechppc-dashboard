@@ -841,8 +841,8 @@ To make this **truly stand out**, focus on:
 
 ## 📝 PROGRESS TRACKING
 
-### Current Phase: Week 1 Quick Wins ✅ COMPLETE
-**Last Updated:** December 10, 2025
+### Current Phase: Layout Simplification ✅ COMPLETE
+**Last Updated:** December 11, 2025
 
 ### Completed Tasks
 - [x] Initial codebase review
@@ -851,6 +851,7 @@ To make this **truly stand out**, focus on:
 - [x] **Quick Win #1**: Human-readable schedule display with cronstrue
 - [x] **Quick Win #2**: Real-time email validation with visual feedback
 - [x] **BONUS**: User-friendly schedule builder (frequency selector, time picker, conditional day/month selectors)
+- [x] **Layout Simplification**: Tab-based navigation with consolidated report types
 
 ### Week 1 Improvements Summary
 
@@ -860,7 +861,7 @@ To make this **truly stand out**, focus on:
 - Example: `"0 11 * * *"` now displays as `"At 11:00 AM"`
 
 #### 2. Email Validation
-- Added real-time email validation across all 4 recipient input fields
+- Added real-time email validation across all recipient input fields
 - Shows `✓ X valid recipients` for valid emails (green)
 - Shows `⚠ X invalid emails: [list]` for invalid emails (red)
 - Prevents common typos and formatting errors
@@ -875,16 +876,61 @@ To make this **truly stand out**, focus on:
 - **Live preview**: Shows both human-readable format and cron expression
 - Automatically generates cron expression from user selections
 
+#### 4. Tab-Based Layout Simplification
+**Problem Identified:**
+- 5 separate cards created fragmented user experience
+- Duplicate recipient fields in 4 locations
+- Confusing mental model (3 "send now" options)
+- Unclear connection between automation and report types
+
+**Solution Implemented:**
+- **Tab 1: Create Report** - Consolidated all 3 report types (Quick Daily, Custom, Template)
+  - Step-by-step wizard interface (1️⃣ Choose Type → 2️⃣ Configure → 3️⃣ Send)
+  - Progressive disclosure: only shows configuration relevant to selected type
+  - Single unified recipients field per report action
+  - Email validation preserved across all types
+
+- **Tab 2: Scheduled Reports** - Automation configuration
+  - User-friendly schedule builder (from Week 1)
+  - Frequency selector with conditional day/month fields
+  - Human-readable schedule preview
+  - Default recipients with validation
+  - Clear status indicator (Active)
+
+- **Tab 3: History** - Report history placeholder
+  - Prepared for Phase 1 database integration
+  - Clear messaging about upcoming feature
+
+**Benefits:**
+- ✅ Eliminated recipient field duplication (4 fields → 1 per report action)
+- ✅ Clearer mental model: "Send now" vs "Schedule" vs "History"
+- ✅ Progressive disclosure reduces cognitive load
+- ✅ Better code organization (state grouped by tab)
+- ✅ Scalable structure ready for Phase 1 features
+- ✅ All existing functionality preserved
+- ✅ Mobile-responsive tab navigation
+
+**Technical Details:**
+- Created mock page first for user preview ([app/(app)/reports-mock/page.tsx](app/(app)/reports-mock/page.tsx))
+- Backed up original implementation ([app/(app)/reports/page.tsx.backup](app/(app)/reports/page.tsx.backup))
+- Maintained all API endpoint connections
+- Preserved Week 1 improvements (email validation, schedule builder)
+- Code remains ~1,119 lines but significantly better organized
+
 ### Next Steps
 1. ✅ Week 1 Quick Wins - COMPLETE
-2. Begin Phase 1: Database Foundation (Weeks 2-4)
+2. ✅ Layout Simplification - COMPLETE
+3. Begin Phase 1: Database Foundation (Weeks 2-4)
    - Choose database solution (Supabase recommended)
    - Design database schema
    - Implement report history storage
    - Create recipient management system
+   - Multiple schedule management (list view in Tab 2)
 
 ### Files Modified
-- `app/(app)/reports/page.tsx` - Schedule UI improvements, email validation
+- `app/(app)/reports/page.tsx` - Complete tab-based layout refactor
+- `app/(app)/reports/page.tsx.backup` - Backup of original 5-card layout
+- `app/(app)/reports-mock/page.tsx` - Mock page for layout preview
 - `package.json` - Added cronstrue dependency
 - `REPORTS_IMPROVEMENT_ROADMAP.md` - This file
 

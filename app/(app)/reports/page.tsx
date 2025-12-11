@@ -22,13 +22,13 @@ interface Account {
 
 export default function ReportsPage() {
   const { settings, updateSettings } = useSettings()
-  const [sending, setSending] = useState(false)
-  const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
-  const [recipients, setRecipients] = useState('')
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'create' | 'scheduled' | 'history'>('create')
+
+  // Common state
   const [templates, setTemplates] = useState<ReportTemplate[]>([])
   const [accounts, setAccounts] = useState<Account[]>([])
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
-  const [selectedAccount, setSelectedAccount] = useState<string>('all')
   const [loadingData, setLoadingData] = useState(true)
 
   // Email validation helper
@@ -43,7 +43,39 @@ export default function ReportsPage() {
     return { valid, invalid, total: emails.length }
   }
 
-  // Schedule settings
+  // CREATE REPORT TAB STATE
+  const [reportType, setReportType] = useState<'quick' | 'custom' | 'template'>('quick')
+  const [recipients, setRecipients] = useState('')
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
+
+  // Quick Daily Report - no additional state needed
+
+  // Custom Report State
+  const [customAccounts, setCustomAccounts] = useState<string[]>([])
+  const [customDateRange, setCustomDateRange] = useState('this_month')
+  const [customDateFrom, setCustomDateFrom] = useState('')
+  const [customDateTo, setCustomDateTo] = useState('')
+  const [customSections, setCustomSections] = useState({
+    campaigns: true,
+    keywords: true,
+    auctionInsights: true,
+    qualityScore: true,
+    geographic: false,
+    device: false,
+    adSchedule: false,
+    searchTerms: false,
+    conversions: true,
+  })
+  const [customTemplate, setCustomTemplate] = useState('detailed')
+  const [generatingCustom, setGeneratingCustom] = useState(false)
+  const [customResult, setCustomResult] = useState<{ success: boolean; message: string; reportId?: string } | null>(null)
+
+  // Template Report State
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
+  const [selectedAccount, setSelectedAccount] = useState<string>('all')
+
+  // SCHEDULED REPORTS TAB STATE
   const [schedule, setSchedule] = useState(settings.schedule || '0 11 * * *')
   const [timezone, setTimezone] = useState(settings.timezone || 'Australia/Melbourne')
   const [defaultRecipients, setDefaultRecipients] = useState(settings.recipients || '')
@@ -53,7 +85,7 @@ export default function ReportsPage() {
   const [scheduleFrequency, setScheduleFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily')
   const [scheduleHour, setScheduleHour] = useState('11')
   const [scheduleMinute, setScheduleMinute] = useState('00')
-  const [scheduleDayOfWeek, setScheduleDayOfWeek] = useState('1') // Monday
+  const [scheduleDayOfWeek, setScheduleDayOfWeek] = useState('1')
   const [scheduleDayOfMonth, setScheduleDayOfMonth] = useState('1')
 
   // Parse existing cron to populate UI
@@ -63,7 +95,6 @@ export default function ReportsPage() {
       setScheduleMinute(parts[0])
       setScheduleHour(parts[1])
 
-      // Determine frequency
       if (parts[4] !== '*') {
         setScheduleFrequency('weekly')
         setScheduleDayOfWeek(parts[4])
@@ -99,33 +130,11 @@ export default function ReportsPage() {
     setSchedule(newCron)
   }, [scheduleFrequency, scheduleHour, scheduleMinute, scheduleDayOfWeek, scheduleDayOfMonth])
 
-  // Monthly Report Builder state
-  const [monthlyAccounts, setMonthlyAccounts] = useState<string[]>([])
-  const [monthlyDateRange, setMonthlyDateRange] = useState('this_month')
-  const [monthlyCustomFrom, setMonthlyCustomFrom] = useState('')
-  const [monthlyCustomTo, setMonthlyCustomTo] = useState('')
-  const [monthlySections, setMonthlySections] = useState({
-    campaigns: true,
-    keywords: true,
-    auctionInsights: true,
-    qualityScore: true,
-    geographic: false,
-    device: false,
-    adSchedule: false,
-    searchTerms: false,
-    conversions: true,
-  })
-  const [monthlyTemplate, setMonthlyTemplate] = useState('detailed')
-  const [monthlyRecipients, setMonthlyRecipients] = useState('')
-  const [generatingMonthly, setGeneratingMonthly] = useState(false)
-  const [monthlyResult, setMonthlyResult] = useState<{ success: boolean; message: string; reportId?: string } | null>(null)
-
   // Sync with settings changes
   useEffect(() => {
     setSchedule(settings.schedule || '0 11 * * *')
     setTimezone(settings.timezone || 'Australia/Melbourne')
     setDefaultRecipients(settings.recipients || '')
-    setRecipients(settings.recipients || '')
   }, [settings])
 
   // Load templates and accounts on mount
@@ -160,6 +169,8 @@ export default function ReportsPage() {
     loadData()
   }, [])
 
+  // HANDLERS
+
   const handleSaveSchedule = async () => {
     try {
       await updateSettings({
@@ -172,6 +183,115 @@ export default function ReportsPage() {
     } catch (error) {
       console.error('Error saving schedule:', error)
       alert('Failed to save schedule settings')
+    }
+  }
+
+  const handleSendQuickReport = async () => {
+    setSending(true)
+    setResult(null)
+
+    try {
+      const res = await fetch('/api/reports/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipients: recipients.split(',').map(email => email.trim()).filter(Boolean),
+        }),
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setResult({
+          success: true,
+          message: `Report sent successfully to ${data.recipients.length} recipient(s)!`,
+        })
+      } else {
+        setResult({
+          success: false,
+          message: data.error || 'Failed to send report',
+        })
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An error occurred'
+      setResult({
+        success: false,
+        message,
+      })
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleSendCustomReport = async () => {
+    if (customAccounts.length === 0) {
+      setCustomResult({ success: false, message: 'Please select at least one account' })
+      return
+    }
+
+    setGeneratingCustom(true)
+    setCustomResult(null)
+
+    try {
+      let dateFrom = ''
+      let dateTo = ''
+
+      if (customDateRange === 'this_month') {
+        const now = new Date()
+        dateFrom = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+        dateTo = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+      } else if (customDateRange === 'last_month') {
+        const now = new Date()
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        const lastDay = new Date(now.getFullYear(), now.getMonth(), 0).getDate()
+        dateFrom = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}-01`
+        dateTo = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+      } else {
+        dateFrom = customDateFrom
+        dateTo = customDateTo
+      }
+
+      if (!dateFrom || !dateTo) {
+        setCustomResult({ success: false, message: 'Please select a valid date range' })
+        setGeneratingCustom(false)
+        return
+      }
+
+      const res = await fetch('/api/reports/monthly', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accountIds: customAccounts,
+          dateFrom,
+          dateTo,
+          sections: customSections,
+          template: customTemplate,
+          recipients: recipients.split(',').map(email => email.trim()).filter(Boolean),
+        }),
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setCustomResult({
+          success: true,
+          message: data.message || 'Custom report generated and sent successfully!',
+          reportId: data.reportId,
+        })
+      } else {
+        setCustomResult({
+          success: false,
+          message: data.error || 'Failed to generate custom report',
+        })
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An error occurred'
+      setCustomResult({
+        success: false,
+        message,
+      })
+    } finally {
+      setGeneratingCustom(false)
     }
   }
 
@@ -219,49 +339,12 @@ export default function ReportsPage() {
     }
   }
 
-  const handleSendReport = async () => {
-    setSending(true)
-    setResult(null)
-
-    try {
-      const res = await fetch('/api/reports/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipients: recipients.split(',').map(email => email.trim()).filter(Boolean),
-        }),
-      })
-
-      const data = await res.json()
-
-      if (data.success) {
-        setResult({
-          success: true,
-          message: `Report sent successfully to ${data.recipients.length} recipient(s)!`,
-        })
-      } else {
-        setResult({
-          success: false,
-          message: data.error || 'Failed to send report',
-        })
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'An error occurred'
-      setResult({
-        success: false,
-        message,
-      })
-    } finally {
-      setSending(false)
-    }
-  }
-
   const handlePreview = () => {
     window.open('/api/reports/preview', '_blank')
   }
 
   const handleToggleAccount = (accountId: string) => {
-    setMonthlyAccounts(prev =>
+    setCustomAccounts(prev =>
       prev.includes(accountId)
         ? prev.filter(id => id !== accountId)
         : [...prev, accountId]
@@ -269,91 +352,18 @@ export default function ReportsPage() {
   }
 
   const handleToggleAllAccounts = () => {
-    if (monthlyAccounts.length === accounts.length) {
-      setMonthlyAccounts([])
+    if (customAccounts.length === accounts.length) {
+      setCustomAccounts([])
     } else {
-      setMonthlyAccounts(accounts.map(a => a.id))
+      setCustomAccounts(accounts.map(a => a.id))
     }
   }
 
-  const handleToggleSection = (section: keyof typeof monthlySections) => {
-    setMonthlySections(prev => ({
+  const handleToggleSection = (section: keyof typeof customSections) => {
+    setCustomSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }))
-  }
-
-  const handleGenerateMonthlyReport = async () => {
-    if (monthlyAccounts.length === 0) {
-      setMonthlyResult({ success: false, message: 'Please select at least one account' })
-      return
-    }
-
-    setGeneratingMonthly(true)
-    setMonthlyResult(null)
-
-    try {
-      // Determine date range
-      let dateFrom = ''
-      let dateTo = ''
-
-      if (monthlyDateRange === 'this_month') {
-        const now = new Date()
-        dateFrom = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
-        dateTo = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-      } else if (monthlyDateRange === 'last_month') {
-        const now = new Date()
-        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-        const lastDay = new Date(now.getFullYear(), now.getMonth(), 0).getDate()
-        dateFrom = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}-01`
-        dateTo = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
-      } else {
-        dateFrom = monthlyCustomFrom
-        dateTo = monthlyCustomTo
-      }
-
-      if (!dateFrom || !dateTo) {
-        setMonthlyResult({ success: false, message: 'Please select a valid date range' })
-        setGeneratingMonthly(false)
-        return
-      }
-
-      const res = await fetch('/api/reports/monthly', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          accountIds: monthlyAccounts,
-          dateFrom,
-          dateTo,
-          sections: monthlySections,
-          template: monthlyTemplate,
-          recipients: monthlyRecipients.split(',').map(email => email.trim()).filter(Boolean),
-        }),
-      })
-
-      const data = await res.json()
-
-      if (data.success) {
-        setMonthlyResult({
-          success: true,
-          message: data.message || 'Monthly report generated and sent successfully!',
-          reportId: data.reportId,
-        })
-      } else {
-        setMonthlyResult({
-          success: false,
-          message: data.error || 'Failed to generate monthly report',
-        })
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'An error occurred'
-      setMonthlyResult({
-        success: false,
-        message,
-      })
-    } finally {
-      setGeneratingMonthly(false)
-    }
   }
 
   const handleDownloadPDF = async (reportId: string) => {
@@ -363,7 +373,7 @@ export default function ReportsPage() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `monthly-report-${reportId}.pdf`
+      a.download = `report-${reportId}.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -382,332 +392,344 @@ export default function ReportsPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Reports</h1>
         <p className="text-muted mt-2 text-sm sm:text-base">
-          Generate and send performance reports from pre-made templates
+          Generate and schedule Google Ads performance reports
         </p>
       </div>
 
-      {/* Monthly Report Builder Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Monthly Report Builder
-          </CardTitle>
-          <CardDescription>
-            Generate comprehensive monthly reports for selected accounts with customizable sections
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {loadingData ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <>
-              {/* Account Multi-Select */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium">
-                    Select Accounts ({monthlyAccounts.length} selected)
-                  </label>
-                  <Button
-                    onClick={handleToggleAllAccounts}
-                    variant="outline"
-                    size="sm"
-                  >
-                    {monthlyAccounts.length === accounts.length ? 'Deselect All' : 'Select All'}
-                  </Button>
-                </div>
-                <div className="border border-border rounded-lg p-4 max-h-48 overflow-y-auto space-y-2">
-                  {accounts.map((account) => (
-                    <label
-                      key={account.id}
-                      className="flex items-center gap-2 p-2 hover:bg-accent rounded cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={monthlyAccounts.includes(account.id)}
-                        onChange={() => handleToggleAccount(account.id)}
-                        className="w-4 h-4 rounded border-border"
-                      />
-                      <span className="text-sm">{account.name}</span>
-                    </label>
-                  ))}
-                  {accounts.length === 0 && (
-                    <p className="text-sm text-muted text-center py-4">
-                      No accounts found. Please check your Google Ads API configuration.
-                    </p>
-                  )}
-                </div>
-              </div>
+      {/* Tab Navigation */}
+      <div className="border-b border-border">
+        <div className="flex gap-1">
+          <button
+            onClick={() => setActiveTab('create')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'create'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted hover:text-foreground'
+            }`}
+          >
+            Create Report
+          </button>
+          <button
+            onClick={() => setActiveTab('scheduled')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'scheduled'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted hover:text-foreground'
+            }`}
+          >
+            Scheduled Reports
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'history'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted hover:text-foreground'
+            }`}
+          >
+            History
+          </button>
+        </div>
+      </div>
 
-              {/* Date Range Picker */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  <Calendar className="inline h-4 w-4 mr-1" />
-                  Date Range
-                </label>
-                <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => setMonthlyDateRange('this_month')}
-                      variant={monthlyDateRange === 'this_month' ? 'default' : 'outline'}
-                      size="sm"
-                    >
-                      This Month
-                    </Button>
-                    <Button
-                      onClick={() => setMonthlyDateRange('last_month')}
-                      variant={monthlyDateRange === 'last_month' ? 'default' : 'outline'}
-                      size="sm"
-                    >
-                      Last Month
-                    </Button>
-                    <Button
-                      onClick={() => setMonthlyDateRange('custom')}
-                      variant={monthlyDateRange === 'custom' ? 'default' : 'outline'}
-                      size="sm"
-                    >
-                      Custom Range
-                    </Button>
-                  </div>
-                  {monthlyDateRange === 'custom' && (
-                    <div className="flex gap-3">
-                      <div className="flex-1">
-                        <label className="block text-xs text-muted mb-1">From</label>
-                        <input
-                          type="date"
-                          value={monthlyCustomFrom}
-                          onChange={(e) => setMonthlyCustomFrom(e.target.value)}
-                          className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <label className="block text-xs text-muted mb-1">To</label>
-                        <input
-                          type="date"
-                          value={monthlyCustomTo}
-                          onChange={(e) => setMonthlyCustomTo(e.target.value)}
-                          className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Report Sections */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Report Sections
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {Object.entries({
-                    campaigns: 'Campaign Performance',
-                    keywords: 'Keyword Analysis',
-                    auctionInsights: 'Auction Insights',
-                    qualityScore: 'Quality Score',
-                    geographic: 'Geographic Performance',
-                    device: 'Device Performance',
-                    adSchedule: 'Ad Schedule',
-                    searchTerms: 'Search Terms',
-                    conversions: 'Conversion Tracking',
-                  }).map(([key, label]) => (
-                    <label
-                      key={key}
-                      className="flex items-center gap-2 p-3 border border-border rounded-lg hover:bg-accent cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={monthlySections[key as keyof typeof monthlySections]}
-                        onChange={() => handleToggleSection(key as keyof typeof monthlySections)}
-                        className="w-4 h-4 rounded border-border"
-                      />
-                      <span className="text-sm">{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Template Selector */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Report Template
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                  {[
-                    { id: 'executive', label: 'Executive Summary' },
-                    { id: 'detailed', label: 'Detailed Performance' },
-                    { id: 'auction', label: 'Auction Insights Focus' },
-                    { id: 'keyword', label: 'Keyword Deep Dive' },
-                    { id: 'custom', label: 'Custom Report' },
-                  ].map((template) => (
-                    <Button
-                      key={template.id}
-                      onClick={() => setMonthlyTemplate(template.id)}
-                      variant={monthlyTemplate === template.id ? 'default' : 'outline'}
-                      size="sm"
-                    >
-                      {template.label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recipients */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Email Recipients
-                </label>
-                <input
-                  type="text"
-                  value={monthlyRecipients}
-                  onChange={(e) => setMonthlyRecipients(e.target.value)}
-                  placeholder="email1@example.com, email2@example.com"
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                {monthlyRecipients && (() => {
-                  const { valid, invalid, total } = parseRecipients(monthlyRecipients)
-                  if (total === 0) return null
-                  if (invalid.length > 0) {
-                    return (
-                      <p className="text-xs text-error mt-1">
-                        ⚠ {invalid.length} invalid email{invalid.length > 1 ? 's' : ''}: {invalid.join(', ')}
-                      </p>
-                    )
-                  }
-                  return (
-                    <p className="text-xs text-success mt-1">
-                      ✓ {valid.length} valid recipient{valid.length > 1 ? 's' : ''}
-                    </p>
-                  )
-                })()}
-                {!monthlyRecipients && (
-                  <p className="text-xs text-muted mt-1">
-                    Separate multiple emails with commas
-                  </p>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleGenerateMonthlyReport}
-                  disabled={generatingMonthly || monthlyAccounts.length === 0 || !monthlyRecipients.trim()}
-                  size="lg"
-                  className="flex-1"
-                >
-                  {generatingMonthly ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4" />
-                      Generate & Send Report
-                    </>
-                  )}
-                </Button>
-                {monthlyResult?.reportId && (
-                  <Button
-                    onClick={() => handleDownloadPDF(monthlyResult.reportId!)}
-                    variant="outline"
-                    size="lg"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download PDF
-                  </Button>
-                )}
-              </div>
-
-              {/* Result Message */}
-              {monthlyResult && (
-                <div
-                  className={`flex items-center gap-2 p-4 rounded-lg ${
-                    monthlyResult.success
-                      ? 'bg-success/10 text-success'
-                      : 'bg-error/10 text-error'
+      {/* CREATE REPORT TAB */}
+      {activeTab === 'create' && (
+        <div className="space-y-6">
+          {/* Step 1: Choose Report Type */}
+          <Card>
+            <CardHeader>
+              <CardTitle>1️⃣ Choose Report Type</CardTitle>
+              <CardDescription>Select the type of report you want to create</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <button
+                  onClick={() => {
+                    setReportType('quick')
+                    setResult(null)
+                    setCustomResult(null)
+                  }}
+                  className={`p-6 rounded-lg border-2 transition-all text-left ${
+                    reportType === 'quick'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
                   }`}
                 >
-                  {monthlyResult.success ? (
-                    <CheckCircle className="h-5 w-5" />
-                  ) : (
-                    <XCircle className="h-5 w-5" />
-                  )}
-                  <span>{monthlyResult.message}</span>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+                  <Clock className="h-8 w-8 mb-3 text-primary" />
+                  <h3 className="font-semibold mb-1">Quick Daily</h3>
+                  <p className="text-sm text-muted">Yesterday&apos;s performance across all accounts</p>
+                </button>
 
-      {/* Template Report Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Template Reports
-          </CardTitle>
-          <CardDescription>
-            Select a pre-made report template and send to recipients
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {loadingData ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <>
-              {/* Template Selection */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Report Template
-                </label>
-                <select
-                  value={selectedTemplate}
-                  onChange={(e) => setSelectedTemplate(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                <button
+                  onClick={() => {
+                    setReportType('custom')
+                    setResult(null)
+                    setCustomResult(null)
+                  }}
+                  className={`p-6 rounded-lg border-2 transition-all text-left ${
+                    reportType === 'custom'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
                 >
-                  {templates.map((template) => (
-                    <option key={template.id} value={template.id}>
-                      {template.name}
-                    </option>
-                  ))}
-                </select>
-                {selectedTemplateData && (
-                  <p className="text-xs text-muted mt-1">
-                    {selectedTemplateData.description}
-                  </p>
+                  <TrendingUp className="h-8 w-8 mb-3 text-primary" />
+                  <h3 className="font-semibold mb-1">Custom Report</h3>
+                  <p className="text-sm text-muted">Choose your own metrics, dates, and accounts</p>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setReportType('template')
+                    setResult(null)
+                    setCustomResult(null)
+                  }}
+                  className={`p-6 rounded-lg border-2 transition-all text-left ${
+                    reportType === 'template'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <FileText className="h-8 w-8 mb-3 text-primary" />
+                  <h3 className="font-semibold mb-1">Template Report</h3>
+                  <p className="text-sm text-muted">Pre-configured professional layouts</p>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Step 2: Configure Report (conditional) */}
+          {reportType !== 'quick' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>2️⃣ Configure Report</CardTitle>
+                <CardDescription>
+                  {reportType === 'custom' && 'Customize your report with specific metrics and date ranges'}
+                  {reportType === 'template' && 'Select a template and account scope'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {loadingData ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <>
+                    {reportType === 'custom' && (
+                      <>
+                        {/* Account Multi-Select */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="block text-sm font-medium">
+                              Select Accounts ({customAccounts.length} selected)
+                            </label>
+                            <Button
+                              onClick={handleToggleAllAccounts}
+                              variant="outline"
+                              size="sm"
+                            >
+                              {customAccounts.length === accounts.length ? 'Deselect All' : 'Select All'}
+                            </Button>
+                          </div>
+                          <div className="border border-border rounded-lg p-4 max-h-48 overflow-y-auto space-y-2">
+                            {accounts.map((account) => (
+                              <label
+                                key={account.id}
+                                className="flex items-center gap-2 p-2 hover:bg-accent rounded cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={customAccounts.includes(account.id)}
+                                  onChange={() => handleToggleAccount(account.id)}
+                                  className="w-4 h-4 rounded border-border"
+                                />
+                                <span className="text-sm">{account.name}</span>
+                              </label>
+                            ))}
+                            {accounts.length === 0 && (
+                              <p className="text-sm text-muted text-center py-4">
+                                No accounts found. Please check your Google Ads API configuration.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Date Range Picker */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            <Calendar className="inline h-4 w-4 mr-1" />
+                            Date Range
+                          </label>
+                          <div className="space-y-3">
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => setCustomDateRange('this_month')}
+                                variant={customDateRange === 'this_month' ? 'default' : 'outline'}
+                                size="sm"
+                              >
+                                This Month
+                              </Button>
+                              <Button
+                                onClick={() => setCustomDateRange('last_month')}
+                                variant={customDateRange === 'last_month' ? 'default' : 'outline'}
+                                size="sm"
+                              >
+                                Last Month
+                              </Button>
+                              <Button
+                                onClick={() => setCustomDateRange('custom')}
+                                variant={customDateRange === 'custom' ? 'default' : 'outline'}
+                                size="sm"
+                              >
+                                Custom Range
+                              </Button>
+                            </div>
+                            {customDateRange === 'custom' && (
+                              <div className="flex gap-3">
+                                <div className="flex-1">
+                                  <label className="block text-xs text-muted mb-1">From</label>
+                                  <input
+                                    type="date"
+                                    value={customDateFrom}
+                                    onChange={(e) => setCustomDateFrom(e.target.value)}
+                                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                  />
+                                </div>
+                                <div className="flex-1">
+                                  <label className="block text-xs text-muted mb-1">To</label>
+                                  <input
+                                    type="date"
+                                    value={customDateTo}
+                                    onChange={(e) => setCustomDateTo(e.target.value)}
+                                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Report Sections */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Report Sections
+                          </label>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {Object.entries({
+                              campaigns: 'Campaign Performance',
+                              keywords: 'Keyword Analysis',
+                              auctionInsights: 'Auction Insights',
+                              qualityScore: 'Quality Score',
+                              geographic: 'Geographic Performance',
+                              device: 'Device Performance',
+                              adSchedule: 'Ad Schedule',
+                              searchTerms: 'Search Terms',
+                              conversions: 'Conversion Tracking',
+                            }).map(([key, label]) => (
+                              <label
+                                key={key}
+                                className="flex items-center gap-2 p-3 border border-border rounded-lg hover:bg-accent cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={customSections[key as keyof typeof customSections]}
+                                  onChange={() => handleToggleSection(key as keyof typeof customSections)}
+                                  className="w-4 h-4 rounded border-border"
+                                />
+                                <span className="text-sm">{label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Template Selector */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Report Template
+                          </label>
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                            {[
+                              { id: 'executive', label: 'Executive Summary' },
+                              { id: 'detailed', label: 'Detailed Performance' },
+                              { id: 'auction', label: 'Auction Insights Focus' },
+                              { id: 'keyword', label: 'Keyword Deep Dive' },
+                              { id: 'custom', label: 'Custom Report' },
+                            ].map((template) => (
+                              <Button
+                                key={template.id}
+                                onClick={() => setCustomTemplate(template.id)}
+                                variant={customTemplate === template.id ? 'default' : 'outline'}
+                                size="sm"
+                              >
+                                {template.label}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {reportType === 'template' && (
+                      <>
+                        {/* Template Selection */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Report Template
+                          </label>
+                          <select
+                            value={selectedTemplate}
+                            onChange={(e) => setSelectedTemplate(e.target.value)}
+                            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                          >
+                            {templates.map((template) => (
+                              <option key={template.id} value={template.id}>
+                                {template.name}
+                              </option>
+                            ))}
+                          </select>
+                          {selectedTemplateData && (
+                            <p className="text-xs text-muted mt-1">
+                              {selectedTemplateData.description}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Account Selection */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Account Scope
+                          </label>
+                          <select
+                            value={selectedAccount}
+                            onChange={(e) => setSelectedAccount(e.target.value)}
+                            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                          >
+                            <option value="all">MCC-Level (All Accounts)</option>
+                            {accounts.map((account) => (
+                              <option key={account.id} value={account.id}>
+                                {account.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </>
+                    )}
+                  </>
                 )}
-              </div>
+              </CardContent>
+            </Card>
+          )}
 
-              {/* Account Selection */}
+          {/* Step 3: Send Report */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {reportType === 'quick' ? '2️⃣' : '3️⃣'} Send Report
+              </CardTitle>
+              <CardDescription>Enter recipients and send or preview your report</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Account
-                </label>
-                <select
-                  value={selectedAccount}
-                  onChange={(e) => setSelectedAccount(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                >
-                  <option value="all">All Accounts</option>
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Recipients Input */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Email Recipients
-                </label>
+                <label className="block text-sm font-medium mb-2">Email Recipients</label>
                 <input
                   type="text"
                   value={recipients}
@@ -732,33 +754,99 @@ export default function ReportsPage() {
                   )
                 })()}
                 {!recipients && (
-                  <p className="text-xs text-muted mt-1">
-                    Separate multiple emails with commas
-                  </p>
+                  <p className="text-xs text-muted mt-1">Separate multiple emails with commas</p>
                 )}
               </div>
 
-              {/* Action Button */}
-              <Button
-                onClick={handleSendTemplateReport}
-                disabled={sending || !recipients.trim() || !selectedTemplate}
-                size="lg"
-                className="w-full"
-              >
-                {sending ? (
+              <div className="flex flex-col sm:flex-row gap-3">
+                {reportType === 'quick' && (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4" />
-                    Send Report Now
+                    <Button
+                      onClick={handlePreview}
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:flex-1"
+                    >
+                      <Eye className="h-4 w-4" />
+                      Preview Report
+                    </Button>
+                    <Button
+                      onClick={handleSendQuickReport}
+                      disabled={sending || !recipients.trim()}
+                      size="lg"
+                      className="w-full sm:flex-1"
+                    >
+                      {sending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4" />
+                          Send Now
+                        </>
+                      )}
+                    </Button>
                   </>
                 )}
-              </Button>
 
-              {/* Result Message */}
+                {reportType === 'custom' && (
+                  <>
+                    <Button
+                      onClick={handleSendCustomReport}
+                      disabled={generatingCustom || customAccounts.length === 0 || !recipients.trim()}
+                      size="lg"
+                      className="w-full"
+                    >
+                      {generatingCustom ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4" />
+                          Generate & Send Report
+                        </>
+                      )}
+                    </Button>
+                    {customResult?.reportId && (
+                      <Button
+                        onClick={() => handleDownloadPDF(customResult.reportId!)}
+                        variant="outline"
+                        size="lg"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download PDF
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {reportType === 'template' && (
+                  <Button
+                    onClick={handleSendTemplateReport}
+                    disabled={sending || !recipients.trim() || !selectedTemplate}
+                    size="lg"
+                    className="w-full"
+                  >
+                    {sending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Send Report Now
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+
+              {/* Result Messages */}
               {result && (
                 <div
                   className={`flex items-center gap-2 p-4 rounded-lg ${
@@ -775,334 +863,257 @@ export default function ReportsPage() {
                   <span>{result.message}</span>
                 </div>
               )}
-            </>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Daily Standard Report Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Send Daily Standard Report</CardTitle>
-          <CardDescription>
-            Generate and send a report with yesterday&apos;s performance data
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Recipients Input */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Email Recipients
-            </label>
-            <input
-              type="text"
-              value={recipients}
-              onChange={(e) => setRecipients(e.target.value)}
-              placeholder="email1@example.com, email2@example.com"
-              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            {recipients && (() => {
-              const { valid, invalid, total } = parseRecipients(recipients)
-              if (total === 0) return null
-              if (invalid.length > 0) {
-                return (
-                  <p className="text-xs text-error mt-1">
-                    ⚠ {invalid.length} invalid email{invalid.length > 1 ? 's' : ''}: {invalid.join(', ')}
-                  </p>
-                )
-              }
-              return (
-                <p className="text-xs text-success mt-1">
-                  ✓ {valid.length} valid recipient{valid.length > 1 ? 's' : ''}
-                </p>
-              )
-            })()}
-            {!recipients && (
-              <p className="text-xs text-muted mt-1">
-                Separate multiple emails with commas
-              </p>
+              {customResult && (
+                <div
+                  className={`flex items-center gap-2 p-4 rounded-lg ${
+                    customResult.success
+                      ? 'bg-success/10 text-success'
+                      : 'bg-error/10 text-error'
+                  }`}
+                >
+                  {customResult.success ? (
+                    <CheckCircle className="h-5 w-5" />
+                  ) : (
+                    <XCircle className="h-5 w-5" />
+                  )}
+                  <span>{customResult.message}</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* SCHEDULED REPORTS TAB */}
+      {activeTab === 'scheduled' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Scheduled Reports
+            </CardTitle>
+            <CardDescription>
+              Configure automatic daily report schedule and default recipients
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Frequency Selector */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Frequency
+              </label>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setScheduleFrequency('daily')}
+                  variant={scheduleFrequency === 'daily' ? 'default' : 'outline'}
+                  size="sm"
+                >
+                  Daily
+                </Button>
+                <Button
+                  onClick={() => setScheduleFrequency('weekly')}
+                  variant={scheduleFrequency === 'weekly' ? 'default' : 'outline'}
+                  size="sm"
+                >
+                  Weekly
+                </Button>
+                <Button
+                  onClick={() => setScheduleFrequency('monthly')}
+                  variant={scheduleFrequency === 'monthly' ? 'default' : 'outline'}
+                  size="sm"
+                >
+                  Monthly
+                </Button>
+              </div>
+            </div>
+
+            {/* Time Picker */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Time
+              </label>
+              <div className="flex gap-3 items-center">
+                <select
+                  value={scheduleHour}
+                  onChange={(e) => setScheduleHour(e.target.value)}
+                  className="px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={String(i).padStart(2, '0')}>
+                      {String(i).padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-muted">:</span>
+                <select
+                  value={scheduleMinute}
+                  onChange={(e) => setScheduleMinute(e.target.value)}
+                  className="px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                >
+                  {['00', '15', '30', '45'].map((min) => (
+                    <option key={min} value={min}>
+                      {min}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Day of Week Selector (for Weekly) */}
+            {scheduleFrequency === 'weekly' && (
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Day of Week
+                </label>
+                <select
+                  value={scheduleDayOfWeek}
+                  onChange={(e) => setScheduleDayOfWeek(e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                >
+                  <option value="1">Monday</option>
+                  <option value="2">Tuesday</option>
+                  <option value="3">Wednesday</option>
+                  <option value="4">Thursday</option>
+                  <option value="5">Friday</option>
+                  <option value="6">Saturday</option>
+                  <option value="0">Sunday</option>
+                </select>
+              </div>
             )}
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              onClick={handleSendReport}
-              disabled={sending || !recipients.trim()}
-              size="lg"
-              className="w-full sm:w-auto"
-            >
-              {sending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4" />
-                  Send Report Now
-                </>
-              )}
-            </Button>
+            {/* Day of Month Selector (for Monthly) */}
+            {scheduleFrequency === 'monthly' && (
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Day of Month
+                </label>
+                <select
+                  value={scheduleDayOfMonth}
+                  onChange={(e) => setScheduleDayOfMonth(e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                >
+                  {Array.from({ length: 31 }, (_, i) => (
+                    <option key={i + 1} value={String(i + 1)}>
+                      {i + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-            <Button
-              onClick={handlePreview}
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto"
-            >
-              <Eye className="h-4 w-4" />
-              Preview Report
-            </Button>
-          </div>
-
-          {/* Result Message */}
-          {result && (
-            <div
-              className={`flex items-center gap-2 p-4 rounded-lg ${
-                result.success
-                  ? 'bg-success/10 text-success'
-                  : 'bg-error/10 text-error'
-              }`}
-            >
-              {result.success ? (
-                <CheckCircle className="h-5 w-5" />
-              ) : (
-                <XCircle className="h-5 w-5" />
-              )}
-              <span>{result.message}</span>
+            {/* Generated Schedule Preview */}
+            <div className="bg-muted/50 p-3 rounded-lg">
+              <p className="text-xs text-muted font-medium mb-1">Schedule Preview:</p>
+              <p className="text-sm font-medium">
+                {(() => {
+                  try {
+                    return cronstrue.toString(schedule)
+                  } catch (e) {
+                    return 'Invalid schedule'
+                  }
+                })()}
+              </p>
+              <p className="text-xs text-muted mt-1 font-mono">{schedule}</p>
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Report Schedule Configuration */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Scheduled Reports
-          </CardTitle>
-          <CardDescription>
-            Configure automatic daily report schedule and default recipients
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Frequency Selector */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Frequency
-            </label>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setScheduleFrequency('daily')}
-                variant={scheduleFrequency === 'daily' ? 'default' : 'outline'}
-                size="sm"
-              >
-                Daily
-              </Button>
-              <Button
-                onClick={() => setScheduleFrequency('weekly')}
-                variant={scheduleFrequency === 'weekly' ? 'default' : 'outline'}
-                size="sm"
-              >
-                Weekly
-              </Button>
-              <Button
-                onClick={() => setScheduleFrequency('monthly')}
-                variant={scheduleFrequency === 'monthly' ? 'default' : 'outline'}
-                size="sm"
-              >
-                Monthly
-              </Button>
-            </div>
-          </div>
-
-          {/* Time Picker */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Time
-            </label>
-            <div className="flex gap-3 items-center">
-              <select
-                value={scheduleHour}
-                onChange={(e) => setScheduleHour(e.target.value)}
-                className="px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-              >
-                {Array.from({ length: 24 }, (_, i) => (
-                  <option key={i} value={String(i).padStart(2, '0')}>
-                    {String(i).padStart(2, '0')}
-                  </option>
-                ))}
-              </select>
-              <span className="text-muted">:</span>
-              <select
-                value={scheduleMinute}
-                onChange={(e) => setScheduleMinute(e.target.value)}
-                className="px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-              >
-                {['00', '15', '30', '45'].map((min) => (
-                  <option key={min} value={min}>
-                    {min}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Day of Week Selector (for Weekly) */}
-          {scheduleFrequency === 'weekly' && (
             <div>
               <label className="block text-sm font-medium mb-2">
-                Day of Week
+                Timezone
               </label>
               <select
-                value={scheduleDayOfWeek}
-                onChange={(e) => setScheduleDayOfWeek(e.target.value)}
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
               >
-                <option value="1">Monday</option>
-                <option value="2">Tuesday</option>
-                <option value="3">Wednesday</option>
-                <option value="4">Thursday</option>
-                <option value="5">Friday</option>
-                <option value="6">Saturday</option>
-                <option value="0">Sunday</option>
+                <option value="Australia/Melbourne">Australia/Melbourne</option>
+                <option value="Australia/Sydney">Australia/Sydney</option>
+                <option value="Australia/Brisbane">Australia/Brisbane</option>
+                <option value="Australia/Perth">Australia/Perth</option>
+                <option value="Pacific/Auckland">New Zealand (Auckland)</option>
+                <option value="UTC">UTC</option>
               </select>
             </div>
-          )}
 
-          {/* Day of Month Selector (for Monthly) */}
-          {scheduleFrequency === 'monthly' && (
             <div>
               <label className="block text-sm font-medium mb-2">
-                Day of Month
+                Default Recipients
               </label>
-              <select
-                value={scheduleDayOfMonth}
-                onChange={(e) => setScheduleDayOfMonth(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-              >
-                {Array.from({ length: 31 }, (_, i) => (
-                  <option key={i + 1} value={String(i + 1)}>
-                    {i + 1}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Generated Schedule Preview */}
-          <div className="bg-muted/50 p-3 rounded-lg">
-            <p className="text-xs text-muted font-medium mb-1">Schedule Preview:</p>
-            <p className="text-sm font-medium">
-              {(() => {
-                try {
-                  return cronstrue.toString(schedule)
-                } catch (e) {
-                  return 'Invalid schedule'
+              <input
+                type="text"
+                value={defaultRecipients}
+                onChange={(e) => setDefaultRecipients(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="email1@example.com, email2@example.com"
+              />
+              {defaultRecipients && (() => {
+                const { valid, invalid, total } = parseRecipients(defaultRecipients)
+                if (total === 0) return null
+                if (invalid.length > 0) {
+                  return (
+                    <p className="text-xs text-error mt-1">
+                      ⚠ {invalid.length} invalid email{invalid.length > 1 ? 's' : ''}: {invalid.join(', ')}
+                    </p>
+                  )
                 }
-              })()}
-            </p>
-            <p className="text-xs text-muted mt-1 font-mono">{schedule}</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Timezone
-            </label>
-            <select
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-            >
-              <option value="Australia/Melbourne">Australia/Melbourne</option>
-              <option value="Australia/Sydney">Australia/Sydney</option>
-              <option value="Australia/Brisbane">Australia/Brisbane</option>
-              <option value="Australia/Perth">Australia/Perth</option>
-              <option value="Pacific/Auckland">New Zealand (Auckland)</option>
-              <option value="UTC">UTC</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Default Recipients
-            </label>
-            <input
-              type="text"
-              value={defaultRecipients}
-              onChange={(e) => setDefaultRecipients(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="email1@example.com, email2@example.com"
-            />
-            {defaultRecipients && (() => {
-              const { valid, invalid, total } = parseRecipients(defaultRecipients)
-              if (total === 0) return null
-              if (invalid.length > 0) {
                 return (
-                  <p className="text-xs text-error mt-1">
-                    ⚠ {invalid.length} invalid email{invalid.length > 1 ? 's' : ''}: {invalid.join(', ')}
+                  <p className="text-xs text-success mt-1">
+                    ✓ {valid.length} valid recipient{valid.length > 1 ? 's' : ''}
                   </p>
                 )
-              }
-              return (
-                <p className="text-xs text-success mt-1">
-                  ✓ {valid.length} valid recipient{valid.length > 1 ? 's' : ''}
+              })()}
+              {!defaultRecipients && (
+                <p className="text-xs text-muted mt-1">
+                  Separate multiple emails with commas
                 </p>
-              )
-            })()}
-            {!defaultRecipients && (
-              <p className="text-xs text-muted mt-1">
-                Separate multiple emails with commas
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t border-border">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-success" />
-              <span className="text-sm text-success">Active</span>
-            </div>
-            <Button onClick={handleSaveSchedule} disabled={scheduleSaved}>
-              {scheduleSaved ? (
-                <>
-                  <CheckCircle className="h-4 w-4" />
-                  Saved!
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save Schedule
-                </>
               )}
-            </Button>
-          </div>
+            </div>
 
-          <div className="pt-4 border-t border-border">
-            <p className="text-xs sm:text-sm text-muted">
-              <strong>Note:</strong> Schedule changes require restarting the service or updating GitHub Actions workflow.
-              Reports are automatically generated and sent daily. Use the manual send buttons above to send on-demand.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex items-center justify-between pt-4 border-t border-border">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-success" />
+                <span className="text-sm text-success">Active</span>
+              </div>
+              <Button onClick={handleSaveSchedule} disabled={scheduleSaved}>
+                {scheduleSaved ? (
+                  <>
+                    <CheckCircle className="h-4 w-4" />
+                    Saved!
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save Schedule
+                  </>
+                )}
+              </Button>
+            </div>
 
-      {/* Historical Reports (Placeholder) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Historical Reports</CardTitle>
-          <CardDescription>
-            View previously sent reports
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted">
-            <p>Historical report tracking will be available once database is configured.</p>
-            <p className="text-sm mt-2">Coming soon in the next update!</p>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs sm:text-sm text-muted">
+                <strong>Note:</strong> Schedule changes require updating the GitHub Actions workflow.
+                The daily report is automatically generated and sent based on this schedule.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* HISTORY TAB */}
+      {activeTab === 'history' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Historical Reports</CardTitle>
+            <CardDescription>View previously sent reports</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-muted">
+              <p>Historical report tracking will be available once database is configured.</p>
+              <p className="text-sm mt-2">Coming soon in Phase 1!</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
