@@ -14,14 +14,12 @@ const globalForPrisma = globalThis as unknown as {
 
 // Create Prisma Client with Neon adapter for serverless
 const createPrismaClient = () => {
-  // Check if we're in a serverless environment (Vercel)
-  const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
-
-  if (isServerless && process.env.DATABASE_URL) {
+  // Always use Neon adapter when DATABASE_URL is available (for Supabase compatibility)
+  if (process.env.DATABASE_URL) {
     // Configure Neon for serverless
     neonConfig.webSocketConstructor = ws
 
-    // Use Neon adapter for serverless - pass PoolConfig object
+    // Use Neon adapter - pass PoolConfig object
     const adapter = new PrismaNeon({
       connectionString: process.env.DATABASE_URL,
     })
@@ -32,7 +30,7 @@ const createPrismaClient = () => {
     })
   }
 
-  // Standard Prisma Client for local development
+  // Fallback to standard Prisma Client (though this shouldn't happen in production)
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   })
