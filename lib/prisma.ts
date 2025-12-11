@@ -5,7 +5,8 @@
 
 import { PrismaClient } from '@prisma/client'
 import { PrismaNeon } from '@prisma/adapter-neon'
-import { Pool } from '@neondatabase/serverless'
+import { neonConfig } from '@neondatabase/serverless'
+import ws from 'ws'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -17,9 +18,13 @@ const createPrismaClient = () => {
   const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
 
   if (isServerless && process.env.DATABASE_URL) {
-    // Use Neon adapter for serverless
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-    const adapter = new PrismaNeon(pool)
+    // Configure Neon for serverless
+    neonConfig.webSocketConstructor = ws
+
+    // Use Neon adapter for serverless - pass PoolConfig object
+    const adapter = new PrismaNeon({
+      connectionString: process.env.DATABASE_URL,
+    })
 
     return new PrismaClient({
       adapter,
