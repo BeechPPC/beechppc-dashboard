@@ -3,14 +3,18 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Clock, Loader2, Plus, MoreVertical, Power, PowerOff } from 'lucide-react'
+import { Clock, Loader2, Plus, MoreVertical, Power, PowerOff, Edit, Trash2 } from 'lucide-react'
 import cronstrue from 'cronstrue'
 import type { ReportSchedule } from '@/lib/types/reports'
+import { ScheduleModal } from './ScheduleModal'
 
 export function SchedulesList() {
   const [schedules, setSchedules] = useState<ReportSchedule[]>([])
   const [loading, setLoading] = useState(true)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingSchedule, setEditingSchedule] = useState<ReportSchedule | null>(null)
+  const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null)
 
   // Load schedules when component mounts
   useEffect(() => {
@@ -77,6 +81,55 @@ export function SchedulesList() {
     return 0
   }
 
+  const handleCreateSchedule = () => {
+    setEditingSchedule(null)
+    setModalOpen(true)
+  }
+
+  const handleEditSchedule = (schedule: ReportSchedule) => {
+    setEditingSchedule(schedule)
+    setModalOpen(true)
+    setShowMoreMenu(null)
+  }
+
+  const handleDeleteSchedule = async (scheduleId: string) => {
+    if (!confirm('Are you sure you want to delete this schedule?')) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/reports/schedules/${scheduleId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setSchedules((prev) => prev.filter((s) => s.id !== scheduleId))
+      } else {
+        alert('Failed to delete schedule: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Error deleting schedule:', error)
+      alert('Failed to delete schedule')
+    } finally {
+      setShowMoreMenu(null)
+    }
+  }
+
+  const handleModalSuccess = () => {
+    loadSchedules()
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setShowMoreMenu(null)
+    if (showMoreMenu) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showMoreMenu])
+
   if (loading) {
     return (
       <Card>
@@ -99,37 +152,38 @@ export function SchedulesList() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Scheduled Reports
-            </CardTitle>
-            <CardDescription>
-              Manage automated report schedules
-            </CardDescription>
-          </div>
-          <Button>
-            <Plus className="h-4 w-4" />
-            New Schedule
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {schedules.length === 0 ? (
-          <div className="text-center py-12">
-            <Clock className="h-12 w-12 text-muted mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No schedules yet</h3>
-            <p className="text-muted mb-4">
-              Create your first automated report schedule to get started
-            </p>
-            <Button>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Scheduled Reports
+              </CardTitle>
+              <CardDescription>
+                Manage automated report schedules
+              </CardDescription>
+            </div>
+            <Button onClick={handleCreateSchedule}>
               <Plus className="h-4 w-4" />
-              Create Schedule
+              New Schedule
             </Button>
           </div>
+        </CardHeader>
+        <CardContent>
+          {schedules.length === 0 ? (
+            <div className="text-center py-12">
+              <Clock className="h-12 w-12 text-muted mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">No schedules yet</h3>
+              <p className="text-muted mb-4">
+                Create your first automated report schedule to get started
+              </p>
+              <Button onClick={handleCreateSchedule}>
+                <Plus className="h-4 w-4" />
+                Create Schedule
+              </Button>
+            </div>
         ) : (
           <div className="space-y-4">
             {schedules.map((schedule) => (
@@ -192,7 +246,7 @@ export function SchedulesList() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex items-center gap-2 ml-4 relative">
                     <Button
                       variant="outline"
                       size="sm"
@@ -213,9 +267,36 @@ export function SchedulesList() {
                         </>
                       )}
                     </Button>
-                    <Button variant="ghost" size="sm">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
+                    <div className="relative">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setShowMoreMenu(showMoreMenu === schedule.id ? null : schedule.id)
+                        }}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                      {showMoreMenu === schedule.id && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border py-1 z-50">
+                          <button
+                            onClick={() => handleEditSchedule(schedule)}
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
+                          >
+                            <Edit className="h-4 w-4" />
+                            Edit Schedule
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSchedule(schedule.id)}
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete Schedule
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -224,5 +305,13 @@ export function SchedulesList() {
         )}
       </CardContent>
     </Card>
+
+    <ScheduleModal
+      open={modalOpen}
+      onClose={() => setModalOpen(false)}
+      onSuccess={handleModalSuccess}
+      schedule={editingSchedule}
+    />
+    </>
   )
 }
