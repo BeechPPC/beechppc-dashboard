@@ -23,12 +23,6 @@ export async function GET(
 
     const schedule = await prisma.reportSchedule.findUnique({
       where: { id },
-      include: {
-        reportHistory: {
-          take: 10,
-          orderBy: { createdAt: 'desc' },
-        },
-      },
     })
 
     if (!schedule || schedule.deletedAt) {
