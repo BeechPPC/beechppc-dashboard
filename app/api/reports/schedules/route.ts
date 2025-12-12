@@ -16,6 +16,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
+    console.log('[Schedules GET] Starting database query...')
+    console.log('[Schedules GET] DATABASE_URL exists:', !!process.env.DATABASE_URL)
+
     const schedules = await prisma.reportSchedule.findMany({
       where: {
         deletedAt: null, // Only non-deleted schedules
@@ -26,16 +29,20 @@ export async function GET(request: NextRequest) {
       ],
     })
 
+    console.log('[Schedules GET] Successfully fetched', schedules.length, 'schedules')
+
     return NextResponse.json({
       success: true,
       schedules,
     })
   } catch (error) {
-    console.error('Error fetching schedules:', error)
+    console.error('[Schedules GET] Error fetching schedules:', error)
+    console.error('[Schedules GET] Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
       {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch schedules',
+        details: error instanceof Error ? error.stack : String(error),
       },
       { status: 500 }
     )
