@@ -6,7 +6,6 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaNeon } from '@prisma/adapter-neon'
 import { neonConfig } from '@neondatabase/serverless'
-import ws from 'ws'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -17,7 +16,11 @@ const createPrismaClient = () => {
   // Always use Neon adapter when DATABASE_URL is available (for Supabase compatibility)
   if (process.env.DATABASE_URL) {
     // Configure Neon for serverless
-    neonConfig.webSocketConstructor = ws
+    // Only use ws in Node.js environment (not Edge Runtime)
+    if (typeof WebSocket === 'undefined') {
+      const ws = require('ws')
+      neonConfig.webSocketConstructor = ws
+    }
 
     // Use Neon adapter - pass PoolConfig object
     const adapter = new PrismaNeon({
