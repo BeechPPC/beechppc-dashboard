@@ -1,6 +1,3 @@
-// Prisma schema for BeechPPC Reports System
-// Based on REPORTS_IMPROVEMENT_ROADMAP.md Phase 1
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,12 +6,138 @@ datasource db {
   provider = "postgresql"
 }
 
-// Enums
-enum ReportType {
-  DAILY
-  WEEKLY
-  MONTHLY
+model Recipient {
+  id                   String                 @id
+  email                String                 @unique
+  name                 String?
+  enabled              Boolean                @default(true)
+  timezone             String?
+  preferredFormat      RecipientFormat?       @default(BOTH)
+  unsubscribedAt       DateTime?
+  unsubscribeToken     String?                @unique
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime
+  RecipientGroupMember RecipientGroupMember[]
+
+  @@index([email])
+  @@index([enabled])
+}
+
+model RecipientGroup {
+  id                   String                 @id
+  name                 String
+  description          String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime
+  RecipientGroupMember RecipientGroupMember[]
+
+  @@index([name])
+}
+
+model RecipientGroupMember {
+  id             String         @id
+  recipientId    String
+  groupId        String
+  createdAt      DateTime       @default(now())
+  RecipientGroup RecipientGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  Recipient      Recipient      @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@unique([recipientId, groupId])
+  @@index([groupId])
+  @@index([recipientId])
+}
+
+model ReportHistory {
+  id               String          @id
+  scheduleId       String?
+  reportType       ReportType
+  reportName       String
+  generatedAt      DateTime        @default(now())
+  dateFrom         DateTime
+  dateTo           DateTime
+  accountIds       Json
+  accountNames     Json
+  htmlContent      String?
+  pdfUrl           String?
+  jsonData         Json?
+  status           ReportStatus    @default(PENDING)
+  deliveryStatus   Json?
+  sentTo           Json?
+  sentAt           DateTime?
+  fileSizeBytes    Int?
+  generationTimeMs Int?
+  errorMessage     String?
+  createdAt        DateTime        @default(now())
+  expiresAt        DateTime?
+  ReportSchedule   ReportSchedule? @relation(fields: [scheduleId], references: [id])
+
+  @@index([createdAt])
+  @@index([generatedAt])
+  @@index([reportType])
+  @@index([scheduleId])
+  @@index([status])
+}
+
+model ReportSchedule {
+  id              String          @id
+  name            String
+  description     String?
+  reportType      ReportType
+  frequency       ReportFrequency
+  enabled         Boolean         @default(true)
+  cronSchedule    String
+  timezone        String          @default("Australia/Melbourne")
+  nextRunAt       DateTime?
+  lastRunAt       DateTime?
+  lastRunStatus   String?
+  scopeType       ScopeType
+  accountIds      Json?
+  templateType    TemplateType
+  sections        Json
+  dateRangeType   DateRangeType
+  recipientEmails Json
+  createdBy       String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+  deletedAt       DateTime?
+  ReportHistory   ReportHistory[]
+
+  @@index([createdAt])
+  @@index([enabled])
+  @@index([nextRunAt])
+}
+
+model ReportTemplate {
+  id               String   @id
+  name             String
+  description      String?
+  templateType     String
+  sections         Json
+  defaultDateRange String?
+  isSystem         Boolean  @default(false)
+  isPublic         Boolean  @default(false)
+  createdBy        String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
+
+  @@index([createdBy])
+  @@index([isPublic])
+  @@index([isSystem])
+}
+
+enum DateRangeType {
+  YESTERDAY
+  LAST_7_DAYS
+  LAST_30_DAYS
+  THIS_MONTH
+  LAST_MONTH
   CUSTOM
+}
+
+enum RecipientFormat {
+  HTML
+  PDF
+  BOTH
 }
 
 enum ReportFrequency {
@@ -22,6 +145,22 @@ enum ReportFrequency {
   WEEKLY
   MONTHLY
   CUSTOM_CRON
+}
+
+enum ReportStatus {
+  PENDING
+  GENERATING
+  GENERATED
+  SENDING
+  SENT
+  FAILED
+}
+
+enum ReportType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  CUSTOM
 }
 
 enum ScopeType {
@@ -36,201 +175,4 @@ enum TemplateType {
   KEYWORD
   AUCTION
   CUSTOM
-}
-
-enum DateRangeType {
-  YESTERDAY
-  LAST_7_DAYS
-  LAST_30_DAYS
-  THIS_MONTH
-  LAST_MONTH
-  CUSTOM
-}
-
-enum ReportStatus {
-  PENDING
-  GENERATING
-  GENERATED
-  SENDING
-  SENT
-  FAILED
-}
-
-enum RecipientFormat {
-  HTML
-  PDF
-  BOTH
-}
-
-// Report Schedules Table
-model ReportSchedule {
-  id String @id @default(uuid())
-
-  // Basic Info
-  name        String // "Daily Performance - All Accounts"
-  description String?
-  reportType  ReportType
-  frequency   ReportFrequency
-
-  // Scheduling
-  enabled       Boolean   @default(true)
-  cronSchedule  String // "0 11 * * *"
-  timezone      String    @default("Australia/Melbourne")
-  nextRunAt     DateTime?
-  lastRunAt     DateTime?
-  lastRunStatus String? // "success", "failed"
-
-  // Scope
-  scopeType  ScopeType
-  accountIds Json? // ['123', '456'] or null for MCC
-
-  // Configuration
-  templateType  TemplateType
-  sections      Json // {campaigns: true, keywords: true, ...}
-  dateRangeType DateRangeType
-
-  // Recipients (storing email strings for Phase 1, will migrate to Recipients table later)
-  recipientEmails Json // ['email1@example.com', 'email2@example.com']
-
-  // Metadata
-  createdBy String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  // Relations
-  reportHistory ReportHistory[]
-
-  @@index([enabled])
-  @@index([nextRunAt])
-  @@index([createdAt])
-}
-
-// Report History Table
-model ReportHistory {
-  id String @id @default(uuid())
-
-  // Link to schedule (nullable for manual reports)
-  scheduleId String?
-  schedule   ReportSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
-
-  // Report Details
-  reportType ReportType
-  reportName String
-  generatedAt DateTime @default(now())
-  dateFrom   DateTime
-  dateTo     DateTime
-
-  // Scope
-  accountIds   Json // ['123', '456']
-  accountNames Json // ['Account A', 'Account B']
-
-  // Content
-  htmlContent String? @db.Text
-  pdfUrl      String? // S3/Cloudflare R2 URL (for future use)
-  jsonData    Json? // Structured report data
-
-  // Delivery
-  status         ReportStatus @default(PENDING)
-  deliveryStatus Json? // {recipient: status, error: message}
-  sentTo         Json? // ['email1@test.com', 'email2@test.com']
-  sentAt         DateTime?
-
-  // Metadata
-  fileSizeBytes     Int?
-  generationTimeMs  Int?
-  errorMessage      String? @db.Text
-
-  createdAt DateTime  @default(now())
-  expiresAt DateTime? // For data retention policy
-
-  @@index([scheduleId])
-  @@index([reportType])
-  @@index([status])
-  @@index([generatedAt])
-  @@index([createdAt])
-}
-
-// Recipients Table (for Phase 2)
-model Recipient {
-  id String @id @default(uuid())
-
-  email String @unique
-  name  String?
-
-  // Preferences
-  enabled         Boolean          @default(true)
-  timezone        String?
-  preferredFormat RecipientFormat? @default(BOTH)
-
-  // Unsubscribe
-  unsubscribedAt    DateTime?
-  unsubscribeToken  String?   @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  recipientGroups RecipientGroupMember[]
-
-  @@index([email])
-  @@index([enabled])
-}
-
-// Recipient Groups Table (for Phase 2)
-model RecipientGroup {
-  id String @id @default(uuid())
-
-  name        String
-  description String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  members RecipientGroupMember[]
-
-  @@index([name])
-}
-
-// Junction table for many-to-many relationship
-model RecipientGroupMember {
-  id String @id @default(uuid())
-
-  recipientId String
-  recipient   Recipient @relation(fields: [recipientId], references: [id], onDelete: Cascade)
-
-  groupId String
-  group   RecipientGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@unique([recipientId, groupId])
-  @@index([recipientId])
-  @@index([groupId])
-}
-
-// Report Templates Table (for Phase 2+)
-model ReportTemplate {
-  id String @id @default(uuid())
-
-  name        String
-  description String?
-
-  // Template Configuration
-  templateType     String
-  sections         Json
-  defaultDateRange String?
-
-  // Visibility
-  isSystem  Boolean @default(false) // Built-in vs user-created
-  isPublic  Boolean @default(false)
-  createdBy String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([isSystem])
-  @@index([isPublic])
-  @@index([createdBy])
 }
