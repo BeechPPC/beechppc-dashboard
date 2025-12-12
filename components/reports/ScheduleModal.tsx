@@ -27,7 +27,7 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
   // Form state
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [reportType, setReportType] = useState<'PERFORMANCE' | 'SEARCH_TERMS' | 'QUALITY_SCORE'>('PERFORMANCE')
+  const [reportType, setReportType] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY' | 'CUSTOM'>('DAILY')
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily')
   const [hour, setHour] = useState('11')
   const [minute, setMinute] = useState('00')
@@ -122,7 +122,7 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
       if (!schedule) {
         setName('')
         setDescription('')
-        setReportType('PERFORMANCE')
+        setReportType('DAILY')
         setFrequency('daily')
         setHour('11')
         setMinute('00')
@@ -308,9 +308,10 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
                 onChange={(e) => setReportType(e.target.value as any)}
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="PERFORMANCE">Performance Report</option>
-                <option value="SEARCH_TERMS">Search Terms Report</option>
-                <option value="QUALITY_SCORE">Quality Score Report</option>
+                <option value="DAILY">Daily Report</option>
+                <option value="WEEKLY">Weekly Report</option>
+                <option value="MONTHLY">Monthly Report</option>
+                <option value="CUSTOM">Custom Report</option>
               </select>
             </div>
 
