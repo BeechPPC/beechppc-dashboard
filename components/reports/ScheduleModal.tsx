@@ -34,9 +34,9 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
   const [dayOfWeek, setDayOfWeek] = useState('1')
   const [dayOfMonth, setDayOfMonth] = useState('1')
   const [timezone, setTimezone] = useState('Australia/Melbourne')
-  const [scopeType, setScopeType] = useState<'ALL_ACCOUNTS' | 'SPECIFIC_ACCOUNTS'>('ALL_ACCOUNTS')
+  const [scopeType, setScopeType] = useState<'MCC' | 'ACCOUNTS' | 'ALL'>('ALL')
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
-  const [templateType, setTemplateType] = useState<'STANDARD' | 'DETAILED' | 'EXECUTIVE'>('STANDARD')
+  const [templateType, setTemplateType] = useState<'EXECUTIVE' | 'DETAILED' | 'KEYWORD' | 'AUCTION' | 'CUSTOM'>('DETAILED')
   const [sections, setSections] = useState({
     campaigns: true,
     keywords: true,
@@ -127,9 +127,9 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
         setHour('11')
         setMinute('00')
         setTimezone('Australia/Melbourne')
-        setScopeType('ALL_ACCOUNTS')
+        setScopeType('ALL')
         setSelectedAccounts([])
-        setTemplateType('STANDARD')
+        setTemplateType('DETAILED')
         setSections({
           campaigns: true,
           keywords: true,
@@ -167,7 +167,7 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
       case 2:
         return true // Report type and frequency are always valid
       case 3:
-        return scopeType === 'ALL_ACCOUNTS' || selectedAccounts.length > 0
+        return scopeType === 'ALL' || scopeType === 'MCC' || selectedAccounts.length > 0
       case 4:
         return true // Template and sections are always valid
       case 5:
@@ -205,7 +205,7 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
         cronSchedule,
         timezone,
         scopeType,
-        accountIds: scopeType === 'SPECIFIC_ACCOUNTS' ? selectedAccounts : undefined,
+        accountIds: scopeType === 'ACCOUNTS' ? selectedAccounts : undefined,
         templateType,
         sections,
         dateRangeType,
@@ -435,8 +435,8 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"
-                    checked={scopeType === 'ALL_ACCOUNTS'}
-                    onChange={() => setScopeType('ALL_ACCOUNTS')}
+                    checked={scopeType === 'ALL'}
+                    onChange={() => setScopeType('ALL')}
                     className="w-4 h-4"
                   />
                   <span>All Accounts</span>
@@ -444,8 +444,8 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"
-                    checked={scopeType === 'SPECIFIC_ACCOUNTS'}
-                    onChange={() => setScopeType('SPECIFIC_ACCOUNTS')}
+                    checked={scopeType === 'ACCOUNTS'}
+                    onChange={() => setScopeType('ACCOUNTS')}
                     className="w-4 h-4"
                   />
                   <span>Specific Accounts</span>
@@ -453,7 +453,7 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
               </div>
             </div>
 
-            {scopeType === 'SPECIFIC_ACCOUNTS' && (
+            {scopeType === 'ACCOUNTS' && (
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Select Accounts <span className="text-red-500">*</span>
@@ -499,9 +499,11 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
                 onChange={(e) => setTemplateType(e.target.value as any)}
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="STANDARD">Standard - Balanced detail</option>
-                <option value="DETAILED">Detailed - Comprehensive analysis</option>
                 <option value="EXECUTIVE">Executive - High-level summary</option>
+                <option value="DETAILED">Detailed - Comprehensive analysis</option>
+                <option value="KEYWORD">Keyword - Keyword performance focus</option>
+                <option value="AUCTION">Auction - Auction insights focus</option>
+                <option value="CUSTOM">Custom - Custom configuration</option>
               </select>
             </div>
 
