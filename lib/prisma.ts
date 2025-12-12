@@ -4,14 +4,13 @@
  */
 
 import { PrismaClient } from '@prisma/client'
-import { Pool } from '@neondatabase/serverless'
 import { PrismaNeon } from '@prisma/adapter-neon'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-// Create Prisma Client with Neon adapter for Supabase serverless
+// Create Prisma Client - use standard client, Prisma handles Supabase natively
 const createPrismaClient = () => {
   console.log('[Prisma] Creating Prisma client...')
   console.log('[Prisma] DATABASE_URL exists:', !!process.env.DATABASE_URL)
@@ -22,12 +21,9 @@ const createPrismaClient = () => {
   }
 
   try {
-    // Use Neon's connection pooling for serverless
-    console.log('[Prisma] Creating Neon connection pool...')
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-
-    console.log('[Prisma] Creating Prisma Neon adapter...')
-    const adapter = new PrismaNeon(pool)
+    // For Supabase, pass the connection string config directly to PrismaNeon
+    console.log('[Prisma] Creating Prisma Neon adapter with connection string...')
+    const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL })
 
     console.log('[Prisma] Creating PrismaClient with adapter...')
     return new PrismaClient({
