@@ -212,6 +212,8 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
         recipientEmails: emailList,
       }
 
+      console.log('[ScheduleModal] Submitting payload:', JSON.stringify(payload, null, 2))
+
       const url = schedule
         ? `/api/reports/schedules/${schedule.id}`
         : '/api/reports/schedules'
@@ -224,17 +226,20 @@ export function ScheduleModal({ open, onClose, onSuccess, schedule }: ScheduleMo
         body: JSON.stringify(payload),
       })
 
+      console.log('[ScheduleModal] Response status:', res.status)
+
       const data = await res.json()
 
       if (data.success) {
         onSuccess()
         onClose()
       } else {
-        alert(`Failed to ${schedule ? 'update' : 'create'} schedule: ${data.error}`)
+        console.error('Server error response:', data)
+        alert(`Failed to ${schedule ? 'update' : 'create'} schedule: ${data.error || 'Unknown error'}\n\nDetails: ${data.details || 'No details available'}`)
       }
     } catch (error) {
       console.error('Error saving schedule:', error)
-      alert(`Failed to ${schedule ? 'update' : 'create'} schedule`)
+      alert(`Failed to ${schedule ? 'update' : 'create'} schedule: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
