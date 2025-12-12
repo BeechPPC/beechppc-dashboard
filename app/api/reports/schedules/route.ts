@@ -85,8 +85,12 @@ export async function POST(request: NextRequest) {
     // For now, we'll set it to null and implement proper calculation later
     const nextRunAt = null
 
+    // Generate unique ID for the schedule
+    const scheduleId = `schedule_${Date.now()}_${Math.random().toString(36).substring(7)}`
+
     const schedule = await prisma.reportSchedule.create({
       data: {
+        id: scheduleId,
         name,
         description,
         reportType: reportType as ReportType,

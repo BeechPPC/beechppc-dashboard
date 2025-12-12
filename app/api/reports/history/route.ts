@@ -95,8 +95,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Generate unique ID for the report
+    const reportId = `report_${Date.now()}_${Math.random().toString(36).substring(7)}`
+
     const report = await prisma.reportHistory.create({
       data: {
+        id: reportId,
         scheduleId: scheduleId || null,
         reportType,
         reportName,
