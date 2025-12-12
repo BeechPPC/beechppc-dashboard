@@ -91,6 +91,9 @@ export async function PATCH(
     if (body.dateRangeType !== undefined) updateData.dateRangeType = body.dateRangeType as DateRangeType
     if (body.recipientEmails !== undefined) updateData.recipientEmails = body.recipientEmails
 
+    // Always update the updatedAt timestamp
+    updateData.updatedAt = new Date()
+
     const schedule = await prisma.reportSchedule.update({
       where: { id },
       data: updateData,
@@ -131,6 +134,7 @@ export async function DELETE(
       data: {
         deletedAt: new Date(),
         enabled: false, // Also disable the schedule
+        updatedAt: new Date(),
       },
     })
 

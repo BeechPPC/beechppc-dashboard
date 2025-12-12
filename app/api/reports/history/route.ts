@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
         data: {
           lastRunAt: new Date(),
           lastRunStatus: status === 'SENT' ? 'success' : 'failed',
+          updatedAt: new Date(),
         },
       })
     }

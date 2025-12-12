@@ -74,8 +74,11 @@ async function migrateSchedule() {
     }
 
     // Create the schedule
+    const scheduleId = `schedule_${Date.now()}_${Math.random().toString(36).substring(7)}`
+
     const newSchedule = await prisma.reportSchedule.create({
       data: {
+        id: scheduleId,
         name: 'Daily MCC Performance Report',
         description: 'Automated daily report for all Google Ads accounts (migrated from legacy settings)',
         reportType: 'DAILY',
@@ -99,6 +102,7 @@ async function migrateSchedule() {
         },
         dateRangeType: 'YESTERDAY',
         recipientEmails,
+        updatedAt: new Date(),
       },
     })
 

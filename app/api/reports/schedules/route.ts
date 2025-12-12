@@ -105,6 +105,7 @@ export async function POST(request: NextRequest) {
         recipientEmails: recipientEmails || [],
         nextRunAt,
         createdBy: userId,
+        updatedAt: new Date(),
       },
     })
 
