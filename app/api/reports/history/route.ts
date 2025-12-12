@@ -32,14 +32,6 @@ export async function GET(request: NextRequest) {
     // Get paginated results
     const reports = await prisma.reportHistory.findMany({
       where,
-      include: {
-        schedule: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
       orderBy: {
         createdAt: 'desc',
       },
