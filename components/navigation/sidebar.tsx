@@ -24,7 +24,8 @@ import {
   Loader2,
   Building2,
   Calendar,
-  LogOut
+  LogOut,
+  FileBarChart
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { GoogleAdsAccount } from '@/lib/google-ads/types'
@@ -40,6 +41,7 @@ const navigation = [
 ]
 
 const automations = [
+  { name: 'Business Clarity Report', href: '/tools/business-clarity-report', icon: FileBarChart, comingSoon: false },
   { name: 'Keyword Research', href: '/automations/keyword-research', icon: Search, comingSoon: false },
   { name: 'Competitor Monitoring', href: '/automations/competitor-monitoring', icon: TrendingUp, comingSoon: true },
   { name: 'Budget Management', href: '/automations/budget-management', icon: DollarSign, comingSoon: true },
@@ -185,7 +187,7 @@ export function Sidebar() {
             className="w-full px-3 pb-2 flex items-center justify-between group"
           >
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted group-hover:text-foreground transition-colors">
-              Automations
+              Tools
             </h3>
             <ChevronDown
               className={cn(
